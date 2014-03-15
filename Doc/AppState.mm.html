@@ -1,0 +1,367 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>AppState</title>
+<style type="text/css">
+    li { list-style: none;  margin: 0; }
+    p { margin: 0; }
+    span.foldopened { color: white; font-size: xx-small;
+    border-width: 1; font-family: monospace; padding: 0em 0.25em 0em 0.25em; background: #e0e0e0;
+    VISIBILITY: visible;
+    cursor:pointer; }
+
+
+    span.foldclosed { color: #666666; font-size: xx-small;
+    border-width: 1; font-family: monospace; padding: 0em 0.25em 0em 0.25em; background: #e0e0e0;
+    VISIBILITY: hidden;
+    cursor:pointer; }
+
+    span.foldspecial { color: #666666; font-size: xx-small; border-style: none solid solid none;
+    border-color: #CCCCCC; border-width: 1; font-family: sans-serif; padding: 0em 0.1em 0em 0.1em; background: #e0e0e0;
+    cursor:pointer; }
+
+    span.l { color: red; font-weight: bold; }
+
+    a.mapnode:link {text-decoration: none; color: black; }
+    a.mapnode:visited {text-decoration: none; color: black; }
+    a.mapnode:active {text-decoration: none; color: black; }
+    a.mapnode:hover {text-decoration: none; color: black; background: #eeeee0; }
+
+</style>
+<!-- ^ Position is not set to relative / absolute here because of Mozilla -->
+</head>
+<body>
+
+<script type="text/javascript">
+   // Here we implement folding. It works fine with MSIE5.5, MSIE6.0 and
+   // Mozilla 0.9.6.
+
+   if (document.layers) {
+      //Netscape 4 specific code
+      pre = 'document.';
+      post = ''; }
+   if (document.getElementById) {
+      //Netscape 6 specific code
+      pre = 'document.getElementById("';
+      post = '").style'; }
+   if (document.all) {
+      //IE4+ specific code
+      pre = 'document.all.';
+      post = '.style'; }
+
+function layer_exists(layer) {
+   try {
+      eval(pre + layer + post);
+      return true; }
+   catch (error) {
+      return false; }}
+
+function show_layer(layer) {
+   eval(pre + layer + post).position = 'relative'; 
+   eval(pre + layer + post).visibility = 'visible'; }
+
+function hide_layer(layer) {
+   eval(pre + layer + post).visibility = 'hidden';
+   eval(pre + layer + post).position = 'absolute'; }
+
+function hide_folder(folder) {
+    hide_folding_layer(folder)
+    show_layer('show'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+}
+
+function show_folder(folder) {
+    // Precondition: all subfolders are folded
+
+    show_layer('hide'+folder);
+    hide_layer('show'+folder);
+    show_layer('fold'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+
+    var i;
+    for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_layer('show'+folder+'_'+i); }
+}
+function show_folder_completely(folder) {
+    // Precondition: all subfolders are folded
+
+    show_layer('hide'+folder);
+    hide_layer('show'+folder);
+    show_layer('fold'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+
+    var i;
+    for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_folder_completely(folder+'_'+i); }
+}
+
+
+
+function hide_folding_layer(folder) {
+   var i;
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       hide_folding_layer(folder+'_'+i); }
+
+   hide_layer('hide'+folder);
+   hide_layer('show'+folder);
+   hide_layer('fold'+folder);
+
+   scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+}
+
+function fold_document() {
+   var i;
+   var folder = '1';
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       hide_folder(folder+'_'+i); }
+}
+
+function unfold_document() {
+   var i;
+   var folder = '1';
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_folder_completely(folder+'_'+i); }
+}
+
+</script>
+<SPAN class="foldspecial" onclick="fold_document()">All +</SPAN>
+<SPAN class="foldspecial" onclick="unfold_document()">All -</SPAN>
+<p><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">AppState</span>
+<ul><li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Config</span>
+<ul><li>options
+<ul><li>more than 1 config file
+
+</li>
+<li>more than 1 config in a config file
+
+</li>
+
+</ul>
+</li>
+<li>specializations
+<ul><li>addressbook
+<ul><li>VCard
+
+</li>
+<li>LDif
+
+</li>
+
+</ul>
+</li>
+<li>calendar
+
+</li>
+<li>bug-list
+
+</li>
+<li>change-log
+
+</li>
+<li>gconf
+
+</li>
+
+</ul>
+</li>
+<li>types
+<ul><li>xml
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Json</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">DataDumper</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">FreezeThaw</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Storable</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Yaml</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Memcached</span>
+
+</li>
+<li>MongoDb
+
+</li>
+
+</ul>
+</li>
+
+</ul>
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">YmlNodeTree</span>
+<ul><li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Node</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Module</span>
+
+</li>
+
+</ul>
+</li>
+<li><span id="show1_1" class="foldclosed" onClick="show_folder('1_1')" style="POSITION: absolute">+</span> <span id="hide1_1" class="foldopened" onClick="hide_folder('1_1')">-</span>
+<span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Log</span>
+<ul id="fold1_1" style="POSITION: relative; VISIBILITY: visible;"><li>Use users filehandle 
+
+</li>
+<li>repeated messages are removed with a remark
+
+</li>
+<li>repeated datestamps are removed
+
+</li>
+
+</ul>
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Process</span>
+<ul><li>Existing Server
+<ul><li>Local
+<ul><li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">MsgQueue</span>
+
+</li>
+<li>dbus
+
+</li>
+
+</ul>
+</li>
+<li>Network
+<ul><li>soap
+
+</li>
+<li>rpc
+
+</li>
+<li>wsdl
+
+</li>
+<li>couchdb
+
+</li>
+<li>mongodb
+
+</li>
+<li>mysql
+
+</li>
+<li>ldap
+
+</li>
+<li>http
+
+</li>
+
+</ul>
+</li>
+
+</ul>
+</li>
+<li>Applications Server
+
+</li>
+
+</ul>
+</li>
+<li><span id="show1_2" class="foldclosed" onClick="show_folder('1_2')" style="POSITION: absolute">+</span> <span id="hide1_2" class="foldopened" onClick="hide_folder('1_2')">-</span>
+<span style="font-family: SansSerif, sans-serif; font-weight: bold; ">CommandLine</span>
+<ul id="fold1_2" style="POSITION: relative; VISIBILITY: visible;"><li>Help text from arguments and options
+
+</li>
+
+</ul>
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">PluginManager</span>
+
+</li>
+<li>Gui
+<ul><li>Wx
+
+</li>
+<li>Qt
+
+</li>
+<li>Tk
+
+</li>
+
+</ul>
+</li>
+<li>Roles
+<ul><li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">ConfigIO</span>
+
+</li>
+
+</ul>
+</li>
+<li>Extensions
+<ul><li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">ConfigFile</span>
+
+</li>
+<li><span style="font-family: SansSerif, sans-serif; font-weight: bold; ">Documents</span>
+
+</li>
+
+</ul>
+</li>
+<li>Documentation
+<ul><li>AppState
+
+</li>
+<li>AppState::Config
+
+</li>
+<li>AppState::Log
+
+</li>
+<li>AppState::Process
+
+</li>
+<li>AppState::CommandLine
+
+</li>
+<li>AppState::PluginManager
+
+</li>
+
+</ul>
+</li>
+<li>Changes
+<ul><li>AppState
+
+</li>
+<li>AppState::Config
+
+</li>
+<li>AppState::Log
+
+</li>
+<li>AppState::Process
+
+</li>
+<li>AppState::CommandLine
+
+</li>
+<li>AppState::PluginManager
+
+</li>
+
+</ul>
+</li>
+<li>Bugs, Todo and Wishlist 
+
+</li>
+
+</ul><SCRIPT type="text/javascript">
+fold_document();
+</SCRIPT>
+</body>
+</html>

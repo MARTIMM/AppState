@@ -1,0 +1,29 @@
+# Testing pod documentation
+#
+use Modern::Perl;
+use Test::More;
+use Test::Pod;
+
+#-------------------------------------------------------------------------------
+&testPod('lib/AppState.pm');
+#&testPod('lib/AppState/Constant');
+#&testPod('lib/AppState');
+#&testPod('lib/AppState');
+#&testPod('lib/AppState');
+
+
+
+#-------------------------------------------------------------------------------
+done_testing();
+
+
+exit(0);
+
+#===============================================================================
+#
+sub testPod
+{
+  my( $file) = @_;
+  
+  pod_file_ok( $file, "Valid POD in file $file" );
+}
