@@ -1,8 +1,9 @@
 AppState
 ========
 
-Project still in Alpha state
+Software is still in alpha state!
 
+INTRODUCTION
 
 Inventing the wheel again..... Its purpose is to group a lot of programs
 nessessities into one set of modules. In the CPAN are modules for accessing
@@ -23,9 +24,6 @@ Modules
     Log levels are bit masks each for specific catagories. Keep
     first 16 bits reserved for AppState. Cannot be checked however.
 
-  AppState::Log::Mask
-    Log mask defs
-
   AppState::Plugins::Feature::Process
     Daemon, fork, process tables etc
 
@@ -40,18 +38,15 @@ INSTALLATION
 To install this module type the following:
 
    perl Build.PL
+   Build
    Build test
    Build install
 
 DEPENDENCIES
 
-This module requires these other modules and libraries:
-
 
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 2013 by Marcel Timmerman
 

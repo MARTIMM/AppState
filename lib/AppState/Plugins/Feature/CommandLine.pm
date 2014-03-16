@@ -108,9 +108,9 @@ sub initialize
 
   if( !defined $description )
   {
-    $self->_log( 'Description of command not defined'
-               , $self->C_CMD_NODESCRIPTION
-               );
+#    $self->_log( 'Description of command not defined'
+#               , $self->C_CMD_NODESCRIPTION
+#               );
     return;
   }
 
