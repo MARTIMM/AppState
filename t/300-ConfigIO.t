@@ -49,7 +49,7 @@ $self->control( { server => 'localhost', port => '99299'});
 # Check setup config
 #
 is( $self->fileExt, 'yml', 'Check extension');
-is( $self->getOption('Indent'), 1, 'Check an option');
+is( $self->get_option('Indent'), 1, 'Check an option');
 is( $self->getControl('port'), 99299, 'Check a control item');
 
 #-------------------------------------------------------------------------------

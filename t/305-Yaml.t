@@ -40,7 +40,7 @@ $cf->options( { Indent => 1, SortKeys => 1, UseBlock => 0
             );
 
 is( $cf->fileExt, 'yml', 'Check extension');
-is( $cf->getOption('Indent'), 1, 'Check an option');
+is( $cf->get_option('Indent'), 1, 'Check an option');
 
 #-------------------------------------------------------------------------------
 my $filename = "t/Yaml/Work/testConfigFile." . $cf->fileExt;

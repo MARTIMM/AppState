@@ -38,7 +38,7 @@ $cf->options( { Indent => 1, Purity => 1, Deparse => 1
             );
 
 is( $cf->fileExt, 'dd', 'Check extension');
-is( $cf->getOption('Indent'), 1, 'Check an option');
+is( $cf->get_option('Indent'), 1, 'Check an option');
 
 #-------------------------------------------------------------------------------
 my $filename = "t/DataDumper/Work/testConfigFile." . $cf->fileExt;

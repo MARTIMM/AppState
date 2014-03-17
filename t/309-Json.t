@@ -38,7 +38,7 @@ $cf->options( { utf8 => 1, pretty => 1
             );
 
 is( $cf->fileExt, 'jsn', 'Check extension');
-is( $cf->getOption('pretty'), 1, 'Check an option');
+is( $cf->get_option('pretty'), 1, 'Check an option');
 
 #-------------------------------------------------------------------------------
 my $filename = "t/Json/Work/testConfigFile." . $cf->fileExt;

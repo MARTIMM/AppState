@@ -36,7 +36,7 @@ $cf->options( { Deparse => 1, Eval => 1});
 $cf->control( { useNFreeze => 1});
 
 is( $cf->fileExt, 'stb', 'Check extension');
-is( $cf->getOption('Deparse'), 1, 'Check an option');
+is( $cf->get_option('Deparse'), 1, 'Check an option');
 
 #-------------------------------------------------------------------------------
 my $filename = "t/Storable/Work/testConfigFile." . $cf->fileExt;

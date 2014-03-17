@@ -70,7 +70,7 @@ has options =>
     , default           => sub{ return {}; }
     , traits            => ['Hash']
     , handles           =>
-      { getOption       => 'get'
+      { get_option       => 'get'
       }
     );
 

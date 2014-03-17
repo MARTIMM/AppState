@@ -38,9 +38,9 @@ has _options =>
     , traits            => ['Hash']
     , default           => sub { return {}; }
     , handles           =>
-      { getOption       => 'get'
-      , setOption       => 'set'
-      , optionExists    => 'exists'
+      { get_option       => 'get'
+      , set_option       => 'set'
+      , option_exists    => 'exists'
       , get_options     => 'keys'
       }
     , writer            => '_set_options'
