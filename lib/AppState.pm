@@ -56,12 +56,14 @@ has temp_dir =>
     ( is                => 'ro'
     , isa               => 'Str'
     , writer            => '_temp_dir'
+    , trigger           => sub{ say "T: $_[1]";}
     );
 
 has work_dir =>
     ( is                => 'ro'
     , isa               => 'Str'
     , writer            => '_work_dir'
+    , trigger           => sub{ say "W: $_[1]";}
     );
 
 # Cleanup temp directory when cleanup() is called, default is no cleanup.
@@ -70,6 +72,18 @@ has cleanup_temp_dir =>
     ( is                => 'rw'
     , isa               => 'Bool'
     , default           => 0
+    );
+
+has use_work_dir =>
+    ( is                => 'rw'
+    , isa               => 'Bool'
+    , default           => 1
+    );
+
+has use_temp_dir =>
+    ( is                => 'rw'
+    , isa               => 'Bool'
+    , default           => 1
     );
 
 has _plugin_manager =>
@@ -236,31 +250,31 @@ sub check_directories
   # Check config directory.
   #
   my $cdir = $self->config_dir;
-
-  # Check workdir directory
-  #
-  my $wdir = $self->work_dir;
-  $wdir = $cdir . "/Work" unless defined $wdir;
-
-  # Check tempdir directory
-  #
-  my $tdir = $self->temp_dir;
-  $tdir = $cdir . "/Temp" unless defined $tdir;
-
-  # Create them if nessessary
-  #
-  File::Path::make_path( $cdir, $wdir, $tdir, { verbose => 0, mode => oct(750)});
-
-  # Can only use realpath when path exists
-  #
+  File::Path::make_path( $cdir, { verbose => 0, mode => oct(750)});
   $cdir = Cwd::realpath($cdir);
   $self->_config_dir($cdir);
 
-  $wdir = Cwd::realpath($wdir);
-  $self->_work_dir($wdir);
+  # Check workdir directory
+  #
+  if( $self->use_work_dir )
+  {
+    my $wdir = $self->work_dir;
+    $wdir //= $cdir . "/Work";
+    File::Path::make_path( $wdir, { verbose => 0, mode => oct(750)});
+    $wdir = Cwd::realpath($wdir);
+    $self->_work_dir($wdir);
+  }
 
-  $tdir = Cwd::realpath($tdir);
-  $self->_temp_dir($tdir);
+  # Check tempdir directory
+  #
+  if( $self->use_temp_dir )
+  {
+    my $tdir = $self->temp_dir;
+    $tdir //= $cdir . "/Temp";
+    File::Path::make_path( $tdir, { verbose => 0, mode => oct(750)});
+    $tdir = Cwd::realpath($tdir);
+    $self->_temp_dir($tdir);
+  }
 
   return;
 }
