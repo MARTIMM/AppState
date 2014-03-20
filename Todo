@@ -1,0 +1,96 @@
+- Renaming log to _log in modules ( CommandLine, PluginManager)
+- Replace or extend AppState::PluginManager with Module::Pluggable
+  - Won't do.
+    1) plugins are all instanciated, not one particularly.
+    2) plugins are search again when use'd (controllable though)
+    3) plugins are not remembered. Each call to plugins() gives new addresses
+
+
+Thinking about AppState plugins interface
+-----------------------------------------
+
+AppState::CommandLine
+---------------------
+Moose generated methods
+  options
+  usage
+  appStateObj
+
+Method functions
+  BUILD
+  _log				plugin check
+  cleanup			plugin check
+  configGetoptLong
+  describeUsage
+
+
+
+AppState::Config
+----------------
+Moose generated methods
+  configObjects
+    _setConfigObject
+    getConfigObject
+    nbrConfigObjects
+    hasConfigObject
+    getConfigObjectNames
+    _dropConfigObject
+
+  currentConfigObjectName
+    _selectConfigObjectName
+
+  currentConfigObject
+    getDocuments		From AppState::Ext::Documents
+    setDocuments
+    currentDocument
+    selectDocument
+    nbrDocuments
+    addDocuments
+    getDocument
+    setDocument
+
+    getKeys
+    getValue
+    setValue
+    dropValue
+    getKValue
+    setKValue
+    dropKValue
+    popValue
+    pushValue
+    shiftValue
+    unshiftValue
+
+    storeType			From AppState::Ext::ConfigFile 
+    location
+    requestFile
+    documents			Type AppState::Ext::Documents
+
+    configFile
+    load
+    save
+    clone
+    cloneDocument
+    init
+    delete
+
+Method functions
+  BUILD
+  _log
+  cleanup
+  selectConfigObject
+  addConfigObject
+  modifyConfigObject
+  dropConfigObject
+  removeConfigObject
+
+
+
+  
+  
+  
+  
+  
+  
+  
+

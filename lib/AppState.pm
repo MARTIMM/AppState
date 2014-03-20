@@ -1,8 +1,9 @@
 package AppState;
 
 use Modern::Perl;
-use version; our $VERSION = qv('v0.4.13');
-use 5.010001 ;
+use version; our $VERSION = qv('v0.4.15');
+#use 5.010001 ;
+use 5.10.1;
 
 use namespace::autoclean;
 
@@ -56,14 +57,12 @@ has temp_dir =>
     ( is                => 'ro'
     , isa               => 'Str'
     , writer            => '_temp_dir'
-    , trigger           => sub{ say "T: $_[1]";}
     );
 
 has work_dir =>
     ( is                => 'ro'
     , isa               => 'Str'
     , writer            => '_work_dir'
-    , trigger           => sub{ say "W: $_[1]";}
     );
 
 # Cleanup temp directory when cleanup() is called, default is no cleanup.

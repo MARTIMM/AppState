@@ -1,0 +1,28 @@
+#-------------------------------------------------------------------------------
+# Default settings for Perl::Critic
+#
+
+#-------------------------------------------------------------------------------
+# Policy blocks. Name between [] are prefixed with 'Perl::Critic::Policy::'.
+#-------------------------------------------------------------------------------
+# These modules are having strict and warnings
+#
+[TestingAndDebugging::RequireUseStrict]
+equivalent_modules = Modern::Perl
+
+[TestingAndDebugging::RequireUseWarnings]
+equivalent_modules = Modern::Perl
+#severity = 5
+
+[Subroutines::RequireArgUnpacking]
+short_subroutine_statements = 5
+#severity = 5
+
+#[Subroutines::ProhibitBuiltinHomonyms]
+#severity = 3
+
+#-------------------------------------------------------------------------------
+# For all other Policies, I accept the default severity,
+# so no additional configuration is required for them.
+#
+

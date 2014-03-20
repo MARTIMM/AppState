@@ -1,18 +1,20 @@
-# Yaml file describing several parts of the project
-#
 ---
-Abstract: Set of modules to maintain an application state
-License: Perl
-Copyright: 2013 - 2014
+Application:
+ name: AppState
+ abstract: Framework to provide basic utilities to a program
+ licenses:
+  - Perl_5
+ copyright: 2013 - 2014
 
-Author:
- name: Marcel Timmerman
- email: mt1957@gmail.com
- cpan: MARTIMM
- github: MARTIMM
+ author:
+  name: Marcel Timmerman
+  email: mt1957@gmail.com
 
-Notes:
- - http://www.perlfoundation.org/cpan_licensing_guidelines
+ notes:
+  - http://www.perlfoundation.org/cpan_licensing_guidelines
+
+ documentation:
+  - README
 
 #-------------------------------------------------------------------------------
 # Bugs to repair, use version of AppState.
@@ -20,34 +22,48 @@ Notes:
 # BugfixCount is reset on Release upgrade.
 #
 Bugs:
- - &bug_issue_1
-   bug: 1
-   found in project version: 0.3.12
-   date: 2014 02 24
-   priority: 1
-   description: >
-    Logfile shows empty lines after printing '--[Message repeated]--'.
+ 2014 02 24:
+  - &bi1
+    issue:
+     version: 0.3.12
+     priority: 1
+     description: >
+      Logfile shows empty lines after printing '--[Message repeated]--'.
+    fix:
+     date: 2014 02 24
+     description: >
+      In Log.pm Text::Wrap::wrap() was called on an empty message. Added
+      an if to prevent log.
+     modules/programs: [Log.pm]
 
-   fixed in project version: 0.3.13
-   fixDate: 2014 02 24
-   fixDescr: >
-    In Log.pm Text::Wrap::wrap() was called on an empty message. Added
-    an if to prevent log.
-   fixmodules: [Log.pm]
+ 2014 03 11:
+  - &bi2
+    issue:
+     version: 0.4.13
+     priority: 8
+     description: >
+      Overwriting existing plugins found before when search_plugins() and
+      set_plugins() are called a second time.
+    fix:
+     date: 2014 03 11
+     description: >
+      search_plugins() and set_plugins() modified to prevent overwriting existing
+      plugins found before.
+     modules/programs: [PluginManager.pm]
 
- - &bug_issue_2
-   bug: 2
-   found in project version: 0.4.13
-   date: 2014 03 11
-   priority: 8
-   description: >
-    search_plugins() and set_plugins() modified to prevent overwriting existing
-    plugins found before.
+ 2014 03 18:
+  - issue:
+     version: 0.4.14
+     priority: 5
+     description: >
+      The log entry:
 
-   fixed in project version: 0.4.14
-   fixDate: 2014 03 11
-   fixDescr: See description
-   fixmodules: [PluginManager.pm]
+      =IO 0171 wf File /home/marcel/.buildBuilder/config.yml not readable or not
+      existent
+
+      should not be a failure(wf) because a configfile can be non-existent the
+      very  first time.
+
 
 #-------------------------------------------------------------------------------
 # What needs to be added changed and removed (+ on front means DONE! :-b )
@@ -87,184 +103,218 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
- - date: 2014 03 11:
-   version: 0.4.14
-   module: PluginManager 0.1.6
-   description: *bug_issue_2
+ 2014 01 10:
+  - version: 0.2.12
+    description: |
+     Removal of clone() from all ConfigDriver plugins. Create clone(),
+     cloneDocuments() and cloneDocument() to AppState::Ext::ConfigFile module.
 
- - date: 2014 02 28
-   version: 0.4.13
-   description: |
-    Added usersUsage and examples arguments to the initialize() method in module
-    AppState::Plugins::Feature::CommandLine to be added to the help message.
+ 2014 01 15:
+  - version: 0.3.12
+    description: |
+     Change the way how constants are defined using const() from module
+     AppState::Ext::Constants. All modules must inherit from this one to
+     define their own constants in addition to the few delivered in that nodule.
 
- - date: 2014 02 24
-   version: 0.3.13
-   description: *bug_issue_1.
-   
- - date: 2014 01 15
-   version: 0.3.12
-   description: |
-    Change the way how constants are defined using const() from module
-    AppState::Ext::Constants. All modules must inherit from this one to
-    define their own constants in addition to the few delivered in that nodule.
-    
-    logInit() and _log() are defined in Constants module. Appstate has no
-    write() or logInit() anymore. These few changes have impact on almost
-    all other modules. Before I used to use '$self->meta->make_immutable;'
-    but I got problems when inheriting the module. It would make the whole
-    object immutable while the inheriting module still needed to modify
-    things. So the __PACKAGE__ use was changed back.
+     logInit() and _log() are defined in Constants module. Appstate has no
+     write() or logInit() anymore. These few changes have impact on almost
+     all other modules. Before I used to use '$self->meta->make_immutable;'
+     but I got problems when inheriting the module. It would make the whole
+     object immutable while the inheriting module still needed to modify
+     things. So the __PACKAGE__ use was changed back.
 
-    Example code;
-    
-    use Moose;
-    ...
-    extends qw( Class::Singleton AppState::Ext::Constants);
-    ...
-    sub BUILD
-    {
-      my($self) = @_;
-      ...
-      if( $self->meta->is_mutable )
-      {
-	$self->const( 'C_APP_UNLINKTEMP', 1, qw( M_SUCCESS M_F_INFO));
+     Example code;
 
-	__PACKAGE__->meta->make_immutable;
-      }
+     use Moose;
+     ...
+     extends qw( Class::Singleton AppState::Ext::Constants);
+     ...
+     sub BUILD
+     {
+       my($self) = @_;
+       ...
+       if( $self->meta->is_mutable )
+       {
+	 $self->const( 'C_APP_UNLINKTEMP', 1, qw( M_SUCCESS M_F_INFO));
 
-      return;
-    }
+	 __PACKAGE__->meta->make_immutable;
+       }
 
-    Of cource other ways are possible like so;
-    
-    my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
-    has M_ALL => ( default => 0xFFFFFFFF, %_c_Attr);
+       return;
+     }
 
+     Of cource other ways are possible like so;
 
- - date: 2014 01 10
-   version: 0.2.12
-   description: |
-    Removal of clone() from all ConfigDriver plugins. Create clone(),
-    cloneDocuments() and cloneDocument() to AppState::Ext::ConfigFile module.
+     my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
+     has M_ALL => ( default => 0xFFFFFFFF, %_c_Attr);
+
+ 2014 02 24:
+  - version: 0.3.13
+    description: *bi1
+
+ 2014 02 28:
+  - version: 0.4.13
+    description: |
+     Added usersUsage and examples arguments to the initialize() method in module
+     AppState::Plugins::Feature::CommandLine to be added to the help message.
+
+ 2014 03 11:
+  - version: 0.4.14
+    module: PluginManager 0.1.6
+    description: *bi2
 
 #-------------------------------------------------------------------------------
 # Scrutinize tests
 #
 Tests:
- - Module: AppState::Ext::Constants
-   Constructor: new
-   TestPrograms:
+ - module: 'AppState::Ext::Constants'
+   constructor: new
+   test-programs:
     - t/005-Constants.t
 
- - Module: AppState
-   Constructor: instance
-   TestPrograms:
+ - module: AppState
+   constructor: instance
+   test-programs:
     - t/010-AppState.t
     - t/011-AppState.t
 
- - Module: AppState::Plugins::Feature::Log
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::Feature::Log
+   constructor: new
+   test-programs:
     - t/100-Log.t
 
- - Module: AppState::Ext::ConfigIO
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Ext::ConfigIO
+   constructor: new
+   test-programs:
     - t/300-ConfigIO.t
 
- - Module: AppState::Plugins::ConfigDriver::Yaml
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::Yaml
+   constructor: new
+   test-programs:
     - t/305-Yaml.t
 
- - Module: AppState::Plugins::ConfigDriver::Memcached
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::Memcached
+   constructor: new
+   test-programs:
     - t/306-Memcached.t
 
- - Module: AppState::Plugins::ConfigDriver::Storable
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::Storable
+   constructor: new
+   test-programs:
     - t/307-Storable.t
 
- - Module: AppState::Plugins::ConfigDriver::DataDumper
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::DataDumper
+   constructor: new
+   test-programs:
     - t/308-DataDumper.t
 
- - Module: AppState::Plugins::ConfigDriver::Json
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::Json
+   constructor: new
+   test-programs:
     - t/309-Json.t
 
- - Module: AppState::Plugins::ConfigDriver::FreezeThaw
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::ConfigDriver::FreezeThaw
+   constructor: new
+   test-programs:
     - t/310-FreezeThaw.t
 
- - Module: AppState::Ext::Documents
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Ext::Documents
+   constructor: new
+   test-programs:
     - t/320-Documents.t
 
- - Module: AppState::Ext::ConfigFile
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Ext::ConfigFile
+   constructor: new
+   test-programs:
     - t/350-ConfigFile.t
 
- - Module: AppState::Plugins::Feature::ConfigManager
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::Feature::ConfigManager
+   constructor: new
+   test-programs:
     - t/390-ConfigManager.t
 
- - Module: AppState::Plugins::Feature::Process
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::Feature::Process
+   constructor: new
+   test-programs:
     - t/560-Process.t
 
- - Module: AppState::NodeTree::NodeGlobal
-   Constructor: instance
-   TestPrograms:
+ - module: AppState::NodeTree::NodeGlobal
+   constructor: instance
+   test-programs:
     - t/700-NodeGlobal.t
 
- - Module: AppState::NodeTree::NodeDOM
-   Constructor: new
-   TestPrograms:
+ - module: AppState::NodeTree::NodeDOM
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/701-NodeDOM.t
 
- - Module: AppState::NodeTree::NodeRoot
-   Constructor: new
-   TestPrograms:
+ - module: AppState::NodeTree::NodeRoot
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/702-NodeRoot.t
 
- - Module: AppState::NodeTree::NodeText
-   Constructor: new
-   TestPrograms:
+ - module: AppState::NodeTree::NodeText
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/703-NodeText.t
 
- - Module: AppState::NodeTree::NodeAttr
-   Constructor: new
-   TestPrograms:
+ - module: AppState::NodeTree::NodeAttr
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/704-NodeAttr.t
 
- - Module: AppState::NodeTree::Node
-   Constructor: new
-   TestPrograms:
+ - module: AppState::NodeTree::Node
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/705-Node.t
 
- - Module: AppState::Plugins::Feature::NodeTree
-   Constructor: new
-   TestPrograms:
+ - module: AppState::Plugins::Feature::NodeTree
+   constructor: new
+   test-programs:
 #    - t/700-NodeGlobal.t
     - t/750-NodeTree.t
     - t/751-NodeTree.t
     - t/752-NodeTree.t
+
+#-------------------------------------------------------------------------------
+#
+Manifest:
+
+#-------------------------------------------------------------------------------
+# Git info
+#
+Git:
+ github:
+  account: MARTIMM
+ git-ignore-list:
+  - '.*'
+
+  - 'MYMETA.*'
+  - '_build/'
+  - 'blib/'
+  - 'Build'
+
+  - '*.LOG'
+  - '*.tmp'
+  - 'pm_to_blib'
+
+  - 'Old/'
+  - 'Bugs-Todo'
+  - 'Changes-*'
+  - 'Tests/*'
+
+  - 'Distribution-Tests/'
+
+#-------------------------------------------------------------------------------
+# CPAN info
+#
+Cpan:
+ account: MARTIMM
 
 #-------------------------------------------------------------------------------
 # Installation: Generated
@@ -274,7 +324,7 @@ Tests:
 #
 Readme:
 
- Body: |
+ body: |
   Inventing the wheel again..... Its purpose is to group a lot of programs
   nessessities into one set of modules. In the CPAN are modules for accessing
   configuration parameters, write log files and so on. All using different class
