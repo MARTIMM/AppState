@@ -50,7 +50,7 @@ sub serialize
   eval($script);
   if( my $e = $@ )
   {
-    $self->_log( "Failed to serialize data dumper file: $e"
+    $self->wlog( "Failed to serialize data dumper file: $e"
                , $self->C_CIO_SERIALIZEFAIL
                );
   }
@@ -83,7 +83,7 @@ sub deserialize
   eval($script);
   if( my $e = $@ )
   {
-    $self->_log( [ "Failed to deserialize data dumper file"
+    $self->wlog( [ "Failed to deserialize data dumper file"
                  , $self->configFile . ":"
                  , $e
                  ]

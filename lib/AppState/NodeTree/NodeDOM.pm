@@ -123,7 +123,7 @@ sub link_with_node
 
       else
       {
-        $self->_log( 'Node not of proper type. Must be a root node. Type = '
+        $self->wlog( 'Node not of proper type. Must be a root node. Type = '
                    . ref $node
                    , $self->C_NDM_NODENOTROOT
                    );
@@ -140,7 +140,7 @@ sub link_with_node
 
       else
       {
-        $self->_log( 'Node not of proper type. Type = ' . ref $node
+        $self->wlog( 'Node not of proper type. Type = ' . ref $node
                    , $self->C_NDM_NODENOTNODE
                    );
       }
@@ -168,7 +168,7 @@ sub link_with_node
 
       else
       {
-        $self->_log( 'Child node not of proper type, This node is '
+        $self->wlog( 'Child node not of proper type, This node is '
                    . 'AppState::NodeTree::Node. Node ref =', ref $node
                    , $self->C_NDM_NODENOTNTA
                    );

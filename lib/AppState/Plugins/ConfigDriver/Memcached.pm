@@ -81,7 +81,7 @@ sub readTextFromConfigFile
 
   else
   {
-    $self->_log( "Data not retrieved", $self->C_CIO_CFGNOTREAD);
+    $self->wlog( "Data not retrieved", $self->C_CIO_CFGNOTREAD);
   }
 }
 
@@ -95,7 +95,7 @@ sub writeTextToConfigFile
   my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
   $memd->enable_compress(1);
   my $sts = $memd->set( $self->sha1ConfigFile, $self->_configText);
-  $self->_log( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
+  $self->wlog( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
 }
 
 #-------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ sub serialize
   eval $script;
   if( my $e = $@ )
   {
-    $self->_log( "Failed to serialize Memcached file using Storable:", $e
+    $self->wlog( "Failed to serialize Memcached file using Storable:", $e
                , $self->C_CIO_SERIALIZEFAIL
                );
   }
@@ -157,7 +157,7 @@ sub deserialize
   eval $script;
   if( my $e = $@ )
   {
-    $self->_log( "Failed to deserialize Memcached file using Storable. "
+    $self->wlog( "Failed to deserialize Memcached file using Storable. "
                . $self->configFile . ": $e"
                , $self->C_CIO_DESERIALFAIL
                );
@@ -184,7 +184,7 @@ sub stats
   my( $self, $items) = @_;
   my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
   my $hr = $memd->stats($items);
-  $self->_log( 'No server available', $self->C_CIO_NOSERVER)
+  $self->wlog( 'No server available', $self->C_CIO_NOSERVER)
     unless keys %$hr;
 
   return $hr;

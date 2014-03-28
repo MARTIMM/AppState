@@ -103,13 +103,13 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
- 2014 01 10:
+  - date: 2014 01 10
   - version: 0.2.12
     description: |
      Removal of clone() from all ConfigDriver plugins. Create clone(),
      cloneDocuments() and cloneDocument() to AppState::Ext::ConfigFile module.
 
- 2014 01 15:
+  - date: 2014 01 15
   - version: 0.3.12
     description: |
      Change the way how constants are defined using const() from module
@@ -148,17 +148,17 @@ Changes:
      my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
      has M_ALL => ( default => 0xFFFFFFFF, %_c_Attr);
 
- 2014 02 24:
+  - date: 2014 02 24
   - version: 0.3.13
     description: *bi1
 
- 2014 02 28:
+  - date: 2014 02 28
   - version: 0.4.13
     description: |
      Added usersUsage and examples arguments to the initialize() method in module
      AppState::Plugins::Feature::CommandLine to be added to the help message.
 
- 2014 03 11:
+  - date: 2014 03 11
   - version: 0.4.14
     module: PluginManager 0.1.6
     description: *bi2

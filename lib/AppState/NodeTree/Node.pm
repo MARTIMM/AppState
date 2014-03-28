@@ -261,7 +261,7 @@ sub push_attribute
 #say "PA 1: ", $attrNode1->name, " == ", $attrNode2->name;
     if( $attrNode1->name eq $attrNode2->name )
     {
-      $self->_log( "Attribute name '" . $attrNode1->name
+      $self->wlog( "Attribute name '" . $attrNode1->name
                  . "' overwritten with new value"
                  , $self->C_NDE_ATTROVERWR
                  );

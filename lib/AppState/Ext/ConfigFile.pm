@@ -57,7 +57,7 @@ has store_type =>
         my( $self, $n, $o) = @_;
         if( !defined $o or $n ne $o )
         {
-          $self->_log( "Store type set to $n", $_[0]->C_CFF_STORETYPESET);
+          $self->wlog( "Store type set to $n", $_[0]->C_CFF_STORETYPESET);
           $self->_setConfigFile($self->C_CFF_RESETCFG);
         }
       }
@@ -122,7 +122,7 @@ has location =>
 
         if( !defined $o or $n != $o )
         {
-          $self->_log( "Location code set to $n"
+          $self->wlog( "Location code set to $n"
                      , $self->C_CFF_LOCCODESET
                      );
           $self->_setConfigFile($self->C_CFF_NORESETCFG);
@@ -149,7 +149,7 @@ has requestFile =>
         my( $self, $n, $o) = @_;
         if( !defined $o or $n ne $o )
         {
-          $self->_log( "Request for file $n", $self->C_CFF_REQFILESET);
+          $self->wlog( "Request for file $n", $self->C_CFF_REQFILESET);
           $self->_setConfigFile($self->C_CFF_NORESETCFG);
         }
       }
@@ -393,7 +393,7 @@ sub _setConfigFile
   }
 
   $plObj->_configFile($configFile);
-  $self->_log( "Config filename set to $configFile", $self->C_CFF_CFGFILESET);
+  $self->wlog( "Config filename set to $configFile", $self->C_CFF_CFGFILESET);
 }
 
 #-------------------------------------------------------------------------------
@@ -440,7 +440,7 @@ sub init
   my( $self, $options, $control) = @_;
   my $storagePlugin = $self->_getStoragePlugin( $options, $control);
 
-  $self->_log( "Config", $storagePlugin->configFile, "initialized"
+  $self->wlog( "Config", $storagePlugin->configFile, "initialized"
              , $self->C_CFF_STOREPLGINIT
              );
 }
@@ -479,7 +479,7 @@ sub delete
 
   else
   {
-    $self->_log( "Cannot delete() documents", $self->C_CFF_CANNOTDELDOC);
+    $self->wlog( "Cannot delete() documents", $self->C_CFF_CANNOTDELDOC);
   }
 }
 
@@ -517,7 +517,7 @@ sub cloneDocument
 
   else
   {
-    $self->_log( "Cannot clone() documents in", ref $storagePlugin
+    $self->wlog( "Cannot clone() documents in", ref $storagePlugin
                , $self->C_CFF_CANNOTCLODOC
                );
   }
@@ -542,12 +542,12 @@ sub clone
   if( $storagePlugin->can('clone') )
   {
     $clonedDocs = $storagePlugin->clone($self->get_documents);
-    $self->_log( "Document cloned = $clonedDocs", $self->C_CFF_DOCCLONED);
+    $self->wlog( "Document cloned = $clonedDocs", $self->C_CFF_DOCCLONED);
   }
 
   else
   {
-    $self->_log( "Cannot clone() documents", $self->C_CFF_CANNOTCLODOC);
+    $self->wlog( "Cannot clone() documents", $self->C_CFF_CANNOTCLODOC);
   }
 
   return $clonedDocs;

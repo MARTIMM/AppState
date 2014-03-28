@@ -139,13 +139,13 @@ sub cleanup
     my $config_dir = AppState->instance->config_dir;
     my $pidFile = $config_dir . '/' . $self->pidFile;
     unlink $pidFile;
-    $self->_log( "Pid file " . $self->pidFile . " removed"
+    $self->wlog( "Pid file " . $self->pidFile . " removed"
                , $self->C_PRC_PIDFILEREMOVED
                );
 
     # Remove communication only when server stops
     #
-    $self->_log( "Cleanup communication", $self->C_PRC_CLEANCOMM);
+    $self->wlog( "Cleanup communication", $self->C_PRC_CLEANCOMM);
     $self->plugin_manager->cleanup;
   }
 }
@@ -176,7 +176,7 @@ sub startServer
     print PIDF "$pid\n";
     close(PIDF);
 
-    $self->_log( "Pid file " . $self->pidFile
+    $self->wlog( "Pid file " . $self->pidFile
                . " created for server with pid $pid"
                , $self->C_PRC_PIDFILECREATED
                );
@@ -184,7 +184,7 @@ sub startServer
     my $log = AppState->instance->checkAppPlugin('Log');
     if( ref $log eq 'AppState::Plugins::Feature::Log' )
     {
-      $log->_log( "Parent process stopped", $self->C_PRC_PARENTSTOPPED);
+      $log->wlog( "Parent process stopped", $self->C_PRC_PARENTSTOPPED);
       $log->stop_logging;
     }
 
@@ -210,7 +210,7 @@ sub startServer
 
   # Setup log to logfile
   #
-  $self->_log( "Server process started with pid $$", $self->C_PRC_SERVERSTARTED);
+  $self->wlog( "Server process started with pid $$", $self->C_PRC_SERVERSTARTED);
 
   # Setup kill signals TERM and INT to call stopServer()
   #
@@ -229,7 +229,7 @@ sub killServer
 
   my $pid = $self->checkServer;
   kill 'TERM', $pid if $pid;
-  $self->_log( "Sent signal to server", $self->C_PRC_SIGNALSENT);
+  $self->wlog( "Sent signal to server", $self->C_PRC_SIGNALSENT);
 }
 
 #--[ Server ]-------------------------------------------------------------------
@@ -241,7 +241,7 @@ sub stopServer
 
   # Kill this server
   #
-  $self->_log( "Server interrupted.", $self->C_PRC_SERVERINTERRUPT);
+  $self->wlog( "Server interrupted.", $self->C_PRC_SERVERINTERRUPT);
 
   # Clear the appstate object which will trigger the demolition of
   # the other objects in the set.
@@ -290,12 +290,12 @@ sub checkServer
     #
     if( $pidFound )
     {
-      $self->_log( "Pid $pid checked and is ok.", $self->C_PRC_PIDOK);
+      $self->wlog( "Pid $pid checked and is ok.", $self->C_PRC_PIDOK);
     }
 
     else
     {
-      $self->_log( "Pid $pid checked and is not found, server crashed?"
+      $self->wlog( "Pid $pid checked and is not found, server crashed?"
                  , $self->C_PRC_PIDNOTFOUND
                  );
       $pid = 0;
@@ -316,13 +316,13 @@ sub receive
   my $cmmType = $self->cmmType;
   if( defined $self->plugin_manager->check_plugin($cmmType) )
   {
-    $self->_log( "Receive using $cmmType type config", $self->C_PRC_RECEIVE);
+    $self->wlog( "Receive using $cmmType type config", $self->C_PRC_RECEIVE);
     $self->plugin_manager->get_object({name => $cmmType})->receive($arguments);
   }
 
   else
   {
-    $self->_log( "Method $cmmType plugin not loaded for receiving"
+    $self->wlog( "Method $cmmType plugin not loaded for receiving"
                , $self->C_PRC_NOPLUGIN
                );
   }
@@ -338,13 +338,13 @@ sub send
   my $pmgr = $self->plugin_manager;
   if( defined $pmgr->check_plugin($cmmType) )
   {
-    $self->_log( "Send using $cmmType type config", $self->C_PRC_RECEIVE);
+    $self->wlog( "Send using $cmmType type config", $self->C_PRC_RECEIVE);
     $pmgr->get_object({name => $cmmType})->send($arguments);
   }
 
   else
   {
-    $self->_log( "Method $cmmType plugin not loaded for sending"
+    $self->wlog( "Method $cmmType plugin not loaded for sending"
                , $self->C_PRC_NOPLUGIN
                );
   }

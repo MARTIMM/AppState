@@ -93,7 +93,7 @@ sub config_getopt_long
   my( $self, @processingOptions) = @_;
 
   Getopt::Long::Configure(@processingOptions);
-  $self->_log( "Option processing changed: " . join( ' ', @processingOptions)
+  $self->wlog( "Option processing changed: " . join( ' ', @processingOptions)
              , $self->C_CMD_OPTCHANGED
              );
 }
@@ -108,7 +108,7 @@ sub initialize
 
   if( !defined $description )
   {
-#    $self->_log( 'Description of command not defined'
+#    $self->wlog( 'Description of command not defined'
 #               , $self->C_CMD_NODESCRIPTION
 #               );
     return;
@@ -254,7 +254,7 @@ sub initialize
     $self->_set_options($options);
     $self->_set_arguments([@ARGV]);
 
-    $self->_log( "Options processed", $self->C_CMD_OPTPROCESSED);
+    $self->wlog( "Options processed", $self->C_CMD_OPTPROCESSED);
   }
 
   else
@@ -262,7 +262,7 @@ sub initialize
     $self->_set_options({});
     $self->_set_arguments([]);
 
-    $self->_log( "There are errors processing commandline options"
+    $self->wlog( "There are errors processing commandline options"
                , $self->C_CMD_OPTPROCFAIL
                );
   }

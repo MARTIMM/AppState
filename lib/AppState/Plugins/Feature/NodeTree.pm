@@ -153,7 +153,7 @@ sub convert_to_node_tree
 
   elsif( ref $node )
   {
-    $self->_log( "Cannot use other types of node than"
+    $self->wlog( "Cannot use other types of node than"
                . " 'AppState::NodeTree::Node or NodeRoot'"
                , $self->C_NT_NOTNODE
                );
@@ -321,7 +321,7 @@ sub _convert_to_node_tree
           $node->add_attribute($exAk => $attrVal);
         }
 
-        $self->_log( 'Add attrs to node=' . $node->name, $self->C_NT_ADDATTR);
+        $self->wlog( 'Add attrs to node=' . $node->name, $self->C_NT_ADDATTR);
       }
 
       # Process children of node
@@ -388,14 +388,14 @@ sub _mkNode
     #
     $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
     $parentNode->link_with_node($node);
-    $self->_log( 'Add text to parent=' . $parentNode->name, $self->C_NT_ADDTEXTTOPARENT);
+    $self->wlog( 'Add text to parent=' . $parentNode->name, $self->C_NT_ADDTEXTTOPARENT);
   }
 
   else
   {
     $node = AppState::NodeTree::Node->new( name => $nodename);
     $parentNode->link_with_node($node);
-    $self->_log( 'Add node ' . $node->name
+    $self->wlog( 'Add node ' . $node->name
                . ' to parent ' . $parentNode->name
                , $self->C_NT_NODEADDTOPARENT
                );
@@ -404,7 +404,7 @@ sub _mkNode
     {
       my $nodeT = AppState::NodeTree::NodeText->new( value => $value);
       $node->link_with_node($nodeT);
-      $self->_log( 'Add text to parent=' . $node->name, $self->C_NT_ADDTEXTTOPARENT );
+      $self->wlog( 'Add text to parent=' . $node->name, $self->C_NT_ADDTEXTTOPARENT );
     }
 
     $self->_setAttributes( $node, $rawDataNode);
@@ -457,7 +457,7 @@ sub _setAttributes
 
     my $nodeA = AppState::NodeTree::NodeAttr->new( name => $ok, value => $ov);
     $node->link_with_node($nodeA);
-    $self->_log( "Add attr $ok=$ov to parent=" . $node->name
+    $self->wlog( "Add attr $ok=$ov to parent=" . $node->name
                , $self->C_NT_ADDATTRTOPARENT
                );
   }
@@ -488,11 +488,11 @@ EOPCD
     # Failure. If logging is on the informational messages must always be
     # written.
     #
-    $self->_log( "Parsing error found in module $modName"
+    $self->wlog( "Parsing error found in module $modName"
                , $self->C_NT_FORCEDINFO
                );
-    $self->_log( "Error: " . $e, $self->C_NT_FORCEDINFO);
-    $self->_log( "Code: " . $code, $self->C_NT_PARSEERROR);
+    $self->wlog( "Error: " . $e, $self->C_NT_FORCEDINFO);
+    $self->wlog( "Code: " . $code, $self->C_NT_PARSEERROR);
   }
 
   else
@@ -502,7 +502,7 @@ EOPCD
     if( $modName->can('new') and $modName->can('process') )
     {
       $mobj = $modName->new(objectData => $objectData);
-      $self->_log( "Object from module $modName initialized properly"
+      $self->wlog( "Object from module $modName initialized properly"
                  , $self->C_NT_MODINIT
                  );
 
@@ -511,7 +511,7 @@ EOPCD
 
     else
     {
-      $self->_log( 'Object of class $modName not initialized,'
+      $self->wlog( 'Object of class $modName not initialized,'
                  . ' new() and or process() not found.'
                  , $self->M_WARNING
                  );
@@ -541,7 +541,7 @@ sub traverse
 
     else
     {
-      $self->_log( "No 'up'-handler. No use to traverse tree1(DF1)."
+      $self->wlog( "No 'up'-handler. No use to traverse tree1(DF1)."
                  , $self->C_NT_NOUPHANDLER
                  );
     }
@@ -576,7 +576,7 @@ sub traverse
 
     else
     {
-      $self->_log( 'No handler. No use to traverse tree(BF1).'
+      $self->wlog( 'No handler. No use to traverse tree(BF1).'
                  , $self->C_NT_NOHANDLER
                  );
     }
@@ -594,7 +594,7 @@ sub traverse
 
     else
     {
-      $self->_log( 'No handler. No use to traverse tree(BF2).'
+      $self->wlog( 'No handler. No use to traverse tree(BF2).'
                  , $self->C_NT_NOHANDLER
                  );
     }

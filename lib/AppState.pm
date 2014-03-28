@@ -164,7 +164,7 @@ sub BUILD
 
   unless( $start and $found )
   {
-    $self->_log( "Called new() directly, use instance() instead! $callInfo"
+    $self->wlog( "Called new() directly, use instance() instead! $callInfo"
                , $self->C_APP_ILLAPPINIT
                );
   }
@@ -302,7 +302,7 @@ sub cleanup
 
   # First make a log. After destroying plugins this will not be possible.
   #
-  $self->_log( "AppState set to be deleted after destroying plugins"
+  $self->wlog( "AppState set to be deleted after destroying plugins"
              , $self->C_APP_APPDESTROY
              );
 
@@ -361,49 +361,49 @@ __END__
 
 =head1 NAME
 
-AppState - Set of modules to maintain an application state
+AppState - Module to give an application a base of utilities using a set of plugins
 
 =head1 SYNOPSIS
 
+  use Moose;
+  extends qw(AppState::Ext::Constants);
   use AppState;
 
   my $app = AppState->instance;
-#  my $m = $app->get_app_object('Constants');
+  $app->use_work_dir(1);
+  $app->use_temp_dir(1);
+  $app->initialize( config_dir => 'LocalConfigDir');
+  $app->check_directories;
 
   # Get an AppState::Plugins::Feature::Log object
   #
-  my $log = $app->get_app_object( 'Log', do_append_log => 0, log_mask => $m->M_ALL);
-  $log->add_tag('A01');
+  my $log = $app->get_app_object('Log');
   $log->start_logging;
+  $log->add_tag('A01');
+
+  ...
+  
+  $app->cleanup;
+  exit(0);
 
 =head1 DESCRIPTION
 
 This module can be used to setup basic facilities used in almost every program
 without too much thinking. The module is subdivided into other modules and are
-only loaded(required) when needed. Where possible the modules are using other
-CPAN modules. At the time of writing the following facilities offered are the
-following;
+only loaded(required) when needed using a plugin system. Where possible the
+modules are using other CPAN modules. At the time of writing the following
+facilities are offered;
 
 =over 2
 
 =item * I<Make use of configuration files>. Programs may make notes about some
 configurations which can be used the next time the program starts. Several
-formats are available such as YAML, JSON, DataDumper, Storable and MemCached.
+formats are available such as YAML, JSON, DataDumper, Storable and Memcached.
 See L<AppState::Plugins::Feature::ConfigManager>.
 
 =item * I<Make use of logfiles>. Messages from several parts of the modules and
 also the user program can log messages into a logfile, The messages can be
 filtered before actually being written to the file. See L<AppState::Plugins::Feature::Log>.
-
-=item * I<Make use of client - server communication>. A process can be set running
-in the background as a daemon process after wbich another process can talk to
-the server using several methods. At the time of writing this is only by way of
-a messagequeue. See L<AppState::Plugins::Feature::Process>.
-
-=item * I<Make use of plugins for the program>. Plugins are an ideal way to add
-functionality without changing the main program. AppState itself is using this
-module to provide all the functionality described here.
-See L<AppState::Plugins::Feature::PluginManager>.
 
 =item * I<Process commandline arguments and create help information>. A program
 can have options and arguments. The caller will setup a structure in which all
@@ -413,8 +413,18 @@ for the program. See L<AppState::Plugins::Feature::CommandLine>.
 
 =item * I<Constructing a nodetree from a specific datastructure>. After creation
 of the nodetree the tree can be traversed in several ways. The traversal program
-will be given a handler from the caller which will be run with the node object
-as input. See L<AppState::Plugins::Feature::NodeTree>.
+will be given one or more handlers from the caller. These handlers will be run
+when a node object is visited. See L<AppState::Plugins::Feature::NodeTree>.
+
+=item * I<Make use of client - server communication>. A process can be set running
+in the background as a daemon process after which another process can talk to
+the server using several methods. At the time of writing this is only by way of
+a messagequeue. See L<AppState::Plugins::Feature::Process>.
+
+=item * I<Make use of plugins for the program>. Plugins are an ideal way to add
+functionality without changing the main program. AppState itself is using this
+module to provide all the functionality described here.
+See L<AppState::Plugins::Feature::PluginManager>.
 
 
 =back
@@ -427,22 +437,25 @@ as input. See L<AppState::Plugins::Feature::NodeTree>.
 =item * instance()
 
 The class is a singleton class. Get object instance of the AppState class. This
-function will always return the same object. The following arguments can be used;
+function will always return the same object. The following arguments can be
+used;
 
 =over 2
 
 =item * B<config_dir> => directory path
 
-Directory where files are stored such as a pidfile (L<AppState::Plugins::Feature::Process>),
-configuration files (L<AppState::Plugins::Feature::Config>) and logfile (L<AppState::Plugins::Feature::Log>). The
-default location will be a directory derived from the programname and.the users
-home directory. E.g. assume the program is C<myProgram.pl> and the username is
-C<thisUser> then the path to the configuration directory will be as
-C</home/thisUser/.myProgram> on most unix systems. This argument can only be set
-when the object is created i.e. on the first call anywhere in your program. On
-the second call and later the argument will be ignored. Any relative path is
-converted into an absolute path to the directory. The only way to change is to
-delete the object and cleanup everything with cleanup().
+Directory where files are stored such as a pidfile
+(L<AppState::Plugins::Feature::Process>), configuration files
+(L<AppState::Plugins::Feature::Config>) and logfile
+(L<AppState::Plugins::Feature::Log>). The default location will be a directory
+derived from the programname and.the users home directory. E.g. assume the
+program is C<myProgram.pl> and the username is C<thisUser> then the path to the
+configuration directory will be as C</home/thisUser/.myProgram> on most unix
+systems. This argument can only be set when the object is created i.e. on the
+first call anywhere in your program. On the second call and later the argument
+will be ignored. Any relative path is converted into an absolute path to the
+directory. The only way to change is to delete the object and cleanup everything
+with cleanup().
 
 =item * B<work_dir> => directory path
 
@@ -465,12 +478,17 @@ is left to the user only the directory is created.
 
 =over 2
 
-=item * checkAppPlugin($name)
+=item * config_dir()
 
-This is an indirect call to check_plugin() of L<AppState::Plugins::Feature::_plugin_manager>. Use
-C<$name> to select the proper plugin. Use get_plugin_names() of the _plugin_manager
-to learn the found plugin names.
+Get the path of the configuration directory.
 
+=item * temp_dir()
+
+Get the path of the temporary files directory.
+
+=item * work_dir()
+
+Get the path of the work directory.
 
 =item * cleanup()
 
@@ -479,20 +497,8 @@ destroy itself. Therefore when you want to use this method, always call
 instance() after that to get a new instance object and never rely on any saved
 addresses!
 
+=item * initialize(%options)
 
-=item * config_dir()
-
-Get the path of the configuration directory.
-
-
-=item * work_dir()
-
-Get the path of the work directory.
-
-
-=item * temp_dir()
-
-Get the path of the temporary files directory.
 
 
 =item * get_app_object( $name, %options)

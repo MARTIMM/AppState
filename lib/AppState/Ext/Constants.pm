@@ -176,7 +176,7 @@ sub const       ## no critic (RequireArgUnpacking)
 
     else
     {
-      $mutatable->_log( "Default is 0, no constant created"
+      $mutatable->wlog( "Default is 0, no constant created"
                       , $mutatable->C_CONST0
                       );
     }
@@ -184,7 +184,7 @@ sub const       ## no critic (RequireArgUnpacking)
 
   else
   {
-    $mutatable->_log( "Module is immutable", $mutatable->C_MODIMMUT);
+    $mutatable->wlog( "Module is immutable", $mutatable->C_MODIMMUT);
   }
 
   return;
@@ -235,7 +235,7 @@ sub log_init
 # Only write to the log file when there is already a log object created by
 # the user. There may be only 2 arguments.
 #
-sub _log
+sub wlog
 {
   my( $self, $messages, $msg_log_mask, $call_level) = @_;
 

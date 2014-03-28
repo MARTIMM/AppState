@@ -150,7 +150,7 @@ sub select_config_object
 
   if( $self->hasConfigObject($configObjectName) )
   {
-    $self->_log( "Config '$configObjectName' selected"
+    $self->wlog( "Config '$configObjectName' selected"
                , $self->C_CFM_CFGSELECTED
                );
     if( !defined $self->_current_config_object
@@ -163,7 +163,7 @@ sub select_config_object
 
   else
   {
-    $self->_log( "Config '$configObjectName' not existent"
+    $self->wlog( "Config '$configObjectName' not existent"
                , $self->C_CFM_CFGNOTEXIST
                );
   }
@@ -179,7 +179,7 @@ sub add_config_object
 
   if( $self->hasConfigObject($configObjectName) )
   {
-    $self->_log( "Config '$configObjectName' already exists"
+    $self->wlog( "Config '$configObjectName' already exists"
                , $self->C_CFM_CFGEXISTS
                );
     $self->select_config_object($configObjectName);
@@ -187,14 +187,14 @@ sub add_config_object
 
   else
   {
-    $self->_log( "Config '$configObjectName' added", $self->C_CFM_CFGADDED);
+    $self->wlog( "Config '$configObjectName' added", $self->C_CFM_CFGADDED);
     my $configObject = AppState::Ext::ConfigFile->new(%$configStruct);
     $self->_set_config_object( $configObjectName, $configObject);
     $self->_set_current_config_object_name($configObjectName);
     $self->_set_current_config_object($configObject);
   }
 
-  $self->_log( "Config '$configObjectName' selected", $self->C_CFM_CFGSELECTED);
+  $self->wlog( "Config '$configObjectName' selected", $self->C_CFM_CFGSELECTED);
 }
 
 #-------------------------------------------------------------------------------
@@ -209,7 +209,7 @@ sub modify_config_object
   {
     $self->_set_current_config_object_name($configObjectName);
     $self->_set_current_config_object($self->_get_config_object($configObjectName));
-    $self->_log( "Config '$configObjectName' selected"
+    $self->wlog( "Config '$configObjectName' selected"
                , $self->C_CFM_CFGSELECTED
                );
 
@@ -220,14 +220,14 @@ sub modify_config_object
     $self->requestFile($configStruct->{requestFile})
       if defined $configStruct->{requestFile};
 
-    $self->_log( "Config '$configObjectName' modified and selected"
+    $self->wlog( "Config '$configObjectName' modified and selected"
                , $self->C_CFM_CFGMODIFIED
                );
   }
 
   else
   {
-    $self->_log( "Config '$configObjectName' not found"
+    $self->wlog( "Config '$configObjectName' not found"
                , $self->C_CFM_CFGNOTEXIST
                );
   }
@@ -251,18 +251,18 @@ sub drop_config_object
     {
       $self->_set_current_config_object_name('defaultConfigObject');
       $self->_set_current_config_object($self->_get_config_object('defaultConfigObject'));
-      $self->_log( "Current config set to 'defaultConfigObject'"
+      $self->wlog( "Current config set to 'defaultConfigObject'"
                  , $self->C_CFM_CFGSELDEFAULT
                  );
     }
 
     $self->_drop_config_object($configObjectName);
-    $self->_log( "Config '$configObjectName' dropped", $self->C_CFM_CFGDROPPED);
+    $self->wlog( "Config '$configObjectName' dropped", $self->C_CFM_CFGDROPPED);
   }
 
   else
   {
-    $self->_log( "Config '$configObjectName' not found"
+    $self->wlog( "Config '$configObjectName' not found"
                , $self->C_CFM_CFGNOTEXIST
                );
   }
@@ -285,7 +285,7 @@ sub remove_config_object
     {
       $self->_set_current_config_object_name('defaultObjectConfig');
       $self->_set_current_config_object($self->_get_config_object('defaultConfigObject'));
-      $self->_log( "Current config set to 'defaultObjectConfig'"
+      $self->wlog( "Current config set to 'defaultObjectConfig'"
                  , $self->C_CFM_CFGSELDEFAULT
                  );
     }
@@ -293,11 +293,11 @@ sub remove_config_object
     my $configFile = $self->_get_config_object($configObjectName)->configFile;
 
     $self->_drop_config_object($configObjectName);
-    $self->_log( "Config '$configObjectName' removed"
+    $self->wlog( "Config '$configObjectName' removed"
                , $self->C_CFM_CFGDROPPED
                );
     unlink $configFile;
-    $self->_log( "Configfile '$configFile' removed"
+    $self->wlog( "Configfile '$configFile' removed"
                , $self->C_CFM_CFGFLREMOVED
                );
 
@@ -305,7 +305,7 @@ sub remove_config_object
 
   else
   {
-    $self->_log( "Config '$configObjectName' not found"
+    $self->wlog( "Config '$configObjectName' not found"
                , $self->C_CFM_CFGNOTEXIST
                );
   }

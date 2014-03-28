@@ -152,7 +152,7 @@ sub readTextFromConfigFile
     my $sts = open my $text, '<', $configFile;
     if( !$sts )
     {
-      $self->_log( "$configFile: $!", $self->C_CIO_IOERROR);
+      $self->wlog( "$configFile: $!", $self->C_CIO_IOERROR);
     }
 
     else
@@ -160,7 +160,7 @@ sub readTextFromConfigFile
       $configText = <$text>;
       $text->close;
 
-      $self->_log( "Config text read from file $configFile"
+      $self->wlog( "Config text read from file $configFile"
                  , $self->C_CIO_CFGREAD
                  );
     }
@@ -168,7 +168,7 @@ sub readTextFromConfigFile
 
   else
   {
-    $self->_log( "File $configFile not readable or not existent"
+    $self->wlog( "File $configFile not readable or not existent"
                , $self->C_CIO_CFGNOTREAD
                );
   }
@@ -191,7 +191,7 @@ sub writeTextToConfigFile
     my $sts = open my $textf, '>', $configFile;
     if( !$sts )
     {
-      $self->_log( "$configFile: $!", $self->C_CIO_CFGNOTWRITTEN);
+      $self->wlog( "$configFile: $!", $self->C_CIO_CFGNOTWRITTEN);
     }
 
     else
@@ -199,7 +199,7 @@ sub writeTextToConfigFile
       $textf->print($self->_configText);
       $textf->close;
 
-      $self->_log( "Data written to file $configFile"
+      $self->wlog( "Data written to file $configFile"
                  , $self->C_CIO_CFGWRITTEN
                  );
     }
@@ -207,7 +207,7 @@ sub writeTextToConfigFile
 #
 #  else
 #  {
-#    $self->_log( "File $configFile not writable", $self->C_CIO_CFGNOTWRITTEN);
+#    $self->wlog( "File $configFile not writable", $self->C_CIO_CFGNOTWRITTEN);
 #  }
 }
 

@@ -51,7 +51,7 @@ sub serialize
   eval($script);
   if( my $e = $@ )
   {
-    $self->_log( "Failed to serialize storable file: $e"
+    $self->wlog( "Failed to serialize storable file: $e"
                , $self->C_CIO_SERIALIZEFAIL
                );
   }
@@ -85,7 +85,7 @@ sub deserialize
   eval($script);
   if( my $e = $@ )
   {
-    $self->_log( "Failed to deserialize Storable file"
+    $self->wlog( "Failed to deserialize Storable file"
                . $self->configFile . ": $e"
                , $self->C_CIO_DESERIALFAIL
                );

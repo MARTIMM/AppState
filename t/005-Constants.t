@@ -54,7 +54,7 @@ $log->log_mask($as->M_SEVERITY);
 
 is( $log->getLogTag(ref $self), '005', 'Check log_init');
 $log->write_log( "Mededeling 1", 1|$log->M_INFO);
-$self->_log( "Mededeling 2", 1|$log->M_INFO);
+$self->wlog( "Mededeling 2", 1|$log->M_INFO);
 
 #-------------------------------------------------------------------------------
 is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');

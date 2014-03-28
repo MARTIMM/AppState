@@ -77,26 +77,26 @@ sub send
     {
       $self->_msgQueue($mq);
 
-      $self->_log( "Message queue created for reading and writing"
+      $self->wlog( "Message queue created for reading and writing"
                  , $m->M_INFO
                  );
     }
 
     else
     {
-      $self->_log( "Message queue not created, $mq", $m->M_ERROR);
+      $self->wlog( "Message queue not created, $mq", $m->M_ERROR);
     }
   }
 
   if( $self->hasQueue )
   {
     $self->msgQueue->snd( $type, $msg);
-    $self->_log( "Message '$msg' of type '$type' sent.", $m->M_INFO);
+    $self->wlog( "Message '$msg' of type '$type' sent.", $m->M_INFO);
   }
 
   else
   {
-    $self->_log( "Message not sent.", $m->M_ERROR);
+    $self->wlog( "Message not sent.", $m->M_ERROR);
   }
 }
 
@@ -115,14 +115,14 @@ sub receive
     {
       $self->_msgQueue($mq);
 
-      $self->_log( "Message queue created for reading and writing:"
+      $self->wlog( "Message queue created for reading and writing:"
                  , $m->M_INFO
                  );
     }
 
     else
     {
-      $self->_log( "Message queue not created", $m->M_ERROR);
+      $self->wlog( "Message queue not created", $m->M_ERROR);
     }
   }
 
@@ -141,13 +141,13 @@ sub receive
                          , $arguments->{flags}
                          );
     $arguments->{type} //= '';
-    $self->_log( "Message of type '$arguments->{type}' received.", $m->M_INFO);
+    $self->wlog( "Message of type '$arguments->{type}' received.", $m->M_INFO);
   }
 
   else
   {
     $arguments->{type} = '';
-    $self->_log( "Cannot receive messages", $m->M_ERROR);
+    $self->wlog( "Cannot receive messages", $m->M_ERROR);
   }
 
   # Only return data when synchronized.
@@ -183,7 +183,7 @@ sub genQueueKey
   $nbr = ftok( AppState->instance->config_dir, 'C');
 say "Nbr: $nbr";
 
-  $self->_log( "Generated message queue key key: $nbr", $m->M_INFO);
+  $self->wlog( "Generated message queue key key: $nbr", $m->M_INFO);
   return $nbr;
 }
 
