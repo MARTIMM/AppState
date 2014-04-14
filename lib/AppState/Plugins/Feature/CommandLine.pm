@@ -28,7 +28,7 @@ has _arguments =>
     , writer            => '_set_arguments'
     , traits            => ['Array']
     , handles           =>
-      { get_arguments    => 'elements'
+      { get_arguments   => 'elements'
       }
     );
 
@@ -38,9 +38,9 @@ has _options =>
     , traits            => ['Hash']
     , default           => sub { return {}; }
     , handles           =>
-      { get_option       => 'get'
-      , set_option       => 'set'
-      , option_exists    => 'exists'
+      { get_option      => 'get'    
+      , set_option      => 'set'    
+      , option_exists   => 'exists' 
       , get_options     => 'keys'
       }
     , writer            => '_set_options'

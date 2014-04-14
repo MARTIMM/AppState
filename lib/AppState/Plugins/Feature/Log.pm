@@ -143,7 +143,7 @@ has do_flush_log =>
 #         my $o = select($self->_logFileHandle);
 #         $|++;
 #         select($o);
-          $self->_logFileHandle->autoflush;
+          $self->_logFileHandle->autoflush(1);
           $self->write_log( "Autoflush turned on", $self->C_LOG_AUTOFLUSHON);
         }
 
@@ -153,7 +153,7 @@ has do_flush_log =>
 #         select($self->_logFileHandle);
 #         $|--;
 #         select($o);
-          $self->_logFileHandle->autoflush;
+          $self->_logFileHandle->autoflush(0);
           $self->write_log( "Autoflush turned off", $self->C_LOG_AUTOFLUSHOFF);
         }
       }

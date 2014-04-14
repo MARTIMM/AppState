@@ -140,6 +140,9 @@ sub cleanup
 }
 
 #-------------------------------------------------------------------------------
+# Convert raw in memory data into a tree of nodes and place it as a child
+# on given node. If node is undefined, place the tree on a Dom and a Root
+# node.
 #
 sub convert_to_node_tree
 {
@@ -309,7 +312,7 @@ sub _convert_to_node_tree
                                   , nodeData => $rawDataNode
                                   , tree_build_data => $self->tree_build_data
                                   }
-                      );
+                                );
 
 #$obj //= '';
 #say "Pwd: ", `pwd`;

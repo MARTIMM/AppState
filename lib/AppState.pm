@@ -53,16 +53,16 @@ has config_dir =>
     , writer            => '_config_dir'
     );
 
-has temp_dir =>
-    ( is                => 'ro'
-    , isa               => 'Str'
-    , writer            => '_temp_dir'
-    );
-
 has work_dir =>
     ( is                => 'ro'
     , isa               => 'Str'
     , writer            => '_work_dir'
+    );
+
+has temp_dir =>
+    ( is                => 'ro'
+    , isa               => 'Str'
+    , writer            => '_temp_dir'
     );
 
 # Cleanup temp directory when cleanup() is called, default is no cleanup.
@@ -233,6 +233,9 @@ sub initialize
   $self->_work_dir($o{work_dir}) if defined $o{work_dir} and $o{work_dir};
   $self->_temp_dir($o{temp_dir}) if defined $o{temp_dir} and $o{temp_dir};
 
+  $self->use_work_dir($o{use_work_dir}) if exists $o{use_work_dir};
+  $self->use_temp_dir($o{use_temp_dir}) if exists $o{use_temp_dir};
+
   $self->cleanup_temp_dir($o{cleanup_temp_dir}) if defined $o{cleanup_temp_dir};
 
   return;
@@ -371,8 +374,7 @@ AppState - Module to give an application a base of utilities using a set of plug
 
   my $app = AppState->instance;
   $app->use_work_dir(1);
-  $app->use_temp_dir(1);
-  $app->initialize( config_dir => 'LocalConfigDir');
+  $app->initialize( config_dir => 'LocalConfigDir', use_temp_dir => 0);
   $app->check_directories;
 
   # Get an AppState::Plugins::Feature::Log object
@@ -434,40 +436,31 @@ See L<AppState::Plugins::Feature::PluginManager>.
 
 =over 2
 
-=item * instance()
+=item * instance(%options)
 
 The class is a singleton class. Get object instance of the AppState class. This
-function will always return the same object. The following arguments can be
-used;
+function will always return the same object.
 
 =over 2
 
 =item * B<config_dir> => directory path
 
-Directory where files are stored such as a pidfile
-(L<AppState::Plugins::Feature::Process>), configuration files
-(L<AppState::Plugins::Feature::Config>) and logfile
-(L<AppState::Plugins::Feature::Log>). The default location will be a directory
-derived from the programname and.the users home directory. E.g. assume the
-program is C<myProgram.pl> and the username is C<thisUser> then the path to the
-configuration directory will be as C</home/thisUser/.myProgram> on most unix
-systems. This argument can only be set when the object is created i.e. on the
-first call anywhere in your program. On the second call and later the argument
-will be ignored. Any relative path is converted into an absolute path to the
-directory. The only way to change is to delete the object and cleanup everything
-with cleanup().
-
 =item * B<work_dir> => directory path
-
-Directory where to dispose other files. By default this will be the current
-directory. The AppState modules do not use it to store files. This argument can
-only be set when the object is created like the C<config_dir> argument. Any
-relative path is converted into an absolute path to the directory.
 
 =item * B<temp_dir> => temporary files path
 
-Directory where to store any files which can be deleted afterwards. This cleanup
-is left to the user only the directory is created.
+=item * B<cleanup_temp_dir> => boolean, clean temporary directory at cleanup()
+
+=item * B<use_work_dir> => boolean, create work directory or not
+
+=item * B<use_temp_dir> => boolean, create temp directory or not
+
+These arguments above can only be set when the object is created i.e. on the
+first call anywhere in your program. On the second call and later the arguments
+are ignored. The only way to change is to delete the object and cleanup
+everything with cleanup() or make use of initialize(). Any relative path is
+converted into an absolute path to the directory. See initialize() for further
+explanation.
 
 =back
 
@@ -478,17 +471,72 @@ is left to the user only the directory is created.
 
 =over 2
 
+=item * initialize(%options)
+
+Initialize module. Directories are set from given options but not yet created.
+Option keys in the hash are C<config_dir>, C<work_dir> and C<temp_dir>. The
+values are the paths to those directories. Any relative path is converted into
+an absolute path to the directory.
+
+Another key can be given as C<cleanup_temp_dir> which is a
+boolean. When set, the temp directory will be cleaned in the cleanup() method.
+The defaults are;
+
+  config_dir            <home_dir/.program_name>
+  work_dir              <home_dir/.program_name/Work>
+  temp_dir              <home_dir/.program_name/Temp>
+  cleanup_temp_dir      0 (false)
+  use_work_dir          1 (true)
+  use_temp_dir          1 (true)
+
+The config directory is a directory where files are stored such as a pidfile
+(L<AppState::Plugins::Feature::Process>), configuration files
+(L<AppState::Plugins::Feature::ConfigManager>) and logfile
+(L<AppState::Plugins::Feature::Log>). The default location will be a directory
+derived from the programname and.the users home directory. E.g. assume the
+program is C<myProgram.pl> and the username is C<thisUser> then the path to the
+configuration directory will be as C</home/thisUser/.myProgram> on most unix
+systems.
+
+The work directory is a directory where to dispose other files. The AppState
+modules do not use it to store files. This argument can only be set when the
+object is created like the C<config_dir> argument.
+
+The temp directory is a directory where to store any files which can be deleted
+afterwards. This cleanup is left to the user when C<cleanup_temp_dir> is 0
+only the directory is created.
+
+C<use_work_dir> and C<use_temp_dir> controls if the work or temp directories are
+created or not.
+
+
 =item * config_dir()
 
 Get the path of the configuration directory.
 
-=item * temp_dir()
-
-Get the path of the temporary files directory.
 
 =item * work_dir()
 
 Get the path of the work directory.
+
+
+=item * use_work_dir($yes_no)
+
+=item * temp_dir()
+
+
+Get the path of the temporary files directory.
+
+=item * use_temp_dir($yes_no)
+
+
+=item * check_directories()
+
+Check directories for existence. Create the directories if they are not
+available. Call initialize() before this method if any default directories
+must be changed. Work and tem directories are not created when use_work_dir(0)
+and use_temp_dir(0) is called.
+
 
 =item * cleanup()
 
@@ -496,8 +544,6 @@ When cleanup() is called it will destroy all plugin objects and finally it will
 destroy itself. Therefore when you want to use this method, always call
 instance() after that to get a new instance object and never rely on any saved
 addresses!
-
-=item * initialize(%options)
 
 
 
@@ -525,13 +571,13 @@ has asked for the log object from AppState with get_app_object(). When not start
 the initialization will be deferred until later.
 
 
-=item * _plugin_manager()
-
-Get the plugin manager object (L<AppState::Plugins::Feature::PluginManager>). A few calls are save
-and usefull such as get_plugin_names(), plugin_defined(), check_plugin() and
-nbr_plugins(). Other functions should not be used to prevent failure of the
-installed plugins. Other functions are made available to access the plugin
-manager indirectly.
+#=item * _plugin_manager()
+#
+#Get the plugin manager object (L<AppState::Plugins::Feature::PluginManager>). A few calls are save
+#and usefull such as get_plugin_names(), plugin_defined(), check_plugin() and
+#nbr_plugins(). Other functions should not be used to prevent failure of the
+#installed plugins. Other functions are made available to access the plugin
+#manager indirectly.
 
 
 =item * version()
@@ -539,6 +585,29 @@ manager indirectly.
 Get current version of AppState module.
 
 =back
+
+
+
+=head1 PLUGIN MANAGER HANDLES
+
+This module make use of the plugin manager plugin. A few of the methods are
+placed in in this modules namespace. The list of the methods is:
+list_plugin_names(), check_plugin(), has_object(), get_object(),
+cleanup_plugin(), add_plugin, get_plugin(), get_plugin_names(), plugin_exists(),
+nbr_plugins() and add_subscriber(). For an explanation of these functions see
+L<AppState::Plugins::Feature::PluginManager>
+
+The method get_app_object() is calling get_object() with a fixed set of
+arguments like so;
+
+  my $object = $plgmngr_object->get_object
+  ( { name => $name
+    , create => $plg->C_PLG_CREATEIF
+    , initOptions => {appState => $self}
+    , modifyOptions => {%options}
+    }
+  );
+
 
 
 =head1 BUGS

@@ -205,7 +205,7 @@ sub doXPathAndTest
 
   my $nodeStr = ref $node eq 'AppState::NodeTree::NodeDOM' ? 'D' : $node->name;
   my $message = sprintf "%-40.40s: %-30.30s", "$path", "$nodeList (From $nodeStr)";
-  $node->xpath( $path, $nodeList);
+  $node->xpath($path);
   my $str = join( ' '
                 , map { ref $_ eq 'AppState::NodeTree::NodeDOM'
                         ? 'D'

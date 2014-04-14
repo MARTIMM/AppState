@@ -255,9 +255,13 @@ sub wlog
 #
 sub leave
 {
+  my( $self, $exit_value) = @_;
+
   my $app = AppState->instance;
   $app->cleanup;
-  exit(0);
+
+  $exit_value //= 0;
+  exit($exit_value);
 }
 
 #-------------------------------------------------------------------------------

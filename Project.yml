@@ -168,7 +168,6 @@ Changes:
 #
 Tests:
  - module: 'AppState::Ext::Constants'
-   constructor: new
    test-programs:
     - t/005-Constants.t
 
@@ -179,62 +178,50 @@ Tests:
     - t/011-AppState.t
 
  - module: AppState::Plugins::Feature::Log
-   constructor: new
    test-programs:
     - t/100-Log.t
 
  - module: AppState::Ext::ConfigIO
-   constructor: new
    test-programs:
     - t/300-ConfigIO.t
 
  - module: AppState::Plugins::ConfigDriver::Yaml
-   constructor: new
    test-programs:
     - t/305-Yaml.t
 
  - module: AppState::Plugins::ConfigDriver::Memcached
-   constructor: new
    test-programs:
     - t/306-Memcached.t
 
  - module: AppState::Plugins::ConfigDriver::Storable
-   constructor: new
    test-programs:
     - t/307-Storable.t
 
  - module: AppState::Plugins::ConfigDriver::DataDumper
-   constructor: new
    test-programs:
     - t/308-DataDumper.t
 
  - module: AppState::Plugins::ConfigDriver::Json
-   constructor: new
    test-programs:
     - t/309-Json.t
 
  - module: AppState::Plugins::ConfigDriver::FreezeThaw
-   constructor: new
    test-programs:
     - t/310-FreezeThaw.t
 
  - module: AppState::Ext::Documents
-   constructor: new
    test-programs:
     - t/320-Documents.t
 
  - module: AppState::Ext::ConfigFile
-   constructor: new
    test-programs:
     - t/350-ConfigFile.t
 
  - module: AppState::Plugins::Feature::ConfigManager
-   constructor: new
    test-programs:
     - t/390-ConfigManager.t
 
  - module: AppState::Plugins::Feature::Process
-   constructor: new
    test-programs:
     - t/560-Process.t
 
@@ -244,37 +231,34 @@ Tests:
     - t/700-NodeGlobal.t
 
  - module: AppState::NodeTree::NodeDOM
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/701-NodeDOM.t
 
  - module: AppState::NodeTree::NodeRoot
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/702-NodeRoot.t
 
  - module: AppState::NodeTree::NodeText
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/703-NodeText.t
 
  - module: AppState::NodeTree::NodeAttr
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/704-NodeAttr.t
 
  - module: AppState::NodeTree::Node
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/705-Node.t
+    - t/710-Node.t
+    - t/711-Node.t
+    - t/712-Node.t
 
  - module: AppState::Plugins::Feature::NodeTree
-   constructor: new
    test-programs:
 #    - t/700-NodeGlobal.t
     - t/750-NodeTree.t

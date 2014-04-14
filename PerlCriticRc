@@ -21,6 +21,9 @@ short_subroutine_statements = 5
 #[Subroutines::ProhibitBuiltinHomonyms]
 #severity = 3
 
+[Documentation::PodSpelling]
+stop_words = Timmerman
+
 #-------------------------------------------------------------------------------
 # For all other Policies, I accept the default severity,
 # so no additional configuration is required for them.
