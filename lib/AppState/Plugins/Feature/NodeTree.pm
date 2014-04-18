@@ -471,9 +471,9 @@ sub _setAttributes
 #
 sub _getObject
 {
-  my( $self, $objectData) = @_;
+  my( $self, $object_data) = @_;
 
-  my $modName = $objectData->{moduleName};
+  my $modName = $object_data->{moduleName};
   my( $processResult, $mobj);
 
   # Create code
@@ -504,7 +504,7 @@ EOPCD
     #
     if( $modName->can('new') and $modName->can('process') )
     {
-      $mobj = $modName->new(objectData => $objectData);
+      $mobj = $modName->new(object_data => $object_data);
       $self->wlog( "Object from module $modName initialized properly"
                  , $self->C_NT_MODINIT
                  );

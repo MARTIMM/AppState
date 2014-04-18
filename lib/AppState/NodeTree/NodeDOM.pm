@@ -29,6 +29,7 @@ has shared_data =>
     , default           => sub { return AppState::NodeTree::NodeGlobal->instance; }
     , handles           => [ qw( nbr_found_nodes get_found_node get_found_nodes
 
+                                 set_all_global_data 
                                  set_global_data get_global_data del_global_data
                                  get_global_data_keys global_data_exists
                                  global_data_defined clear_global_data

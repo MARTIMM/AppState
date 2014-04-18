@@ -42,6 +42,7 @@ has _global_data =>
     , init_arg          => undef
     , default           => sub { return {}; }
     , traits            => ['Hash']
+    , writer            => 'set_all_global_data'
     , handles           =>
       { set_global_data         => 'set'
       , get_global_data         => 'get'

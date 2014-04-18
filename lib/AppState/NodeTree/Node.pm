@@ -53,6 +53,7 @@ has _local_data =>
     , isa               => 'HashRef'
     , init_arg          => undef
     , default           => sub { return {}; }
+    , writer            => 'set_all_local_data'
     , traits            => ['Hash']
     , handles           =>
       { set_local_data          => 'set'
