@@ -27,6 +27,19 @@ require AppState::NodeTree::NodeAttr;
 #    , init_arg         => undef
 #    );
 
+has _loaded_modules =>
+    ( is                => 'ro'
+    , isa               => 'HashRef'
+    , default           => sub { return {}; }
+    , init_arg          => undef
+    , traits            => ['Hash']
+    , handles           =>
+      { _get_loaded_module      => 'get'
+      , _set_loaded_module      => 'set'
+      , _loaded_module_exists   => 'exists'
+      }
+    );
+
 has tree_build_data =>
     ( is                => 'rw'
     , isa               => 'HashRef'
@@ -334,9 +347,10 @@ sub _convert_to_node_tree
 
     elsif( ref $rawDataNode eq 'ARRAY' )
     {
-      # Create unnamed node and process children
+      # Create text node and process children
       #
       $node = $self->_mkNode( $parent_node, '', '');
+#? text with children ???
       $self->_convert_to_node_tree( $node, $rawDataNode);
     }
 
@@ -386,7 +400,7 @@ sub _mkNode
   if( $nodename =~ m/\s/ )
   {
     # If nodename is still having spaces then it is supposed to be a sentence
-    # instead of a nodename with attributes. Make an unnamed node having the
+    # instead of a nodename with attributes. Make a text node having the
     # whole item line as its value. There will be no attributes.
     #
     $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
@@ -478,27 +492,35 @@ sub _getObject
 
   # Create code
   #
-  my $code = <<EOPCD;
+  if( !$self->_loaded_module_exists($modName) )
+  {
+    my $code = <<EOPCD;
 use Modern::Perl;
 require $modName;
 EOPCD
 
-  # Evaluate code
-  #
-  eval($code);
-  if( my $e = $@ )
-  {
-    # Failure. If logging is on the informational messages must always be
-    # written.
+    # Evaluate code
     #
-    $self->wlog( "Parsing error found in module $modName"
-               , $self->C_NT_FORCEDINFO
-               );
-    $self->wlog( "Error: " . $e, $self->C_NT_FORCEDINFO);
-    $self->wlog( "Code: " . $code, $self->C_NT_PARSEERROR);
+    eval($code);
+    if( my $e = $@ )
+    {
+      # Failure. If logging is on the informational messages must always be
+      # written.
+      #
+      $self->wlog( "Parsing error found in module $modName"
+                 , $self->C_NT_FORCEDINFO
+                 );
+      $self->wlog( "Error: " . $e, $self->C_NT_FORCEDINFO);
+      $self->wlog( "Code: " . $code, $self->C_NT_PARSEERROR);
+    }
+
+    else
+    {
+      $self->_set_loaded_module($modName => 1);
+    }
   }
 
-  else
+#  else
   {
     # Module loaded. Check if new() and process() can be run.
     #
