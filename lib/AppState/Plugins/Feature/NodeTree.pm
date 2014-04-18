@@ -202,7 +202,7 @@ sub convert_to_node_tree
 #
 sub _convert_to_node_tree
 {
-  my( $self, $parentNode, $rawData) = @_;
+  my( $self, $parent_node, $rawData) = @_;
 
   my $node;
 
@@ -256,9 +256,9 @@ sub _convert_to_node_tree
             #
             ( $text, $obj) = $self->_getObject
                              ( { type => $self->C_NT_VALUEDMODULE
-                               , moduleName => ref $v
-                               , parentNode => $parentNode
-                               , nodeData => $rawDataNode
+                               , module_name => ref $v
+                               , parent_node => $parent_node
+                               , node_data => $rawDataNode
                                , tree_build_data => $self->tree_build_data
                                }
                              );
@@ -281,8 +281,8 @@ sub _convert_to_node_tree
 
       # Create node from key and text/object
       #
-      $node = $self->_mkNode( $parentNode, $key, $text);
-#      $node = $self->_mkNode( $parentNode, $key, '');
+      $node = $self->_mkNode( $parent_node, $key, $text);
+#      $node = $self->_mkNode( $parent_node, $key, '');
 #      $nodeTxt = $self->_mkNode( $node, '', $text);
 
       # Process any extended attributes
@@ -306,10 +306,10 @@ sub _convert_to_node_tree
             ( $attrVal, $obj) = $self->_getObject
                                 ( { type => $self->C_NT_ATTRIBUTEMODULE
                                   , node => $node
-                                  , attributeName => $exAk
-                                  , moduleName => ref $attrVal
-                                  , parentNode => $parentNode
-                                  , nodeData => $rawDataNode
+                                  , attribute_name => $exAk
+                                  , module_name => ref $attrVal
+                                  , parent_node => $parent_node
+                                  , node_data => $rawDataNode
                                   , tree_build_data => $self->tree_build_data
                                   }
                                 );
@@ -336,7 +336,7 @@ sub _convert_to_node_tree
     {
       # Create unnamed node and process children
       #
-      $node = $self->_mkNode( $parentNode, '', '');
+      $node = $self->_mkNode( $parent_node, '', '');
       $self->_convert_to_node_tree( $node, $rawDataNode);
     }
 
@@ -344,9 +344,9 @@ sub _convert_to_node_tree
     {
       my( $data, $obj) = $self->_getObject
                          ( { type => $self->C_NT_NODEMODULE
-                           , moduleName => ref $rawDataNode
-                           , parentNode => $parentNode
-                           , nodeData => $rawDataNode
+                           , module_name => ref $rawDataNode
+                           , parent_node => $parent_node
+                           , node_data => $rawDataNode
                            , tree_build_data => $self->tree_build_data
                            }
                          );
@@ -367,19 +367,19 @@ sub _convert_to_node_tree
 #      if( $rawDataNode )
 #      {
         $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
-        $parentNode->link_with_node($node);
+        $parent_node->link_with_node($node);
 #      }
     }
   }
 
-  return $parentNode;
+  return $parent_node;
 }
 
 #-------------------------------------------------------------------------------
 #
 sub _mkNode
 {
-  my( $self, $parentNode, $rawDataNode, $value) = @_;
+  my( $self, $parent_node, $rawDataNode, $value) = @_;
 
   my $node;
   my $nodename = $self->_getNodename($rawDataNode);
@@ -390,16 +390,16 @@ sub _mkNode
     # whole item line as its value. There will be no attributes.
     #
     $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
-    $parentNode->link_with_node($node);
-    $self->wlog( 'Add text to parent=' . $parentNode->name, $self->C_NT_ADDTEXTTOPARENT);
+    $parent_node->link_with_node($node);
+    $self->wlog( 'Add text to parent=' . $parent_node->name, $self->C_NT_ADDTEXTTOPARENT);
   }
 
   else
   {
     $node = AppState::NodeTree::Node->new( name => $nodename);
-    $parentNode->link_with_node($node);
+    $parent_node->link_with_node($node);
     $self->wlog( 'Add node ' . $node->name
-               . ' to parent ' . $parentNode->name
+               . ' to parent ' . $parent_node->name
                , $self->C_NT_NODEADDTOPARENT
                );
 
@@ -473,7 +473,7 @@ sub _getObject
 {
   my( $self, $object_data) = @_;
 
-  my $modName = $object_data->{moduleName};
+  my $modName = $object_data->{module_name};
   my( $processResult, $mobj);
 
   # Create code
