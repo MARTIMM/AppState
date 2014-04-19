@@ -18,15 +18,7 @@ require AppState::NodeTree::NodeAttr;
 
 
 #-------------------------------------------------------------------------------
-# Nodetree structure
 #
-#has node_tree =>
-#    ( is               => 'ro'
-#    , isa              => 'ArrayRef'
-#    , default          => sub { return []; }
-#    , init_arg         => undef
-#    );
-
 has _loaded_modules =>
     ( is                => 'ro'
     , isa               => 'HashRef'
@@ -38,13 +30,6 @@ has _loaded_modules =>
       , _set_loaded_module      => 'set'
       , _loaded_module_exists   => 'exists'
       }
-    );
-
-has tree_build_data =>
-    ( is                => 'rw'
-    , isa               => 'HashRef'
-    , default           => sub { return {}; }
-    , init_arg          => undef
     );
 
 # Helper structure to do breathfirst tree traversal
@@ -272,7 +257,6 @@ sub _convert_to_node_tree
                                , module_name => ref $v
                                , parent_node => $parent_node
                                , node_data => $rawDataNode
-                               , tree_build_data => $self->tree_build_data
                                }
                              );
           }
@@ -323,7 +307,6 @@ sub _convert_to_node_tree
                                   , module_name => ref $attrVal
                                   , parent_node => $parent_node
                                   , node_data => $rawDataNode
-                                  , tree_build_data => $self->tree_build_data
                                   }
                                 );
 
@@ -361,7 +344,6 @@ sub _convert_to_node_tree
                            , module_name => ref $rawDataNode
                            , parent_node => $parent_node
                            , node_data => $rawDataNode
-                           , tree_build_data => $self->tree_build_data
                            }
                          );
       $obj //= '';
