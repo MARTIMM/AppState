@@ -1,7 +1,7 @@
 package AppState::Ext::ConfigIO;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.1.2');
+use version; our $VERSION = version->parse('v0.1.3');
 use 5.010001;
 
 use namespace::autoclean;
@@ -12,6 +12,7 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
+require Encode;
 
 #-------------------------------------------------------------------------------
 has fileExt =>
@@ -21,19 +22,12 @@ has fileExt =>
     , init_arg          => undef
     );
 
-#has canDoMultiDocuments =>
-#    ( is               => 'ro'
-#    , isa              => 'Bool'
-#    , default          => 0
-#    , init_arg         => undef
-#    );
-
-#has canSaveCode =>
-#    ( is               => 'ro'
-#    , isa              => 'Bool'
-#    , default          => 0
-#    , init_arg         => undef
-#    );
+has encoding =>
+    ( is               => 'ro'
+    , isa              => 'Bool'
+    , default          => 0
+    , init_arg         => undef
+    );
 
 has _configText =>
     ( is                => 'rw'
@@ -173,7 +167,7 @@ sub readTextFromConfigFile
                );
   }
 
-  $self->_configText($configText);
+  $self->_configText(Encode::decode( 'utf8', $configText));
 }
 
 #-------------------------------------------------------------------------------
@@ -196,7 +190,7 @@ sub writeTextToConfigFile
 
     else
     {
-      $textf->print($self->_configText);
+      $textf->print(Encode::encode( 'utf8', $self->_configText));
       $textf->close;
 
       $self->wlog( "Data written to file $configFile"

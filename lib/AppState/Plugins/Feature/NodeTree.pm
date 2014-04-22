@@ -28,7 +28,7 @@ has _loaded_modules =>
     , handles           =>
       { _get_loaded_module      => 'get'
       , _set_loaded_module      => 'set'
-      , _loaded_module_exists   => 'exists'
+      , _module_loaded          => 'exists'
       }
     );
 
@@ -204,12 +204,16 @@ sub _convert_to_node_tree
 
   my $node;
 
+# Test and log if not array!!!!
+
   # Process each raw data node which must be an array entry
   #
   foreach my $rawDataNode (@$rawData)
   {
     # Items can have several types of content. Recognized are hashes, arrays
     # blessed data(any type) and just text.
+    #
+    # Process hashes
     #
     if( ref $rawDataNode eq 'HASH' )
     {
@@ -220,14 +224,14 @@ sub _convert_to_node_tree
       my $text = '';
       my $children = [];
       my $exAttrs = {};
-      my $obj;
+#      my $obj;
 
       foreach my $k (sort keys %$rawDataNode)
       {
         $key .= " $k" unless $k =~ m/^\.\w/;
         my $v = $rawDataNode->{$k};
         $v //= '';
-        $obj = undef;
+#        $obj = undef;
 #say "KV: $k, $v";
 
         if( defined $v )
@@ -252,7 +256,8 @@ sub _convert_to_node_tree
             # overwrite the previous object. It will overrule the
             # text value of $text later when creating the node.
             #
-            ( $text, $obj) = $self->_getObject
+#            ( $text, $obj) = $self->_getObject
+            $self->_getObject
                              ( { type => $self->C_NT_VALUEDMODULE
                                , module_name => ref $v
                                , parent_node => $parent_node
@@ -299,8 +304,9 @@ sub _convert_to_node_tree
             # Overwrite attribute value with the resulting object if
             # the module is instantiated properly. Errors are logged.
             #
-            my $obj;
-            ( $attrVal, $obj) = $self->_getObject
+#            my $obj;
+#            ( $attrVal, $obj) = $self->_getObject
+            $self->_getObject
                                 ( { type => $self->C_NT_ATTRIBUTEMODULE
                                   , node => $node
                                   , attribute_name => $exAk
@@ -328,28 +334,34 @@ sub _convert_to_node_tree
       $self->_convert_to_node_tree( $node, $children) if @$children;
     }
 
+    # Process arrays
+    #
     elsif( ref $rawDataNode eq 'ARRAY' )
     {
-      # Create text node and process children
+      # Create text node
       #
       $node = $self->_mkNode( $parent_node, '', '');
-#? text with children ???
       $self->_convert_to_node_tree( $node, $rawDataNode);
     }
 
+    # Process blessed perl structures. !perl/module
+    #
     elsif( ref $rawDataNode )
     {
-      my( $data, $obj) = $self->_getObject
+#      my( $data, $obj) = $self->_getObject
+      $self->_getObject
                          ( { type => $self->C_NT_NODEMODULE
                            , module_name => ref $rawDataNode
                            , parent_node => $parent_node
                            , node_data => $rawDataNode
                            }
                          );
-      $obj //= '';
+#      $obj //= '';
 #say "Module node '$obj', process=$data from ", ref $rawDataNode;
     }
 
+    # Process text
+    #
     elsif( $rawDataNode )
     {
       # Text only will be handled as a value to an unnamed node if there are
@@ -470,11 +482,12 @@ sub _getObject
   my( $self, $object_data) = @_;
 
   my $modName = $object_data->{module_name};
-  my( $processResult, $mobj);
+#  my( $processResult, $mobj);
+  my $mobj;
 
-  # Create code
+  # Load the module if not loaded before
   #
-  if( !$self->_loaded_module_exists($modName) )
+  if( !$self->_module_loaded($modName) )
   {
     my $code = <<EOPCD;
 use Modern::Perl;
@@ -513,7 +526,8 @@ EOPCD
                  , $self->C_NT_MODINIT
                  );
 
-      $processResult = $mobj->process;
+#      $processResult = $mobj->process;
+      $mobj->process;
     }
 
     else
@@ -525,7 +539,7 @@ EOPCD
     }
   }
 
-  return ( $processResult, $mobj);
+#  return ( $processResult, $mobj);
 }
 
 

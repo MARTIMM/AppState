@@ -53,8 +53,8 @@ sub xpath_get_child_nodes               { return (); }
 #sub xpath_get_attributes               { return []; }
 
 #-------------------------------------------------------------------------------
-sub nbr_children                                { return 0; }
-sub get_children                                { return (); }
+sub nbr_children                        { return 0; }
+sub get_children                        { return (); }
 #sub children                           { return []; }
 #sub name                               { return 'text'; }
 #-------------------------------------------------------------------------------
