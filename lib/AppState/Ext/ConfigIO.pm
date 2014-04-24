@@ -1,7 +1,7 @@
 package AppState::Ext::ConfigIO;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.1.3');
+use version; our $VERSION = version->parse('v0.1.4');
 use 5.010001;
 
 use namespace::autoclean;
@@ -167,7 +167,7 @@ sub readTextFromConfigFile
                );
   }
 
-  $self->_configText(Encode::decode( 'utf8', $configText));
+  $self->_configText(Encode::decode( 'UTF-8', $configText));
 }
 
 #-------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ sub writeTextToConfigFile
 
     else
     {
-      $textf->print(Encode::encode( 'utf8', $self->_configText));
+      $textf->print(Encode::encode( 'UTF-8', $self->_configText));
       $textf->close;
 
       $self->wlog( "Data written to file $configFile"

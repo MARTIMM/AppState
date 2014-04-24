@@ -103,6 +103,11 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
+  - date: 2014 04 24
+    module: AppState::Ext::ConfigIO, AppState::Plugins::ConfigDriver::Memcached
+    version: 0.1.4, 0.1.7 resp
+    description: >
+      Changed argument 'utf8' into 'UTF-8' for encoding/decoding
   - date: 2014 04 22
     version: 0.1.6
     module: AppState::Plugins::ConfigDriver::Memcached

@@ -1,7 +1,7 @@
 package AppState::Plugins::ConfigDriver::Memcached;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.6");
+use version; our $VERSION = '' . version->parse("v0.1.7");
 use 5.010001;
 
 use namespace::autoclean;
@@ -77,7 +77,7 @@ sub readTextFromConfigFile
   my $data = $memd->get($self->sha1ConfigFile);
   if( defined $data )
   {
-    $self->_configText(Encode::decode( 'utf8', $data));
+    $self->_configText(Encode::decode( 'UTF-8', $data));
   }
 
   else
@@ -96,7 +96,7 @@ sub writeTextToConfigFile
   my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
   $memd->enable_compress(1);
   my $sts = $memd->set( $self->sha1ConfigFile
-                      , (Encode::encode( 'utf8', $self->_configText)
+                      , (Encode::encode( 'UTF-8', $self->_configText)
                       );
   $self->wlog( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
 }
