@@ -32,8 +32,8 @@ has _xpath_methods =>
     ( is                => 'ro'
     , isa               => 'Tree::XPathEngine'
     , init_arg          => undef
-    , predicate         => '_has_xpath_methods_set'
-    , writer            => '_xpath_methods_set'
+    , predicate         => '_has_xpath_methods'
+    , writer            => '_set_xpath_methods'
     );
 
 has _global_data =>

@@ -328,15 +328,21 @@ sub xpath
 {
   my( $self, $path) = @_;
 
-  if( !$self->shared_data->_has_xpath_methods_set )
+  # If there is no xpath methods set then set them first
+  #
+  if( !$self->shared_data->_has_xpath_methods )
   {
     my $xpobj = Tree::XPathEngine->new(xpath_name_re => $self->_xpath_regexpr);
-    $self->shared_data->_xpath_methods_set($xpobj);
+    $self->shared_data->_set_xpath_methods($xpobj);
   }
 
 #say "\nSearch start at: ", $self->can('name') ? $self->name : 'R';
 #say "Path: ", $path;
 
+  # Clear previous found nodes, then search them using xpath and save
+  # the nodes in the global nodes data store. Any other node can retrieve
+  # the results.
+  #
   $self->shared_data->_clear_found_nodes;
   my @fNodes = $self->shared_data->_xpath_methods->findnodes( $path, $self);
   $self->shared_data->_add_found_node(@fNodes);
