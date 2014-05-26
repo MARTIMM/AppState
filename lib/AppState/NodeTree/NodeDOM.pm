@@ -323,10 +323,16 @@ sub _search_data
 }
 
 #-------------------------------------------------------------------------------
+# Search through the node tree using the famous XML xpath method.
 #
 sub xpath
 {
-  my( $self, $path) = @_;
+  my( $self, $path, $debug) = @_;
+
+  # Turn debugging on if true
+  #
+  $debug //= 0;
+  $self->xpath_debug(!!$debug);
 
   # If there is no xpath methods set then set them first
   #
@@ -346,6 +352,21 @@ sub xpath
   $self->shared_data->_clear_found_nodes;
   my @fNodes = $self->shared_data->_xpath_methods->findnodes( $path, $self);
   $self->shared_data->_add_found_node(@fNodes);
+  
+  # Give back what one needs; array, first value or nothing.
+  #
+  my $context = wantarray();
+  if( defined $context and $context )
+  {
+    return @fNodes;
+  }
+  
+  elsif( defined $context )
+  {
+    return shift @fNodes;
+  }
+
+  return undef;
 }
 
 #-------------------------------------------------------------------------------
