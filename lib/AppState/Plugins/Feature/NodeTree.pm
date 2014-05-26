@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::NodeTree;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.3.3");
+use version; our $VERSION = '' . version->parse("v0.3.4");
 use 5.010001;
 
 use namespace::autoclean;
@@ -204,7 +204,7 @@ sub _convert_to_node_tree
 
   my $node;
 
-# Test and log if not array!!!!
+# Test and log if @$rawData not array!!!!
 
   # Process each raw data node which must be an array entry
   #
@@ -224,14 +224,12 @@ sub _convert_to_node_tree
       my $text = '';
       my $children = [];
       my $exAttrs = {};
-#      my $obj;
 
       foreach my $k (sort keys %$rawDataNode)
       {
         $key .= " $k" unless $k =~ m/^\.\w/;
         my $v = $rawDataNode->{$k};
         $v //= '';
-#        $obj = undef;
 #say "KV: $k, $v";
 
         if( defined $v )
@@ -256,9 +254,7 @@ sub _convert_to_node_tree
             # overwrite the previous object. It will overrule the
             # text value of $text later when creating the node.
             #
-#            ( $text, $obj) = $self->_getObject
-            $self->_getObject
-                             ( { type => $self->C_NT_VALUEDMODULE
+            $self->_getObject( { type => $self->C_NT_VALUEDMODULE
                                , module_name => ref $v
                                , parent_node => $parent_node
                                , node_data => $rawDataNode
@@ -273,7 +269,8 @@ sub _convert_to_node_tree
             # know which key comes first. If there are objects created as a
             # value it will overwrite the textual value.
             #
-            $text = $v if $v;
+            $text = '' . $v if defined $v;
+#say "Text: $v -> $text";
           }
         }
       }
@@ -304,17 +301,14 @@ sub _convert_to_node_tree
             # Overwrite attribute value with the resulting object if
             # the module is instantiated properly. Errors are logged.
             #
-#            my $obj;
-#            ( $attrVal, $obj) = $self->_getObject
-            $self->_getObject
-                                ( { type => $self->C_NT_ATTRIBUTEMODULE
-                                  , node => $node
-                                  , attribute_name => $exAk
-                                  , module_name => ref $attrVal
-                                  , parent_node => $parent_node
-                                  , node_data => $rawDataNode
-                                  }
-                                );
+            $self->_getObject( { type => $self->C_NT_ATTRIBUTEMODULE
+                               , node => $node
+                               , attribute_name => $exAk
+                               , module_name => ref $attrVal
+                               , parent_node => $parent_node
+                               , node_data => $rawDataNode
+                               }
+                             );
 
 #$obj //= '';
 #say "Pwd: ", `pwd`;
@@ -348,14 +342,12 @@ sub _convert_to_node_tree
     #
     elsif( ref $rawDataNode )
     {
-#      my( $data, $obj) = $self->_getObject
-      $self->_getObject
-                         ( { type => $self->C_NT_NODEMODULE
-                           , module_name => ref $rawDataNode
-                           , parent_node => $parent_node
-                           , node_data => $rawDataNode
-                           }
-                         );
+      $self->_getObject( { type => $self->C_NT_NODEMODULE
+                         , module_name => ref $rawDataNode
+                         , parent_node => $parent_node
+                         , node_data => $rawDataNode
+                         }
+                       );
 #      $obj //= '';
 #say "Module node '$obj', process=$data from ", ref $rawDataNode;
     }
@@ -374,7 +366,7 @@ sub _convert_to_node_tree
       #
 #      if( $rawDataNode )
 #      {
-        $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
+        $node = AppState::NodeTree::NodeText->new( value => '' . $rawDataNode);
         $parent_node->link_with_node($node);
 #      }
     }
@@ -391,13 +383,15 @@ sub _mkNode
 
   my $node;
   my $nodename = $self->_getNodename($rawDataNode);
+say "MkNode: $nodename, $value";
+
   if( $nodename =~ m/\s/ )
   {
     # If nodename is still having spaces then it is supposed to be a sentence
     # instead of a nodename with attributes. Make a text node having the
     # whole item line as its value. There will be no attributes.
     #
-    $node = AppState::NodeTree::NodeText->new( value => $rawDataNode);
+    $node = AppState::NodeTree::NodeText->new( value => '' . $rawDataNode);
     $parent_node->link_with_node($node);
     $self->wlog( 'Add text to parent=' . $parent_node->name, $self->C_NT_ADDTEXTTOPARENT);
   }
@@ -411,9 +405,9 @@ sub _mkNode
                , $self->C_NT_NODEADDTOPARENT
                );
 
-    if( defined $value and $value )
+    if( defined $value )
     {
-      my $nodeT = AppState::NodeTree::NodeText->new( value => $value);
+      my $nodeT = AppState::NodeTree::NodeText->new( value => '' . $value);
       $node->link_with_node($nodeT);
       $self->wlog( 'Add text to parent=' . $node->name, $self->C_NT_ADDTEXTTOPARENT );
     }
@@ -466,7 +460,9 @@ sub _setAttributes
     $ov =~ s/^['"]//;
     $ov =~ s/['"]$//;
 
-    my $nodeA = AppState::NodeTree::NodeAttr->new( name => $ok, value => $ov);
+    my $nodeA = AppState::NodeTree::NodeAttr->new( name => $ok
+                                                 , value => '' . $ov
+                                                 );
     $node->link_with_node($nodeA);
     $self->wlog( "Add attr $ok=$ov to parent=" . $node->name
                , $self->C_NT_ADDATTRTOPARENT

@@ -22,6 +22,22 @@ Application:
 # BugfixCount is reset on Release upgrade.
 #
 Bugs:
+ 2014 05 26:
+  - &bi3
+    issue:
+     module: NodeTree
+     version: 0.3.3
+     description: >
+      When convert_to_node_tree() is called to get a tree of nodes some
+      text values were dropped. This is the case when a value has the text '0'.
+    fix:
+     date: 2014 05 26
+     description: >
+      In _convert_to_node_tree() several tests on a text value was done wrong.
+     version: 0.3.4
+     module: NodeTree
+      
+     
  2014 02 24:
   - &bi1
     issue:
