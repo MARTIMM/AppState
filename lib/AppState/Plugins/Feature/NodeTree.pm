@@ -275,14 +275,9 @@ sub _convert_to_node_tree
         }
       }
 
-#      $key =~ s/^\s+//;
-#      $text =~ s/^\s+//;
-
       # Create node from key and text/object
       #
       $node = $self->_mkNode( $parent_node, $key, $text);
-#      $node = $self->_mkNode( $parent_node, $key, '');
-#      $nodeTxt = $self->_mkNode( $node, '', $text);
 
       # Process any extended attributes
       #
@@ -383,7 +378,7 @@ sub _mkNode
 
   my $node;
   my $nodename = $self->_getNodename($rawDataNode);
-say "MkNode: $nodename, $value";
+#say "MkNode: $nodename, $value";
 
   if( $nodename =~ m/\s/ )
   {

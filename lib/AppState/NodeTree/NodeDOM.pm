@@ -26,7 +26,10 @@ has shared_data =>
     ( is                => 'ro'
     , isa               => 'AppState::NodeTree::NodeGlobal'
     , init_arg          => undef
-    , default           => sub { return AppState::NodeTree::NodeGlobal->instance; }
+    , default           =>
+      sub
+      { return AppState::NodeTree::NodeGlobal->instance;
+      }
     , handles           => [ qw( nbr_found_nodes get_found_node get_found_nodes
 
                                  set_all_global_data 
