@@ -12,6 +12,7 @@ use MooseX::Singleton;
 use Tree::XPathEngine;
 
 #-------------------------------------------------------------------------------
+# Search results of xpath and other search methods are stored here
 #
 has _found_nodes =>
     ( is                => 'ro'
@@ -28,6 +29,8 @@ has _found_nodes =>
     , default           => sub { return []; }
     );
 
+# Xpath settings
+#
 has _xpath_methods =>
     ( is                => 'ro'
     , isa               => 'Tree::XPathEngine'
@@ -36,6 +39,10 @@ has _xpath_methods =>
     , writer            => '_set_xpath_methods'
     );
 
+# Global data can be used and stored here. NodeDOM will point to this
+# variable and handles the methods defined here. The other Node* classes
+# inherit from NodeDOM and therefore any node can reach this data.
+#
 has _global_data =>
     ( is                => 'ro'
     , isa               => 'HashRef'

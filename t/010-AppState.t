@@ -29,7 +29,7 @@ is( $a->C_APP_UNLINKTEMP
 #my $m = $a->get_app_object('Constants');
 $a->check_directories;
 
-isa_ok( $a, 'AppState', 'Check config object type');
+isa_ok( $a, 'AppState');
 ok( $a->has_instance, 'Test has_instance of AppState object');
 
 #-------------------------------------------------------------------------------

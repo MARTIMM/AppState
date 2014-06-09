@@ -34,6 +34,7 @@ sub BUILD
 # Make object
 #
 my $self = main->new;
+isa_ok( $self, 'main');
 
 #-------------------------------------------------------------------------------
 # Init
@@ -52,27 +53,35 @@ $log->start_logging;
 $log->do_flush_log(1);
 $log->log_mask($as->M_SEVERITY);
 
-is( $log->getLogTag(ref $self), '005', 'Check log_init');
-$log->write_log( "Mededeling 1", 1|$log->M_INFO);
-$self->wlog( "Mededeling 2", 1|$log->M_INFO);
+is( $log->getLogTag(ref $self), '005', 'Check log tag');
+$log->write_log( "Message 1", 1|$log->M_INFO);
+$self->wlog( "Message 2", 1|$log->M_INFO);
 
 #-------------------------------------------------------------------------------
-is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
-is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+subtest 'Constants test and set constant' =>
+sub
+{
+  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
+  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
 
-eval('$self->N(11);');
+  eval('$self->N(11);');
 
-is( $@ =~ m/Cannot assign a value to a read-only accessor/
-  , 1
-  , 'Cannot change a constant N'
-  );
+  is( $@ =~ m/Cannot assign a value to a read-only accessor/
+    , 1
+    , 'Cannot change a constant N'
+    );
+};
 
 #-------------------------------------------------------------------------------
-$self = undef;
-$self = main->new;
+subtest 'Drop main and test again' =>
+sub
+{
+  $self = undef;
+  $self = main->new;
 
-is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
-is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
+  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+};
 
 #-------------------------------------------------------------------------------
 done_testing();
