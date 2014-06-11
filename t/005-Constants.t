@@ -84,52 +84,57 @@ sub
 };
 
 #-------------------------------------------------------------------------------
+subtest 'Drop main and test again' =>
+sub
+{
+  $self = undef;
+  $self = main->new;
+
+  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
+  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+};
+
+#-------------------------------------------------------------------------------
+subtest 'Test all codes' =>
+sub
+{
+  $self->t_code( M_ALL => 0xFFFFFFFF);
+  $self->t_code( M_NONE => 0);
+
+  $self->t_code( M_EVNTCODE => 0xFF);
+  $self->t_code( M_SEVERITY => 0xFF000000);
+  $self->t_code( M_MSGMASK => 0xFF0000FF);
+  $self->t_code( M_RESERVED => 0x00FFFF00);
+
+  $self->t_code( M_SUCCESS => 0x01000000);
+  $self->t_code( M_FAIL => 0x02000000);
+
+  $self->t_code( M_INFO => 0x10000000);
+  $self->t_code( M_WARNING => 0x20000000);
+  $self->t_code( M_ERROR => 0x40000000);
+  $self->t_code( M_FORCED => 0x80000000);
+
+  $self->t_code( M_F_INFO => 0x90000000);
+  $self->t_code( M_F_WARNING => 0xA0000000);
+  $self->t_code( M_F_ERROR => 0xB0000000);
+
+#  $self->t_code(  => 0x);
+};
+
+#-------------------------------------------------------------------------------
 done_testing();
 $as->cleanup;
 
 File::Path::remove_tree('t/Constants');
+exit(0);
 
-
-
-
-__END__
-use constant
-{ M_ALL                 => 0xFFFFFFFF
-  M_NONE                => 0x00000000
-
-  M_EVNTCODE            => 0x00000FFF # 4095 codes/module (no 0)
-  M_SEVERITY            => 0xFF000000 # 8 bits for severity
-  M_MSGMASK             => 0xFF000FFF # Severity and code
-  M_RESERVED            => 0x00FFF000 # Reserved
-
-  # Severity codes ar
-  #
-  M_SUCCESS             => 0x01000000
-  M_FAIL                => 0x02000000
-
-  M_INFO                => 0x10000000  # INFO always SUCCESS
-  M_WARNING             => 0x20000000
-  M_ERROR               => 0x40000000  # ERROR always FAIL
-  M_FORCED              => 0x80000000  # Force logging
-
-  # Following are combinations with FORCED -> log always when log is opened
-  #
-  M_F_INFO              => 0x90000000  # INFO always SUCCESS
-  M_F_WARNING           => 0xA0000000
-  M_F_ERROR             => 0xB0000000  # ERROR always FAIL
-};
-
-#-------------------------------------------------------------------------------
-*c_Attr = *AppState::Ext::Constants::c_Attr;
-say join( ', ', c_Attr());
-
-sub c_Attr
+################################################################################
+#
+sub t_code
 {
-  my( $defCode, @defSeverity) = shift;
-  my %attr = ( is => 'ro', init_arg => undef, lazy => 1);
-  $attr{default} = $defCode if defined $defCode;
-  return %attr;
+  my( $self, $name, $code) = @_;
+  
+  is( $self->$name, $code, sprintf( "Code %s = 0x%08X", $name, $code));
 }
 
-#-------------------------------------------------------------------------------
-*$full_name = sub () { $scalar };
+
