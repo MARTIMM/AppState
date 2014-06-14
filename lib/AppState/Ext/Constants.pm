@@ -1,7 +1,7 @@
 package AppState::Ext::Constants;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse("v0.2.6");
+use version; our $VERSION = version->parse('v0.2.6');
 use 5.010001;
 
 use namespace::autoclean;
@@ -36,25 +36,35 @@ has M_ALL       => ( default => 0xFFFFFFFF, %_c_Attr);
 has M_NONE      => ( default => 0x00000000, %_c_Attr);
 
 has M_EVNTCODE  => ( default => 0x000000FF, %_c_Attr); # 255 codes/module (no 0)
-has M_SEVERITY  => ( default => 0xFF000000, %_c_Attr); # 8 bits for severity
-has M_MSGMASK   => ( default => 0xFF0000FF, %_c_Attr); # Severity and code
-has M_RESERVED  => ( default => 0x00FFFF00, %_c_Attr); # Reserved
+has M_SEVERITY  => ( default => 0xFFF00000, %_c_Attr); # 12 bits for severity
+has M_OLD_MASK  => ( default => 0xF0000000, %_c_Attr); 
+has M_OK_MASK   => ( default => 0x0F000000, %_c_Attr); 
+has M_L4P_MASK  => ( default => 0x00F00000, %_c_Attr); 
+has M_MSGMASK   => ( default => 0xFFF000FF, %_c_Attr); # Severity and code
+has M_RESERVED  => ( default => 0x000FFF00, %_c_Attr); # Reserved
 
 # Severity codes are bitmasks
 #
 has M_SUCCESS   => ( default => 0x01000000, %_c_Attr);
 has M_FAIL      => ( default => 0x02000000, %_c_Attr);
+has M_FORCED    => ( default => 0x04000000, %_c_Attr);  # Force logging
 
-has M_INFO      => ( default => 0x10000000, %_c_Attr);
-has M_WARNING   => ( default => 0x20000000, %_c_Attr);
-has M_ERROR     => ( default => 0x40000000, %_c_Attr);
-has M_FORCED    => ( default => 0x80000000, %_c_Attr);  # Force logging
+has M_INFO      => ( default => 0x11000000, %_c_Attr);  # is success
+has M_WARNING   => ( default => 0x20000000, %_c_Attr);  # no success/fail
+has M_ERROR     => ( default => 0x42000000, %_c_Attr);  # is fail
+
+has M_L4P_TRACE => ( default => 0x01100000, %_c_Attr);  # Log4perl codes
+has M_L4P_DEBUG => ( default => 0x01200000, %_c_Attr);
+has M_L4P_INFO  => ( default => 0x11000000, %_c_Attr);  # same as M_INFO
+has M_L4P_WARN  => ( default => 0x20000000, %_c_Attr);  # same as M_WARNING
+has M_L4P_ERROR => ( default => 0x42000000, %_c_Attr);  # same as M_ERROR
+has M_L4P_FATAL => ( default => 0x02400000, %_c_Attr);
 
 # Following are combinations with FORCED -> log always when log is opened
 #
-has M_F_INFO    => ( default => 0x90000000, %_c_Attr);
-has M_F_WARNING => ( default => 0xA0000000, %_c_Attr);
-has M_F_ERROR   => ( default => 0xB0000000, %_c_Attr);
+has M_F_INFO    => ( default => 0x15000000, %_c_Attr);
+has M_F_WARNING => ( default => 0x24000000, %_c_Attr);
+has M_F_ERROR   => ( default => 0x46000000, %_c_Attr);
 
 #-------------------------------------------------------------------------------
 # POSIX IPC constants
@@ -64,56 +74,10 @@ has M_F_ERROR   => ( default => 0xB0000000, %_c_Attr);
 has MSG_NOERROR => ( default => oct(10000), %_c_Attr);
 
 #-------------------------------------------------------------------------------
-# ConfigFile
-#
-#has C_CFF_CONFIGDIR    => ( default => 0, %_c_Attr);
-#has C_CFF_WORKDIR      => ( default => 1, %_c_Attr);
-#has C_CFF_FILEPATH     => ( default => 2, %_c_Attr);
-#has C_CFF_TEMPDIR      => ( default => 3, %_c_Attr);
-
-#has C_CFF_NORESETCFG   => ( default => 0, %_c_Attr);
-#has C_CFF_RESETCFG     => ( default => 1, %_c_Attr);
-
-#-------------------------------------------------------------------------------
 # AppState::Process
 #
 has C_MSG_WAIT          => ( default => 0, %_c_Attr);
 has C_MSG_NOWAIT        => ( default => 1, %_c_Attr);
-
-#has C_PRC_SRVROK        => ( default => 2, %_c_Attr);
-#has C_PRC_SRVRNOK       => ( default => 3, %_c_Attr);
-#has C_PRC_SRVRASTRTD    => ( default => 4, %_c_Attr);
-
-#-------------------------------------------------------------------------------
-# AppState::PluginManager
-#
-#has C_PLG_NOCREATE     => ( default => 0, %_c_Attr);
-#has C_PLG_CREATEIF     => ( default => 1, %_c_Attr);
-#has C_PLG_CREATEALW    => ( default => 2, %_c_Attr);
-
-#-------------------------------------------------------------------------------
-# AppState::NodeTree
-#
-#has C_NT_DEPTHFIRST1            => ( default => 0, %_c_Attr);
-#has C_NT_DEPTHFIRST2            => ( default => 1, %_c_Attr);
-#has C_NT_BREADTHFIRST1          => ( default => 2, %_c_Attr);
-#has C_NT_BREADTHFIRST2          => ( default => 3, %_c_Attr);
-
-#has C_NT_NODEMODULE             => ( default => 4, %_c_Attr);
-#has C_NT_VALUEDMODULE           => ( default => 5, %_c_Attr);
-#has C_NT_ATTRIBUTEMODULE        => ( default => 6, %_c_Attr);
-
-#has C_NT_CMP_NAME              => ( default => 7, %_c_Attr);
-#has C_NT_CMP_ATTR              => ( default => 8, %_c_Attr);
-#has C_NT_CMP_DATA              => ( default => 9, %_c_Attr);
-#has C_NT_CMP_PATH              => ( default => 10, %_c_Attr);
-
-#has C_NT_TYPE_DOCUMENT         => ( default => 11, %_c_Attr);
-#has C_NT_TYPE_ELEMENT          => ( default => 12, %_c_Attr);
-#has C_NT_TYPE_ATTRIBUTE                => ( default => 13, %_c_Attr);
-#has C_NT_TYPE_VALUE            => ( default => 14, %_c_Attr);
-
-
 
 #-------------------------------------------------------------------------------
 # Error codes for Constants module

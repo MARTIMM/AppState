@@ -378,13 +378,13 @@ sub write_log
   #
   $self->_lastError
          ( { message    => ref $messages eq 'ARRAY'
-                        ? join( ' ', @$messages)
-                        : $messages
+                           ? join( ' ', @$messages)
+                           : $messages
            , error      => $error
            , severity   => $error & $self->M_SEVERITY
            , eventCode  => $error & $self->M_EVNTCODE
            , forced     => $error & $self->M_FORCED     ? 1 : 0
-           , fail       => $error & $self->M_FAIL               ? 1 : 0
+           , fail       => $error & $self->M_FAIL       ? 1 : 0
            , success    => $error & $self->M_SUCCESS    ? 1 : 0
            }
          );

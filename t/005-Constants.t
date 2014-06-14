@@ -1,4 +1,4 @@
-# Testing module AppState.pm
+# Testing module AppState::Ext::Constants
 #
 use Modern::Perl;
 
@@ -98,25 +98,35 @@ sub
 subtest 'Test all codes' =>
 sub
 {
-  $self->t_code( M_ALL => 0xFFFFFFFF);
-  $self->t_code( M_NONE => 0);
+  $self->t_code( M_ALL          => 0xFFFFFFFF);
+  $self->t_code( M_NONE         => 0x00000000);
 
-  $self->t_code( M_EVNTCODE => 0xFF);
-  $self->t_code( M_SEVERITY => 0xFF000000);
-  $self->t_code( M_MSGMASK => 0xFF0000FF);
-  $self->t_code( M_RESERVED => 0x00FFFF00);
+  $self->t_code( M_EVNTCODE     => 0x000000FF);
+  $self->t_code( M_SEVERITY     => 0xFFF00000);
+  $self->t_code( M_OLD_MASK     => 0xF0000000); 
+  $self->t_code( M_OK_MASK      => 0x0F000000); 
+  $self->t_code( M_L4P_MASK     => 0x00F00000); 
+  $self->t_code( M_MSGMASK      => 0xFFF000FF);
+  $self->t_code( M_RESERVED     => 0x000FFF00);
 
-  $self->t_code( M_SUCCESS => 0x01000000);
-  $self->t_code( M_FAIL => 0x02000000);
+  $self->t_code( M_SUCCESS      => 0x01000000);
+  $self->t_code( M_FAIL         => 0x02000000);
+  $self->t_code( M_FORCED       => 0x04000000);
 
-  $self->t_code( M_INFO => 0x10000000);
-  $self->t_code( M_WARNING => 0x20000000);
-  $self->t_code( M_ERROR => 0x40000000);
-  $self->t_code( M_FORCED => 0x80000000);
+  $self->t_code( M_INFO         => 0x11000000);
+  $self->t_code( M_WARNING      => 0x20000000);
+  $self->t_code( M_ERROR        => 0x42000000);
 
-  $self->t_code( M_F_INFO => 0x90000000);
-  $self->t_code( M_F_WARNING => 0xA0000000);
-  $self->t_code( M_F_ERROR => 0xB0000000);
+  $self->t_code( M_L4P_TRACE    => 0x01100000);
+  $self->t_code( M_L4P_DEBUG    => 0x01200000);
+  $self->t_code( M_L4P_INFO     => 0x11000000);
+  $self->t_code( M_L4P_WARN     => 0x20000000);
+  $self->t_code( M_L4P_ERROR    => 0x42000000);
+  $self->t_code( M_L4P_FATAL    => 0x02400000);
+
+  $self->t_code( M_F_INFO       => 0x15000000);
+  $self->t_code( M_F_WARNING    => 0x24000000);
+  $self->t_code( M_F_ERROR      => 0x46000000);
 
 #  $self->t_code(  => 0x);
 };
@@ -133,7 +143,7 @@ exit(0);
 sub t_code
 {
   my( $self, $name, $code) = @_;
-  
+
   is( $self->$name, $code, sprintf( "Code %s = 0x%08X", $name, $code));
 }
 
