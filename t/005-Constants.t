@@ -101,13 +101,13 @@ sub
   $self->t_code( M_ALL          => 0xFFFFFFFF);
   $self->t_code( M_NONE         => 0x00000000);
 
-  $self->t_code( M_EVNTCODE     => 0x000000FF);
+  $self->t_code( M_EVNTCODE     => 0x000003FF);
   $self->t_code( M_SEVERITY     => 0xFFF00000);
   $self->t_code( M_OLD_MASK     => 0xF0000000); 
   $self->t_code( M_OK_MASK      => 0x0F000000); 
   $self->t_code( M_L4P_MASK     => 0x00F00000); 
-  $self->t_code( M_MSGMASK      => 0xFFF000FF);
-  $self->t_code( M_RESERVED     => 0x000FFF00);
+  $self->t_code( M_MSGMASK      => 0xFFF003FF);
+  $self->t_code( M_RESERVED     => 0x000FFC00);
 
   $self->t_code( M_SUCCESS      => 0x01000000);
   $self->t_code( M_FAIL         => 0x02000000);

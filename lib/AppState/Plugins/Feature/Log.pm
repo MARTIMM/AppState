@@ -14,6 +14,10 @@ use DateTime;
 require File::Basename;
 use IO::Handle;
 use AppState;
+use Log::Log4perl;
+use Log::Log4perl::Layout;
+use Log::Log4perl::Level;
+use AppState::Ext::Status;
 
 use Text::Wrap ('$columns');
 $columns = 80;
@@ -218,7 +222,7 @@ sub BUILD
   {
     # Error codes
     #
-    $self->code_reset;
+#    $self->code_reset;
     $self->const( 'C_LOG_AUTOFLUSHON'   , qw(M_SUCCESS M_F_INFO));
     $self->const( 'C_LOG_AUTOFLUSHOFF'  , qw(M_SUCCESS M_F_INFO));
     $self->const( 'C_LOG_LOGOPENED'     , qw(M_SUCCESS M_F_INFO));

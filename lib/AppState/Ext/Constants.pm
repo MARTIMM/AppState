@@ -35,13 +35,13 @@ my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
 has M_ALL       => ( default => 0xFFFFFFFF, %_c_Attr);
 has M_NONE      => ( default => 0x00000000, %_c_Attr);
 
-has M_EVNTCODE  => ( default => 0x000000FF, %_c_Attr); # 255 codes/module (no 0)
+has M_EVNTCODE  => ( default => 0x000003FF, %_c_Attr); # 1023 codes/module (no 0)
 has M_SEVERITY  => ( default => 0xFFF00000, %_c_Attr); # 12 bits for severity
 has M_OLD_MASK  => ( default => 0xF0000000, %_c_Attr); 
 has M_OK_MASK   => ( default => 0x0F000000, %_c_Attr); 
 has M_L4P_MASK  => ( default => 0x00F00000, %_c_Attr); 
-has M_MSGMASK   => ( default => 0xFFF000FF, %_c_Attr); # Severity and code
-has M_RESERVED  => ( default => 0x000FFF00, %_c_Attr); # Reserved
+has M_MSGMASK   => ( default => 0xFFF003FF, %_c_Attr); # Severity and code
+has M_RESERVED  => ( default => 0x000FFC00, %_c_Attr); # Reserved
 
 # Severity codes are bitmasks
 #
