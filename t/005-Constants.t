@@ -103,10 +103,9 @@ sub
 
   $self->t_code( M_EVNTCODE     => 0x000003FF);
   $self->t_code( M_SEVERITY     => 0xFFF00000);
-  $self->t_code( M_OLD_MASK     => 0xF0000000); 
-  $self->t_code( M_OK_MASK      => 0x0F000000); 
-  $self->t_code( M_L4P_MASK     => 0x00F00000); 
   $self->t_code( M_MSGMASK      => 0xFFF003FF);
+  $self->t_code( M_NOTMSFF      => 0xF0F00000);
+
   $self->t_code( M_RESERVED     => 0x000FFC00);
 
   $self->t_code( M_SUCCESS      => 0x01000000);
@@ -117,16 +116,18 @@ sub
   $self->t_code( M_WARNING      => 0x20000000);
   $self->t_code( M_ERROR        => 0x42000000);
 
-  $self->t_code( M_L4P_TRACE    => 0x01100000);
-  $self->t_code( M_L4P_DEBUG    => 0x01200000);
-  $self->t_code( M_L4P_INFO     => 0x11000000);
-  $self->t_code( M_L4P_WARN     => 0x20000000);
-  $self->t_code( M_L4P_ERROR    => 0x42000000);
-  $self->t_code( M_L4P_FATAL    => 0x02400000);
+  $self->t_code( M_TRACE        => 0x01100000);
+  $self->t_code( M_DEBUG        => 0x01200000);
+  $self->t_code( M_WARN         => 0x20000000);
+  $self->t_code( M_FATAL        => 0x02400000);
 
   $self->t_code( M_F_INFO       => 0x15000000);
   $self->t_code( M_F_WARNING    => 0x24000000);
   $self->t_code( M_F_ERROR      => 0x46000000);
+  $self->t_code( M_F_TRACE      => 0x05100000);
+  $self->t_code( M_F_DEBUG      => 0x05200000);
+  $self->t_code( M_F_WARN       => 0x24000000);
+  $self->t_code( M_F_FATAL      => 0x06400000);
 
 #  $self->t_code(  => 0x);
 };

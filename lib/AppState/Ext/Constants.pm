@@ -37,10 +37,9 @@ has M_NONE      => ( default => 0x00000000, %_c_Attr);
 
 has M_EVNTCODE  => ( default => 0x000003FF, %_c_Attr); # 1023 codes/module (no 0)
 has M_SEVERITY  => ( default => 0xFFF00000, %_c_Attr); # 12 bits for severity
-has M_OLD_MASK  => ( default => 0xF0000000, %_c_Attr); 
-has M_OK_MASK   => ( default => 0x0F000000, %_c_Attr); 
-has M_L4P_MASK  => ( default => 0x00F00000, %_c_Attr); 
 has M_MSGMASK   => ( default => 0xFFF003FF, %_c_Attr); # Severity and code
+has M_NOTMSFF   => ( default => 0xF0F00000, %_c_Attr); # Not Success failed etc
+
 has M_RESERVED  => ( default => 0x000FFC00, %_c_Attr); # Reserved
 
 # Severity codes are bitmasks
@@ -53,18 +52,20 @@ has M_INFO      => ( default => 0x11000000, %_c_Attr);  # is success
 has M_WARNING   => ( default => 0x20000000, %_c_Attr);  # no success/fail
 has M_ERROR     => ( default => 0x42000000, %_c_Attr);  # is fail
 
-has M_L4P_TRACE => ( default => 0x01100000, %_c_Attr);  # Log4perl codes
-has M_L4P_DEBUG => ( default => 0x01200000, %_c_Attr);
-has M_L4P_INFO  => ( default => 0x11000000, %_c_Attr);  # same as M_INFO
-has M_L4P_WARN  => ( default => 0x20000000, %_c_Attr);  # same as M_WARNING
-has M_L4P_ERROR => ( default => 0x42000000, %_c_Attr);  # same as M_ERROR
-has M_L4P_FATAL => ( default => 0x02400000, %_c_Attr);
+has M_TRACE     => ( default => 0x01100000, %_c_Attr);  # Log4perl codes
+has M_DEBUG     => ( default => 0x01200000, %_c_Attr);
+has M_WARN      => ( default => 0x20000000, %_c_Attr);  # same as M_WARNING
+has M_FATAL     => ( default => 0x02400000, %_c_Attr);
 
 # Following are combinations with FORCED -> log always when log is opened
 #
 has M_F_INFO    => ( default => 0x15000000, %_c_Attr);
 has M_F_WARNING => ( default => 0x24000000, %_c_Attr);
 has M_F_ERROR   => ( default => 0x46000000, %_c_Attr);
+has M_F_TRACE   => ( default => 0x05100000, %_c_Attr);
+has M_F_DEBUG   => ( default => 0x05200000, %_c_Attr);
+has M_F_WARN    => ( default => 0x24000000, %_c_Attr);
+has M_F_FATAL   => ( default => 0x06400000, %_c_Attr);
 
 #-------------------------------------------------------------------------------
 # POSIX IPC constants

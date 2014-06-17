@@ -202,13 +202,21 @@ has _previousMsgEq =>
 #
 has _lastError =>
     ( is                => 'rw'
-    , isa               => 'HashRef'
-#    , writer           => '_lastError'
-    , default           => sub {return {};}
+    , isa               => 'AppState::Ext::Status'
+    , default           => sub {AppState::Ext::Status->new;}
     , init_arg          => undef
-    , traits            => ['Hash']
     , handles           =>
-      { clearLastError  => 'clear'
+      { clear_last_error        => 'clear_error'
+      , is_last_success         => 'is_success'
+      , is_last_fail            => 'is_fail'
+      , is_last_forced          => 'is_forced'
+      , get_last_message        => 'get_message'
+      , get_last_error          => 'get_error'
+      , get_last_severity       => 'get_severity'
+      , get_last_eventcode      => 'get_eventcode'
+      , get_sender_line_no      => 'get_line'
+      , get_sender_file         => 'get_file'
+      , get_sender_package      => 'get_package'
       }
     );
 
@@ -231,6 +239,8 @@ sub BUILD
     $self->const( 'C_LOG_TAGALRDYSET'   , qw(M_F_WARNING));
     $self->const( 'C_LOG_BMCHANGED'     , qw(M_SUCCESS M_F_INFO));
     $self->const( 'C_LOG_TAGADDED'      , qw(M_SUCCESS M_INFO));
+    $self->const( 'C_LOG_NOERRCODE'     , qw(M_F_ERROR));
+    $self->const( 'C_LOG_NOMSG'         , qw(M_F_ERROR));
 #    $self->const( 'C_LOG_', 9, qw());
 
     # Constant codes
@@ -269,7 +279,7 @@ sub start_logging
   #
   return if $self->isLogFileOpen;
 
-  # Reset some values used in write_log()
+  # Reset some values used to compare values from a previous log entry.
   #
   $self->_previousMsg('');
   $self->_previousDate('');
@@ -374,26 +384,45 @@ sub write_log
 {
   my( $self, $messages, $error, $call_level) = @_;
 
-  # Check if message mask has a proper error.
-  #
-  return unless $error & $self->M_MSGMASK;
+  my $message = '';
 
-  # Store error and message
+  # Check if error has both an event code and a severity.
   #
-  $self->_lastError
-         ( { message    => ref $messages eq 'ARRAY'
-                           ? join( ' ', @$messages)
-                           : $messages
-           , error      => $error
-           , severity   => $error & $self->M_SEVERITY
-           , eventCode  => $error & $self->M_EVNTCODE
-           , forced     => $error & $self->M_FORCED     ? 1 : 0
-           , fail       => $error & $self->M_FAIL       ? 1 : 0
-           , success    => $error & $self->M_SUCCESS    ? 1 : 0
-           }
-         );
+  if( ($error & $self->M_EVNTCODE) and ($error & $self->M_SEVERITY) )
+  {
+    # Store error and message
+    #
+    $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
+  }  
 
-  $self->_lastError->{success} = 0 if $self->_lastError->{fail};
+  # Rewrite message if there is no message.
+  #
+  elsif( !defined $message or !$message )
+  {
+    $message = "No message given to write_log";
+    $error = $self->C_LOG_NOMSG;
+  }
+
+  else
+  {
+    $error = $self->C_LOG_NOERRCODE;
+    $message = 'Error does not have an error code and/or severity code';
+  }
+  
+#  $self->_lastError
+#         ( { message    => ref $messages eq 'ARRAY'
+#                           ? join( ' ', @$messages)
+#                           : $messages
+#           , error      => $error
+#           , severity   => $error & $self->M_SEVERITY
+#           , eventCode  => $error & $self->M_EVNTCODE
+#           , forced     => $error & $self->M_FORCED     ? 1 : 0
+#           , fail       => $error & $self->M_FAIL       ? 1 : 0
+#           , success    => $error & $self->M_SUCCESS    ? 1 : 0
+#           }
+#         );
+
+#  $self->_lastError->{success} = 0 if $self->_lastError->{fail};
 
   # Get the line number from where the call to write_log() was made. Default
   # caller stack level is 0. Get the log_tag when the call level packagename
@@ -404,35 +433,44 @@ sub write_log
   my $log_tag = $self->getLogTag($package);
   $log_tag //= '';
   $log_tag = substr( "$log_tag---", 0, 3);
-  $self->_lastError->{senderTag} = $log_tag;
-  $self->_lastError->{senderLineNo} = $l;
-  $self->_lastError->{senderFile} = $f;
-  $self->_lastError->{senderPackage} = $package;
-
-  # Notify users when something is logged
-  #
-  $self->notify_subscribers( $log_tag, $self->get_last_error);
-
-  # Return if there is no message or if the logfile has not been opened.
-  #
-  return unless $self->_lastError->{message}
-            and $self->isLogFileOpen
-            ;
+#  $self->_lastError->{senderTag} = $log_tag;
+#  $self->_lastError->{senderLineNo} = $l;
+#  $self->_lastError->{senderFile} = $f;
+#  $self->_lastError->{senderPackage} = $package;
 
   # Check if log_mask is set in such a way that the severity bits from the
   # message log mask are not filtered or that the forced bit in the message log
   # mask is turned on.
   #
-  my $severity = $self->get_last_severity;
-  return unless $self->log_mask & $severity      # Filter log mask on severity
-             or $self->is_last_forced             # or forced bit turned on
-             ;
+# log4perl will filter later. Only on forced we need to reset the level.
+#  my $severity = $self->_lastError->{severity};
+#  return unless $self->log_mask & $severity     # Filter log mask on severity
+#             or $self->is_last_forced           # or forced bit turned on
+#             ;
+
+  # Notify users when something is logged
+  #
+  $self->notify_subscribers( $log_tag, $error);
+
+  # Make the status object to be returned later. When it fails, returns
+  # a status object itself and must be returned immediately.
+  # Any error logged in set_status comes here again -> deep recursion
+  #
+  my $status = AppState::Ext::Status->new;
+  $status->set_status( error     => $error
+                     , message   => $message
+                     , line      => $l
+                     , file      => $f
+                     , package   => $package
+                     );
+  $self->_lastError($status);
 
   # Create the message for the log
   #
   my( $dateTxt, $timeTxt, $msgTxt) =
-     $self->_create_message($call_level + 1);
+     $self->_create_message( $log_tag, $call_level + 1);
 
+  my $severity = $self->_lastError->get_severity;
   if( $self->_logFileHandle )
   {
     say {$self->_logFileHandle} $self->_show_start($dateTxt) if $dateTxt;
@@ -462,13 +500,17 @@ sub write_log
     say STDERR Text::Wrap::wrap( '', ' ' x 12, $msgTxt);
     print STDERR map {' ' x 4 . $_ . "\n"} $self->_get_stack($call_level + 1);
   }
+
+  # Return status object
+  #
+  return $status;
 }
 
 #-------------------------------------------------------------------------------
 #
 sub _create_message
 {
-  my( $self, $call_level) = @_;
+  my( $self, $log_tag, $call_level) = @_;
 
   # Keep values between calls
   #
@@ -499,10 +541,10 @@ sub _create_message
   $severitySymbol = uc($severitySymbol) unless $self->log_mask & $severity;
 
   my $msgTxt = sprintf "%3.3s %4.4d %2.2s %s"
-             , $self->_lastError->{senderTag}
+             , $log_tag
              , $self->get_sender_line_no
              , $severitySymbol
-             , $self->_lastError->{message}
+             , $self->_lastError->get_message
              ;
 
   if( $previousMsg eq $msgTxt )
@@ -564,11 +606,32 @@ sub _show_start
 {
   my( $self, $dateTxt) = @_;
 
+  my $dline = '-' x length $dateTxt;
   my $line = '-' x 80;
-  return "\n$line\n$dateTxt"
-       . "  iI - Info, wW - Warning, eE - Error (Uppercase is forced)\n"
-       . "            sS - Success, fF - Fail (Uppercase is forced)\n"
-       . "            - - Unknown severity or state";
+  return <<EOLEGEND;
+$line
+Format is as follows;
+[date][time][msec] tag line_number severity_code wrapped_message
+
+Date and time are shown on a separate line when it repeates
+Milliseconds are shown when date and time are not changing between logs
+
+Tag is a 3 letter code representing the logging module
+
+Severity code is a 2 letter code.
+First is i, w, e, t, d and f for info, warning, error, trace, debug or fatal resp.
+Second is s and f for success or failure resp.
+Uppercase letters mean that the log was forced while loglevel would prevent it.
+$line
+
+$dateTxt
+$dline
+EOLEGEND
+
+#  return "\n$line\n$dateTxt"
+#       . "  iI - Info, wW - Warning, eE - Error (Uppercase is forced)\n"
+#       . "            sS - Success, fF - Fail (Uppercase is forced)\n"
+#       . "            - - Unknown severity or state";
 }
 
 #-------------------------------------------------------------------------------
@@ -588,21 +651,6 @@ sub _get_stack
 
   return ("Stack;", @stack);
 }
-
-#-------------------------------------------------------------------------------
-# Info from last message stored in write_log()
-#
-sub is_last_success     { return $_[0]->_lastError->{success}; }
-sub is_last_fail        { return $_[0]->_lastError->{fail}; }
-sub is_last_forced      { return $_[0]->_lastError->{forced}; }
-sub get_last_message    { return $_[0]->_lastError->{message}; }
-sub get_last_error      { return $_[0]->_lastError->{error}; }
-sub get_last_severity   { return $_[0]->_lastError->{severity}; }
-sub get_last_eventcode  { return $_[0]->_lastError->{eventCode}; }
-sub get_sender_tag      { return $_[0]->_lastError->{senderTag}; }
-sub get_sender_line_no  { return $_[0]->_lastError->{senderLineNo}; }
-sub get_sender_file     { return $_[0]->_lastError->{senderFile}; }
-sub get_sender_package  { return $_[0]->_lastError->{senderPackage}; }
 
 #-------------------------------------------------------------------------------
 # Add a 3 letter tag and couple it to the callers package name. Will be used

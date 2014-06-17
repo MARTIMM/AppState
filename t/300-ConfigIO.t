@@ -57,13 +57,13 @@ is( $self->getControl('port'), 99299, 'Check a control item');
 #
 my $filename = "t/ConfigIO/WorkX/testConfigFile.yml";
 $self->_configFile($filename);
-$log->clearLastError;
+$log->clear_last_error;
 my $docs = $self->load;
 is( $log->get_last_error, $self->C_CIO_CFGNOTREAD, 'Load error, path is wrong');
 
 # Change and try again
 #
-$log->clearLastError;
+$log->clear_last_error;
 $filename = "t/ConfigIO/Work/testConfigFile.yml";
 $self->_configFile($filename);
 unlink $filename;
@@ -79,14 +79,14 @@ $docs->[0] = 'abc';
 #
 $filename = "t/ConfigIO/WorkX/testConfigFile.yml";
 $self->_configFile($filename);
-$log->clearLastError;
+$log->clear_last_error;
 $self->save($docs);
 
 is( $log->get_last_error, $self->C_CIO_CFGNOTWRITTEN, 'Save error, path is wrong');
 
 # Change and try again
 #
-$log->clearLastError;
+$log->clear_last_error;
 $filename = "t/ConfigIO/Work/testConfigFile.yml";
 $self->_configFile($filename);
 
