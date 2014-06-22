@@ -16,16 +16,21 @@ sub BUILD
   # Create a constant. Cannot be done after first instanciation but is tested.
   #
   $self->set_code_count(hex('7b'));
-  $self->const( 'N', qw( M_SUCCESS M_INFO));
+  $self->const( 'N',  'M_INFO', 'Message for constant N');
   is( ref $self->can('N'), 'CODE', 'Constant N available');
+
+  # Create another constant.
+  #
+  $self->set_code_count(hex('8b'));
+  $self->const( 'M', 'M_INFO', 'Message for constant M');
+  is( ref $self->can('M'), 'CODE', 'Constant M available');
 
   $self->meta->make_immutable;
 
   # Create another constant, should not be possible.
   #
-  $self->set_code_count(hex('8b'));
-  $self->const( 'M', qw( M_SUCCESS M_INFO));
-  is( ref $self->can('M'), '', 'Constant M not available');
+  $self->const( 'O', 'M_INFO');
+  is( ref $self->can('O'), '', 'Constant O not available');
 
   $self->log_init('005');
 }
@@ -40,29 +45,33 @@ isa_ok( $self, 'main');
 # Init
 #
 my $as = AppState->instance;
-$as->initialize( config_dir => 't/Constants');
+$as->initialize( config_dir => 't/Constants'
+               , use_work_dir => 0
+               , use_temp_dir => 0
+               );
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
 $log->show_on_error(0);
+$log->show_on_fatal(0);
+$log->die_on_fatal(0);
 #$log->show_on_warning(1);
 $log->do_append_log(0);
 
 $log->start_logging;
 
 $log->do_flush_log(1);
-$log->log_mask($as->M_SEVERITY);
+$log->log_mask($as->M_TRACE);
 
-is( $log->getLogTag(ref $self), '005', 'Check log tag');
-$log->write_log( "Message 1", 1|$log->M_INFO);
-$self->wlog( "Message 2", 1|$log->M_INFO);
+is( $log->get_log_tag(ref $self), '005', 'Check log tag');
 
 #-------------------------------------------------------------------------------
 subtest 'Constants test and set constant' =>
 sub
 {
-  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
-  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+  ok( $self->M_SUCCESS == 0x01000000, 'Check constant success = 0x01000000');
+  ok( $self->N == $self->M_INFO | hex('7b'), 'Check number constant value N');
+  is( $self->N, 'Message for constant N', 'Check text constant value N');
 
   eval('$self->N(11);');
 
@@ -79,8 +88,9 @@ sub
   $self = undef;
   $self = main->new;
 
-  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
-  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+  ok( $self->M_FAIL == 0x02000000, 'Check constant fail = 0x02000000');
+  ok( $self->N == ($self->M_INFO | hex('7b')), 'Check new constant value N');
+  is( $self->N, 'Message for constant N', 'Check text constant value N');
 };
 
 #-------------------------------------------------------------------------------
@@ -90,8 +100,9 @@ sub
   $self = undef;
   $self = main->new;
 
-  is( $self->M_SUCCESS, 0x01000000, 'Check constant success = 0x01000000');
-  is( $self->N, 0x1100007b, 'Check new constant value N = 0x1100007b');
+  ok( $self->M_SUCCESS == 0x01000000, 'Check constant success = 0x01000000');
+  ok( $self->M == ($self->M_INFO | hex('8b')), 'Check new constant value M');
+  is( $self->M, 'Message for constant M', 'Check text constant value M');
 };
 
 #-------------------------------------------------------------------------------

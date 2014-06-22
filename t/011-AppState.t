@@ -98,16 +98,18 @@ $log->add_tag('011');
 $log->show_on_error(0);
 #$log->show_on_warning(1);
 $log->do_append_log(0);
-$log->log_mask($a->M_SEVERITY);
+$log->log_mask($a->M_WARNING);
 
 #-------------------------------------------------------------------------------
-my( $msgCode, $severity, $source, $modTag, $errCode) = ( '', 0, '', '', 0);
+#my( $msgCode, $severity, $source, $modTag, $errCode) = ( '', 0, '', '', 0);
+my $errCode = 0;
 $log->add_subscriber( '=AP'
                     , sub
-                      { ( $source, $modTag, $errCode) = @_;
+                      { my( $source, $modTag, $status) = @_;
 
-                        $msgCode = $errCode & $a->M_EVNTCODE;
-                        $severity = $errCode & $a->M_SEVERITY;
+#                        $msgCode = $errCode & $a->M_EVNTCODE;
+#                        $severity = $errCode & $a->M_SEVERITY;
+                        $errCode = $status->get_error;
 
 #say sprintf( "Tag: %s, Err: 0x%08x, Event: 0x%03x, Sev: 0x%01x"
 #           , $modTag, $errCode, $msgCode, $severity

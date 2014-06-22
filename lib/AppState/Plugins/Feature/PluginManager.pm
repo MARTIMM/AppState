@@ -55,26 +55,26 @@ sub BUILD
   {
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_PLG_PLGDELETED',   qw(M_SUCCESS M_INFO));
-    $self->const( 'C_PLG_PLGREMOVED',   qw(M_SUCCESS M_INFO));
-    $self->const( 'C_PLG_PLGNOTDEF',    qw(M_ERROR M_FORCED));
-    $self->const( 'C_PLG_PLGKEYNOTDEF', qw(M_ERROR M_FORCED));
-    $self->const( 'C_PLG_PLGDEFINED',   qw(M_SUCCESS M_INFO));
-    $self->const( 'C_PLG_PLGCREATED',   qw(M_SUCCESS M_INFO));
-    $self->const( 'C_PLG_PLGRETRVED',   qw(M_SUCCESS M_INFO));
-    $self->const( 'C_PLG_UNRECCREATE',  qw(M_INFO));
-    $self->const( 'C_PLG_APIFAIL',      qw(M_ERROR M_FAIL));
-    $self->const( 'C_PLG_APISTUB',      qw(M_WARNING M_FORCED));
-    $self->const( 'C_PLG_PLGCODEFAIL',  qw(M_ERROR M_FAIL));
-    $self->const( 'C_PLG_PLGEXISTS',    qw(M_ERROR M_FORCED));
-#    $self->const( 'C_PLG_',qw());
+#    $self->code_reset;
+    $self->const( 'C_PLG_PLGDELETED',   'M_INFO');
+    $self->const( 'C_PLG_PLGREMOVED',   'M_INFO');
+    $self->const( 'C_PLG_PLGNOTDEF',    'M_F_ERROR');
+    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_F_ERROR');
+    $self->const( 'C_PLG_PLGDEFINED',   'M_INFO');
+    $self->const( 'C_PLG_PLGCREATED',   'M_INFO');
+    $self->const( 'C_PLG_PLGRETRVED',   'M_INFO');
+    $self->const( 'C_PLG_UNRECCREATE',  'M_INFO');
+    $self->const( 'C_PLG_APIFAIL',      'M_ERROR');
+    $self->const( 'C_PLG_APISTUB',      'M_F_WARNING');
+    $self->const( 'C_PLG_PLGCODEFAIL',  'M_ERROR');
+    $self->const( 'C_PLG_PLGEXISTS',    'M_F_ERROR');
+#    $self->const( 'C_PLG_', '');
 
     # Object creation codes
     #
-    $self->const('C_PLG_NOCREATE');
-    $self->const('C_PLG_CREATEIF');
-    $self->const('C_PLG_CREATEALW');
+    $self->const( 'C_PLG_NOCREATE',     'M_CODE');
+    $self->const( 'C_PLG_CREATEIF',     'M_CODE');
+    $self->const( 'C_PLG_CREATEALW',    'M_CODE');
 
     __PACKAGE__->meta->make_immutable;
   }

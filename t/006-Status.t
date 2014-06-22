@@ -17,10 +17,10 @@ sub
 {
   ok( $sts->is_success, 'is successfull');
   ok( !$sts->is_fail, 'is not a failure');
-  ok( $sts->is_info, 'is info');
+  ok( !$sts->is_info, 'is not info');
   ok( !$sts->is_warning, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
-  ok( !$sts->is_trace, 'is not a trace');
+  ok( $sts->is_trace, 'is trace');
   ok( !$sts->is_debug, 'is not a debug');
   ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not a fatal');

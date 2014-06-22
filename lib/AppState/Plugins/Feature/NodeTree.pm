@@ -99,32 +99,32 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_NT_NOTNODE',               qw(M_ERROR));
-    $self->const( 'C_NT_ADDATTR',               qw(M_SUCCESS M_INFO));
-    $self->const( 'C_NT_NODEADDTOPARENT',       qw(M_SUCCESS M_INFO));
-    $self->const( 'C_NT_ADDTEXTTOPARENT',       qw(M_SUCCESS M_INFO));
-    $self->const( 'C_NT_ADDATTRTOPARENT',       qw(M_SUCCESS M_INFO));
-    $self->const( 'C_NT_FORCEDINFO',            qw(M_INFO M_FORCED));
-    $self->const( 'C_NT_PARSEERROR',            qw(M_ERROR M_FAIL));
-    $self->const( 'C_NT_MODINIT',               qw(M_SUCCESS M_INFO));
-    $self->const( 'C_NT_MODINCOMPLETE',         qw(M_WARNING M_FORCED));
-    $self->const( 'C_NT_NOUPHANDLER',           qw(M_WARNING M_FORCED));
-    $self->const( 'C_NT_NOHANDLER',             qw(M_WARNING M_FORCED));
-#    $self->const( 'C_NT_',qw(M_SUCCESS M_INFO));
+#    $self->code_reset;
+    $self->const( 'C_NT_NOTNODE',               'M_ERROR');
+    $self->const( 'C_NT_ADDATTR',               'M_INFO');
+    $self->const( 'C_NT_NODEADDTOPARENT',       'M_INFO');
+    $self->const( 'C_NT_ADDTEXTTOPARENT',       'M_INFO');
+    $self->const( 'C_NT_ADDATTRTOPARENT',       'M_INFO');
+    $self->const( 'C_NT_FORCEDINFO',            'M_F_INFO');
+    $self->const( 'C_NT_PARSEERROR',            'M_ERROR');
+    $self->const( 'C_NT_MODINIT',               'M_INFO');
+    $self->const( 'C_NT_MODINCOMPLETE',         'M_F_WARNING');
+    $self->const( 'C_NT_NOUPHANDLER',           'M_F_WARNING');
+    $self->const( 'C_NT_NOHANDLER',             'M_F_WARNING');
+#    $self->const( 'C_NT_', 'M_INFO');
 
     # Tree traversing codes
     #
-    $self->const('C_NT_DEPTHFIRST1');
-    $self->const('C_NT_DEPTHFIRST2');
-    $self->const('C_NT_BREADTHFIRST1');
-    $self->const('C_NT_BREADTHFIRST2');
+    $self->const('C_NT_DEPTHFIRST1',            'M_CODE');
+    $self->const('C_NT_DEPTHFIRST2',            'M_CODE');
+    $self->const('C_NT_BREADTHFIRST1',          'M_CODE');
+    $self->const('C_NT_BREADTHFIRST2',          'M_CODE');
 
     # Tree building codes
     #
-    $self->const('C_NT_NODEMODULE');
-    $self->const('C_NT_VALUEDMODULE');
-    $self->const('C_NT_ATTRIBUTEMODULE');
+    $self->const('C_NT_NODEMODULE',             'M_CODE');
+    $self->const('C_NT_VALUEDMODULE',           'M_CODE');
+    $self->const('C_NT_ATTRIBUTEMODULE',        'M_CODE');
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -221,7 +221,7 @@ sub _convert_to_node_tree
       # into strings, hashes and arrays.
       #
       my $key = '';
-      my $text = '';
+      my $text = undef;
       my $children = [];
       my $exAttrs = {};
 
@@ -229,7 +229,7 @@ sub _convert_to_node_tree
       {
         $key .= " $k" unless $k =~ m/^\.\w/;
         my $v = $rawDataNode->{$k};
-        $v //= '';
+#        $v //= '';
 #say "KV: $k, $v";
 
         if( defined $v )

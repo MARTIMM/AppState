@@ -63,11 +63,8 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-#    $self->const( 'C_NRT_', qw(M_SUCCESS M_INFO));
-#    $self->const( 'C_NRT_', qw(M_SUCCESS M_INFO));
-#    $self->const( 'C_NRT_', qw(M_SUCCESS M_INFO));
-#    $self->const( 'C_NRT_', qw(M_SUCCESS M_INFO));
+#    $self->code_reset;
+#    $self->const( 'C_NRT_', 'M_INFO');
 
     __PACKAGE__->meta->make_immutable;
   }

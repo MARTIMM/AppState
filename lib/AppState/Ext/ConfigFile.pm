@@ -83,30 +83,11 @@ has _storeTypeObject =>
 
 # Subtype to be used to test location against.
 #
+my $_test_location = sub {return 0;};
 subtype 'AppState::Ext::ConfigFile::Types::Location'
     => as 'Int'
-    => where { $_ == 1     # == $_[0]->C_CFF_CONFIGDIR
-           or $_ == 2     # == $_[0]->C_CFF_WORKDIR
-           or $_ == 3     # == $_[0]->C_CFF_FILEPATH
-           or $_ == 4     # == $_[0]->C_CFF_TEMPDIR
-            }
-    => message { return 'The location code is not correct'};
-
-#subtype( 'AppState::Ext::ConfigFile::Types::Location'
-#       , as 'Int'
-#       , { where => sub
-#           { my( $self, $locCode) = @_;
-#            say "Where: $self, $locCode";
-#            return 0;
-#
-#            return $locCode == $self->C_CFF_CONFIGDIR
-#                or $locCode == $self->C_CFF_WORKDIR
-#                or $locCode == $self->C_CFF_FILEPATH
-#                or $locCode == $self->C_CFF_TEMPDIR
-#          }
-#        , message => sub { return 'The location code is not correct';}
-#        }
-#    );
+    => where {$_test_location->($_);}
+    => message {'The location code is not correct'};
 
 # Location code where to find the file.
 #
@@ -235,51 +216,45 @@ sub BUILD
 
     # Error codes. These codes must also be handled by ConfigManager.
     #
-    $self->code_reset;
-    $self->const( 'C_CFF_STORETYPESET'  , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_LOCCODESET'    , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_REQFILESET'    , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_CFGFILESET'    , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_CREATEALW'     , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_CANNOTDELDOC'  , qw( M_WARNING));
-    $self->const( 'C_CFF_DOCCLONED'     , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFF_CANNOTCLODOC'  , qw( M_WARNING));
-    $self->const( 'C_CFF_STOREPLGINIT'  , qw( M_SUCCESS M_INFO));
+#    $self->code_reset;
+    $self->const( 'C_CFF_STORETYPESET', 'M_INFO');
+    $self->const( 'C_CFF_LOCCODESET',   'M_INFO');
+    $self->const( 'C_CFF_REQFILESET',   'M_INFO');
+    $self->const( 'C_CFF_CFGFILESET',   'M_INFO');
+    $self->const( 'C_CFF_CREATEALW',    'M_INFO');
+    $self->const( 'C_CFF_CANNOTDELDOC', 'M_WARNING');
+    $self->const( 'C_CFF_DOCCLONED',    'M_INFO');
+    $self->const( 'C_CFF_CANNOTCLODOC', 'M_WARNING');
+    $self->const( 'C_CFF_STOREPLGINIT', 'M_INFO');
 
     # Location values
     #
-    $self->code_reset;
-    $self->const('C_CFF_CONFIGDIR');
-    $self->const('C_CFF_WORKDIR');
-    $self->const('C_CFF_FILEPATH');
-    $self->const('C_CFF_TEMPDIR');
+#    $self->code_reset;
+    $self->const( 'C_CFF_CONFIGDIR',    'M_CODE');
+    $self->const( 'C_CFF_WORKDIR',      'M_CODE');
+    $self->const( 'C_CFF_FILEPATH',     'M_CODE');
+    $self->const( 'C_CFF_TEMPDIR',      'M_CODE');
 
     # Reset values, only used locally
     #
-    $self->code_reset;
-    $self->const('C_CFF_NORESETCFG');
-    $self->const('C_CFF_RESETCFG');
+#    $self->code_reset;
+    $self->const( 'C_CFF_NORESETCFG',   'M_CODE');
+    $self->const( 'C_CFF_RESETCFG',     'M_CODE');
 
     my $meta = $self->meta;
-if(0)
-{
-    subtype
-           ( 'AppState::Ext::ConfigFile::Types::Location'
-           , as 'Int'
-           , { where => sub
-                        { my($locCode) = @_;
-                          return $locCode == $self->C_CFF_CONFIGDIR
-                              or $locCode == $self->C_CFF_WORKDIR
-                              or $locCode == $self->C_CFF_FILEPATH
-                              or $locCode == $self->C_CFF_TEMPDIR
-                        }
-              , message => sub { return 'The location code is not correct';}
-              }
-        );
 
-    my $location_attr = $meta->get_attribute('location');
-    $location_attr->iso();
-}
+    # Overwrite the sub at _test_location. It is used for testing the subtype
+    # 'AppState::Ext::ConfigFile::Types::Location'. At that point we do not
+    # know the constant values to test against.
+    #
+    $_test_location =
+    sub
+    {
+      return $_[0] ~~ [ $self->C_CFF_CONFIGDIR, $self->C_CFF_WORKDIR
+                      , $self->C_CFF_FILEPATH, $self->C_CFF_TEMPDIR
+                      ];
+          ;
+    };
 
     __PACKAGE__->meta->make_immutable;
   }

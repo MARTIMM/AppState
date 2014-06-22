@@ -80,17 +80,17 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_NDM_NODENOTROOT',  qw(M_ERROR M_FAIL));
-    $self->const( 'C_NDM_NODENOTNODE',  qw(M_ERROR M_FAIL));
-    $self->const( 'C_NDM_NODENOTNTA',   qw(M_ERROR M_FAIL));
-#    $self->const( 'C_NDM_', qw());
-#    $self->const( 'C_NDM_', qw());
+#    $self->code_reset;
+    $self->const( 'C_NDM_NODENOTROOT',  'M_ERROR');
+    $self->const( 'C_NDM_NODENOTNODE',  'M_ERROR');
+    $self->const( 'C_NDM_NODENOTNTA',   'M_ERROR');
+#    $self->const( 'C_NDM_', '');
+
 
 #    $self->code_reset;
-    $self->const('C_NDM_CMP_NAME');
-    $self->const('C_NDM_CMP_ATTR');
-    $self->const('C_NDM_CMP_DATA');
+    $self->const( 'C_NDM_CMP_NAME', 'M_CODE');
+    $self->const( 'C_NDM_CMP_ATTR', 'M_CODE');
+    $self->const( 'C_NDM_CMP_DATA', 'M_CODE');
 
     __PACKAGE__->meta->make_immutable;
   }

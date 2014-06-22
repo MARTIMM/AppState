@@ -5,7 +5,7 @@ use version; our $VERSION = version->parse('v0.2.6');
 use 5.010001;
 
 use namespace::autoclean;
-
+require Scalar::Util;
 use Moose;
 
 #-------------------------------------------------------------------------------
@@ -47,6 +47,7 @@ has M_RESERVED  => ( default => 0x000FFC00, %_c_Attr); # Reserved
 has M_SUCCESS   => ( default => 0x01000000, %_c_Attr);
 has M_FAIL      => ( default => 0x02000000, %_c_Attr);
 has M_FORCED    => ( default => 0x04000000, %_c_Attr);  # Force logging
+has M_CODE      => ( default => 0x08000000, %_c_Attr);  # Used to define codes
 
 has M_INFO      => ( default => 0x11000000, %_c_Attr);  # is success
 has M_WARNING   => ( default => 0x20000000, %_c_Attr);  # no success/fail
@@ -83,8 +84,8 @@ has C_MSG_NOWAIT        => ( default => 1, %_c_Attr);
 #-------------------------------------------------------------------------------
 # Error codes for Constants module
 #
-has C_CONST0    => ( default => 1 | 0x40000000 | 0x02000000, %_c_Attr);
-has C_MODIMMUT  => ( default => 2 | 0x40000000 | 0x02000000, %_c_Attr);
+my $_v = Scalar::Util::dualvar( 1 | 0x06400000, 'Module is immutable');
+has C_MODIMMUT  => ( default => $_v, %_c_Attr); # M_F_FATAL
 
 #-------------------------------------------------------------------------------
 # Do not make a BUILD subroutine because of init sequence and has no further
@@ -113,43 +114,49 @@ sub const       ## no critic (RequireArgUnpacking)
 
   # Get the rest from the stack
   #
-  my( $mutatable, $name, @modifiers) = @_[$stackPtr..$#_];
-  my $const_code = $mutatable->get_code_count;
-  $mutatable->_code_increment;
+  my( $self, $name, $modifier, $message) = @_[$stackPtr..$#_];
+  my $const_code = $self->get_code_count;
+  $self->_code_increment;
 
-#say "MM: ", ref $mutatable
-#  , ", ", ($mutatable->meta->is_mutable ? 'RW' : 'RO')
+#say "MM: ", ref $self
+#  , ", ", ($self->meta->is_mutable ? 'RW' : 'RO')
 #  , ", $name = $const_code";
 
   # Check if caller class is mutable, if so add the constant.
   #
-  my $meta = $mutatable->meta;
+  my $meta = $self->meta;
   if( $meta->is_mutable )
   {
-    $const_code //= 0;
+    # 1) Make sure that message is defined
+    # 2) Make sure that users error code is not larger than allowed.
+    # 3) Make sure that the users severity code is not larger than allowed.
+    #
+    $message //= '';
+    $const_code = $self->M_EVNTCODE & ($const_code // 1);
+    $const_code |= $self->M_SEVERITY & $self->$modifier;
 
-    $const_code |= $mutatable->M_SEVERITY & $mutatable->$_
-      for (@modifiers);
-
+    # Make the code for the user. It boils down to moose's
+    # has $name => ( default => ..., ...);
+    # The result is not overwritable, not settable when initializing the
+    # callers module and is lazy so only comes into view when using. The
+    # value of the variable is a dualvar holding a constant and its message.
+    #
     if( $const_code )
     {
-      $meta->add_attribute( $name, default => $const_code
-                          , init_arg => undef, lazy => 1
-                          , is => 'ro'
-                          );
-    }
-
-    else
-    {
-      $mutatable->wlog( "Default is 0, no constant created"
-                      , $mutatable->C_CONST0
-                      );
+      $meta->add_attribute
+             ( $name
+             , default => Scalar::Util::dualvar( $const_code, $message)
+             , init_arg => undef
+             , lazy => 1
+             , is => 'ro'
+             , isa => 'Any'
+             );
     }
   }
 
   else
   {
-    $mutatable->wlog( "Module is immutable", $mutatable->C_MODIMMUT);
+    $self->wlog( "Module is immutable", $self->C_MODIMMUT);
   }
 
   return;
@@ -175,9 +182,9 @@ sub log_init
 
   if( ref $log eq 'AppState::Plugins::Feature::Log' )
   {
-#say "Set direct: $package = ", ($log->hasLogTag($package) ? 'Y' : 'N');
+#say "Set direct: $package = ", ($log->has_log_tag($package) ? 'Y' : 'N');
     $log->add_tag( $prefix, $call_level + 1)
-      unless $log->hasLogTag($package);
+      unless $log->has_log_tag($package);
   }
 
   else
@@ -202,14 +209,33 @@ sub log_init
 #
 sub wlog
 {
-  my( $self, $messages, $msg_log_mask, $call_level) = @_;
+  my( $self, $messages, $error_code, $call_level) = @_;
 
   $call_level //= 0;
 
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-  $log->write_log( $messages, $msg_log_mask, $call_level + 1)
+  $log->write_log( $messages, $error_code, $call_level + 1)
+    if ref $log eq 'AppState::Plugins::Feature::Log';
+
+  return;
+}
+
+#-------------------------------------------------------------------------------
+# Only write to the log file when there is already a log object created by
+# the user. There may be only 2 arguments.
+#
+sub log
+{
+  my( $self, $error_code, $msg_values, $call_level) = @_;
+
+  $call_level //= 0;
+
+  my $app = AppState->instance;
+  my $log = $app->check_plugin('Log');
+
+  $log->log( $error_code, $msg_values, $call_level + 1)
     if ref $log eq 'AppState::Plugins::Feature::Log';
 
   return;

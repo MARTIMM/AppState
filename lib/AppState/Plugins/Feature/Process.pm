@@ -96,28 +96,26 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_PRC_PIDFILEREMOVED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_CLEANCOMM',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_PIDFILECREATED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_PARENTSTOPPED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_SERVERSTARTED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_SIGNALSENT',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_SERVERINTERRUPT',qw(M_WARNING M_FORCED));
-    $self->const( 'C_PRC_PIDOK',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_PIDNOTFOUND',qw(M_WARNING M_FORCED));
-    $self->const( 'C_PRC_RECEIVE',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_PRC_NOPLUGIN',qw(M_ERROR M_FAIL));
-    $self->const( 'C_PRC_RECEIVE',qw(M_INFO M_SUCCESS));
-#    $self->const( '',qw());
-#    $self->const( '',qw());
-#    $self->const( '',qw());
+#    $self->code_reset;
+    $self->const( 'C_PRC_PIDFILEREMOVED',       'M_INFO');
+    $self->const( 'C_PRC_CLEANCOMM',            'M_INFO');
+    $self->const( 'C_PRC_PIDFILECREATED',       'M_INFO');
+    $self->const( 'C_PRC_PARENTSTOPPED',        'M_INFO');
+    $self->const( 'C_PRC_SERVERSTARTED',        'M_INFO');
+    $self->const( 'C_PRC_SIGNALSENT',           'M_INFO');
+    $self->const( 'C_PRC_SERVERINTERRUPT',      'M_F_WARNING');
+    $self->const( 'C_PRC_PIDOK',                'M_INFO');
+    $self->const( 'C_PRC_PIDNOTFOUND',          'M_F_WARNING');
+    $self->const( 'C_PRC_RECEIVE',              'M_INFO');
+    $self->const( 'C_PRC_NOPLUGIN',             'M_ERROR');
+    $self->const( 'C_PRC_RECEIVE',              'M_INFO');
+#    $self->const( '', '');
 
     # Server status codes
     #
-    $self->const('C_PRC_SRVROK');
-    $self->const('C_PRC_SRVRNOK');
-    $self->const('C_PRC_SRVRASTRTD');
+    $self->const( 'C_PRC_SRVROK',               'M_CODE');
+    $self->const( 'C_PRC_SRVRNOK',              'M_CODE');
+    $self->const( 'C_PRC_SRVRASTRTD',           'M_CODE');
 
     __PACKAGE__->meta->make_immutable;
   }

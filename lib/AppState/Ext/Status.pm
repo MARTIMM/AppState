@@ -2,7 +2,7 @@ package AppState::Ext::Status;
 
 use Modern::Perl;
  
-use version; our $VERSION = version->parse('v0.0.1');
+use version; our $VERSION = version->parse('v0.0.2');
 use 5.010001;
 
 use namespace::autoclean;
@@ -11,7 +11,9 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 #-------------------------------------------------------------------------------
-# Error codes for Constants module
+# Error codes for Constants module. The error code can be a dualvar which if so
+# will be a code together with its error message. In that case message wouldn't
+# have to be used.
 #
 has status =>
     ( is                => 'ro'
@@ -27,8 +29,8 @@ has status =>
         $error = $self->C_STS_INITOK unless $self->meta->is_mutable;
 
         return
-        { error         => $error
-        , message       => ''
+        { message       => ''
+        , error         => $error
         , line          => 0
         , file          => ''
         , package       => ''
@@ -47,8 +49,8 @@ sub BUILD
     # Error codes
     #
 #    $self->code_reset;
-    $self->const( 'C_STS_INITOK',       qw(M_INFO));
-    $self->const( 'C_STS_UNKNKEY',      qw(M_WARN));
+    $self->const( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
+    $self->const( 'C_STS_UNKNKEY', 'M_WARN');
 
     # Codes
     #
@@ -267,6 +269,7 @@ sub get_package
 }
 
 #-------------------------------------------------------------------------------
+# Set the status fields in one go. 
 #
 sub set_status
 {
@@ -287,6 +290,10 @@ sub set_status
     }
   }
 
+  # If everything was set right then set the data. If a field call_level was
+  # used then ignore the line, file and package info and get that info from
+  # set_caller_info().
+  #
   if( !$sts )
   {
     my $cl = delete $status_fields{call_level};

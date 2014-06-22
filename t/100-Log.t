@@ -5,7 +5,32 @@ use Test::Most;
 use Test::File::Content;
 use File::Path();
 
+use Moose;
+extends 'AppState::Ext::Constants';
+
 use AppState;
+
+#-------------------------------------------------------------------------------
+sub BUILD
+{
+  my($self) = @_;
+
+  # Create a constant. Cannot be done after first instanciation but is tested.
+  #
+  $self->set_code_count(hex('7b'));
+  $self->const( qw( C_ERR_1 M_ERROR), 'This has gone bad ....');
+  $self->const( qw( C_ERR_2 M_ERROR), 'This has gone bad because %d != %d');
+  $self->const( qw( C_LOOP M_TRACE), 'Message %02d %02d. Test the time reset in the log');
+
+  $self->meta->make_immutable;
+}
+
+#-------------------------------------------------------------------------------
+# Make object
+#
+my $self = main->new;
+isa_ok( $self, 'main');
+
 
 #-------------------------------------------------------------------------------
 # Init
@@ -23,6 +48,11 @@ $a->check_directories;
 #
 my $tagName = '100';
 my $log = $a->get_app_object('Log');
+$log->die_on_fatal(0);
+$log->show_on_warning(0);
+$log->show_on_error(0);
+$log->show_on_fatal(0);
+
 subtest 'check object' =>
 sub
 {
@@ -73,22 +103,66 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-# Check notify system. Must work even logfile is closed.
+# Check notify system.
 #
-subtest 'subscriber tests' =>
+subtest 'subscriber tests 1' =>
 sub
 {
-  my( $source, $tag, $error) = ( 0, '', 0, 0);
+  my( $source, $tag, $error, $status) = ( 0, '', 0, 0, 0);
   my $subscriber = sub
                    {
-                     ( $source, $tag, $error) = @_;
-                     pass sprintf( "Tag: %s, Err: 0x%08x", $tag, $error);
+                     ( $source, $tag, $status) = @_;
+                     pass sprintf( "Tag: %s, Err: 0x%08x"
+                                 , $tag
+                                 , $status->get_error
+                                 );
                    };
   $log->add_subscriber( $tagName, $subscriber);
-  $log->write_log( ['This has gone ok ....'], 0x3aB | $a->M_INFO);
+
+  $log->write_log( ['This has gone ok ....'], 0x3aB | $a->M_WARNING);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  is( $error, 0x3aB | $a->M_INFO, 'Check error of the event');
+  ok( $status->is_warning, 'is warning');
+  ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
+
+  $self->wlog( ['This has gone ok ....'], 0x3aB | $a->M_WARNING);
+  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( $tag, $tagName, 'Check tag name of the event');
+  ok( $status->is_warning, 'is warning');
+  ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
+
+  $log->delete_subscriber( $tagName, $subscriber);
+};
+
+#-------------------------------------------------------------------------------
+# Check notify system.
+#
+subtest 'subscriber tests 2' =>
+sub
+{
+  my( $source, $tag, $error, $status) = ( 0, '', 0, 0, 0);
+  my $subscriber = sub
+                   {
+                     ( $source, $tag, $status) = @_;
+                     pass sprintf( "Tag: %s, Err: 0x%08x"
+                                 , $tag
+                                 , $status->get_error
+                                 );
+                   };
+  $log->add_subscriber( $tagName, $subscriber);
+
+  $log->log($self->C_ERR_1);
+  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( $tag, $tagName, 'Check tag name of the event');
+  ok( $status->is_error, 'is error');
+  ok( $status->get_eventcode == 0x7b, 'Check eventcode');
+
+  $self->log( $self->C_ERR_2, [ 10, 11]);
+  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( $tag, $tagName, 'Check tag name of the event');
+  ok( $status->is_error, 'is error');
+  ok( $status->get_eventcode == 0x7c, 'Check eventcode');
+
   $log->delete_subscriber( $tagName, $subscriber);
 };
 
@@ -106,7 +180,7 @@ sub
   $log->do_flush_log(1);
   $log->log_mask($log->M_SEVERITY);
 
-  is( $log->isLogFileOpen, '', 'Logfile should still be closed');
+#  is( $log->isLogFileOpen, '', 'Logfile should still be closed');
 
   # Change filename
   #
@@ -117,7 +191,7 @@ sub
   # Start logging
   #
   $log->start_logging;
-  is( $log->isLogFileOpen, 1, 'Logfile should be open');
+#  is( $log->isLogFileOpen, 1, 'Logfile should be open');
   is( -w 't/Log/log.t.log', 1, 'Test creation of logfile, is writable');
   is( -r 't/Log/log.t.log', 1, 'Logfile is readable');
 };
@@ -130,7 +204,7 @@ sub
 {
   $log->add_tag(101);
   $log->add_tag('=AP');
-  my $tags = join( ' ', sort map {$log->getLogTag($_);} $log->getLogTags);
+  my $tags = join( ' ', sort map {$log->get_log_tag($_);} $log->get_log_tags);
   is( $tags, "$tagName =AP =LG =PM", 'Tags from 3 modules and main');
 };
 
@@ -160,7 +234,7 @@ sub
 #-------------------------------------------------------------------------------
 # Info and warnings are not sent to the log unless forced.
 #
-subtest 'log file tests' =>
+subtest 'log file tests 1' =>
 sub
 {
   $log->log_mask($log->M_ERROR);
@@ -172,7 +246,7 @@ sub
   $log->write_log( 'LOG 002 This has gone wrong but not so bad ....'
              , 0xAA | $a->M_WARNING | $a->M_SUCCESS
              );
-  content_unlike( qr/.*\.log$/, qr/$tagName \d+ IS LOG 002/, $config_dir);
+  content_unlike( qr/.*\.log$/, qr/$tagName \d+ ws LOG 002/, $config_dir);
 
   $log->write_log( 'LOG 003 I really must say this ....', 0x18 | $a->M_F_INFO);
   content_like( qr/.*\.log$/, qr/$tagName \d+ IS LOG 003/, $config_dir);
@@ -180,21 +254,44 @@ sub
   $log->write_log( 'LOG 004 Wrong and should change ....'
              , 0x18 | $a->M_F_WARNING | $a->M_FAIL
              );
-  content_like( qr/.*\.log$/, qr/$tagName \d+ ef LOG 004/, $config_dir);
+  content_unlike( qr/.*\.log$/, qr/$tagName \d+ ef LOG 004/, $config_dir);
+# Done later forced...
 
   $log->write_log( 'LOG 005 This has gone wrong badly ....', 0xFF | $a->M_ERROR);
   content_like( qr/.*\.log$/, qr/$tagName \d+ ef LOG 005/, $config_dir);
+
+  $log->write_log( 'LOG 006 Failed from begin to end', 0xFF | $a->M_FATAL);
+  content_like( qr/.*\.log$/, qr/$tagName \d+ ff LOG 006/, $config_dir);
 };
+
+#-------------------------------------------------------------------------------
+# Info and warnings are not sent to the log unless forced.
+#
+#subtest 'log file tests 2' =>
+#sub
+#{
+#  $log->write_log( "Message 1", 1|$log->M_INFO);
+#};
+
+$log->log_mask($self->M_TRACE);
+foreach my $count1 (1..3)
+{
+  foreach my $count2 (1..10)
+  {
+    $self->log( $self->C_LOOP, [ $count1, $count2]);
+  }
+  sleep(1);
+}
 
 #-------------------------------------------------------------------------------
 # Stop logging
 #
-subtest 'finish logging' =>
-sub
-{
+#subtest 'finish logging' =>
+#sub
+#{
   $log->stop_logging;
-  is( $log->isLogFileOpen, '', 'Logfile should be closed again');
-};
+#  is( $log->isLogFileOpen, '', 'Logfile should be closed again');
+#};
 
 #-------------------------------------------------------------------------------
 $a->cleanup;

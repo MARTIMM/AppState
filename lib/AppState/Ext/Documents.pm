@@ -57,16 +57,16 @@ sub BUILD
 
     # Error codes. These codes must also be handled by ConfigManager.
     #
-    $self->code_reset;
-    $self->const( 'C_DOC_SELOUTRANGE'   , qw( M_ERROR M_FAIL));
-    $self->const( 'C_DOC_DOCRETRIEVED'  , qw( M_SUCCESS M_INFO));
-    $self->const( 'C_DOC_NODOCUMENTS'   , qw( M_F_WARNING));
-    $self->const( 'C_DOC_NOHASHREF'     , qw( M_ERROR M_FAIL));
-    $self->const( 'C_DOC_EVALERROR'     , qw( M_ERROR M_FAIL));
-    $self->const( 'C_DOC_NOVALUE'       , qw( M_WARNING));
-    $self->const( 'C_DOC_NOKEY'         , qw( M_ERROR M_FAIL));
-#    $self->const( 'C_DOC_'             , qw());
-#    $self->const( 'C_DOC_'             , qw());
+#    $self->code_reset;
+    $self->const( 'C_DOC_SELOUTRANGE'   , 'M_ERROR');
+    $self->const( 'C_DOC_DOCRETRIEVED'  , 'M_INFO');
+    $self->const( 'C_DOC_NODOCUMENTS'   , 'M_F_WARNING');
+    $self->const( 'C_DOC_NOHASHREF'     , 'M_ERROR');
+    $self->const( 'C_DOC_EVALERROR'     , 'M_ERROR');
+    $self->const( 'C_DOC_NOVALUE'       , 'M_WARNING');
+    $self->const( 'C_DOC_NOKEY'         , 'M_ERROR');
+
+#    $self->const( 'C_DOC_'             , '');
 
     __PACKAGE__->meta->make_immutable;
   }

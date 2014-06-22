@@ -78,8 +78,8 @@ sub BUILD
   {
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_NDE_ATTROVERWR'  , qw(M_WARNING));
+#    $self->code_reset;
+    $self->const( 'C_NDE_ATTROVERWR', 'M_WARNING');
 
     $self->meta->make_immutable;
   }

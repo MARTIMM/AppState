@@ -67,12 +67,12 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_CMD_OPTPROCESSED',         qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CMD_OPTCHANGED',           qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CMD_OPTPROCFAIL',          qw( M_WARNING M_FORCED));
-    $self->const( 'C_CMD_NODESCRIPTION',        qw( M_WARNING M_FORCED));
-#    $self->const( 'C_CMD_', qw( M_SUCCESS M_INFO));
+#    $self->code_reset;
+    $self->const( 'C_CMD_OPTPROCESSED', 'M_INFO');
+    $self->const( 'C_CMD_OPTCHANGED',   'M_INFO');
+    $self->const( 'C_CMD_OPTPROCFAIL',  'M_F_WARNING');
+    $self->const( 'C_CMD_NODESCRIPTION','M_F_WARNING');
+#    $self->const( 'C_CMD_', 'M_INFO');
 
     __PACKAGE__->meta->make_immutable;
   }

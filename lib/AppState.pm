@@ -116,9 +116,9 @@ sub BUILD
   if( $self->meta->is_mutable )
   {
     $self->code_reset;
-    $self->const( 'C_APP_UNLINKTEMP'    , qw( M_SUCCESS M_F_INFO));
-    $self->const( 'C_APP_APPDESTROY'    , qw( M_SUCCESS M_F_INFO));
-    $self->const( 'C_APP_ILLAPPINIT'    , qw( M_FAIL M_F_ERROR));
+    $self->const( 'C_APP_UNLINKTEMP', 'M_F_WARNING');
+    $self->const( 'C_APP_APPDESTROY', 'M_F_WARNING');
+    $self->const( 'C_APP_ILLAPPINIT', 'M_F_ERROR');
 
     __PACKAGE__->meta->make_immutable;
   }

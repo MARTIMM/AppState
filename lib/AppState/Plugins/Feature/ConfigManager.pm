@@ -99,17 +99,17 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_CFM_CFGSELECTED'   ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGNOTEXIST'   ,qw( M_WARNING M_FORCED));
-    $self->const( 'C_CFM_CFGADDED'      ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGEXISTS'     ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGMODIFIED'   ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGDROPPED'    ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGSELDEFAULT' ,qw( M_SUCCESS M_INFO));
-    $self->const( 'C_CFM_CFGFLREMOVED'  ,qw( M_SUCCESS M_INFO));
-#    $self->const( 'C_CFM_', qw( M_SUCCESS M_INFO));
-#    $self->const( 'C_CFM_', qw( M_SUCCESS M_INFO));
+#    $self->code_reset;
+    $self->const( 'C_CFM_CFGSELECTED'   , 'M_INFO');
+    $self->const( 'C_CFM_CFGNOTEXIST'   , 'M_F_WARNING');
+    $self->const( 'C_CFM_CFGADDED'      , 'M_INFO');
+    $self->const( 'C_CFM_CFGEXISTS'     , 'M_INFO');
+    $self->const( 'C_CFM_CFGMODIFIED'   , 'M_INFO');
+    $self->const( 'C_CFM_CFGDROPPED'    , 'M_INFO');
+    $self->const( 'C_CFM_CFGSELDEFAULT' , 'M_INFO');
+    $self->const( 'C_CFM_CFGFLREMOVED'  , 'M_INFO');
+#    $self->const( 'C_CFM_', 'M_INFO');
+#    $self->const( 'C_CFM_', 'M_INFO');
 
     __PACKAGE__->meta->make_immutable;
   }

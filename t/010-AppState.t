@@ -21,11 +21,6 @@ BEGIN { use_ok('AppState') };
 #
 my $a = AppState->instance;
 
-is( $a->C_APP_UNLINKTEMP
-  , 0x91000001
-  , 'Check constant C_APP_UNLINKTEMP = 0x91000001'
-  );
-
 #my $m = $a->get_app_object('Constants');
 $a->check_directories;
 
@@ -106,13 +101,15 @@ $log->add_tag($tagName);
 #-------------------------------------------------------------------------------
 # Destroy apps
 #
-my( $msgCode, $severity, $source, $modTag, $errCode) = ( '', 0, '', '', 0);
+#my( $msgCode, $severity, $source, $modTag, $errCode) = ( '', 0, '', '', 0);
+my( $errCode) = ( 0);
 $log->add_subscriber( '=AP'
                     , sub
-                      { ( $source, $modTag, $errCode) = @_;
+                      { my( $source, $modTag, $status) = @_;
 
-                        $msgCode = $errCode & $a->M_EVNTCODE;
-                        $severity = $errCode & $a->M_SEVERITY;
+#                        $msgCode = $status->get_eventcode;
+#                        $severity = $status->get_severity;
+                        $errCode = $status->get_error;
 
 #say sprintf( "Tag: %s, Err: 0x%08x, Event: 0x%03x, Sev: 0x%01x"
 #           , $modTag, $errCode, $msgCode, $severity

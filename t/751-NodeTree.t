@@ -101,33 +101,55 @@ $nt->node_handler_up($nh);
 $nt->node_handler_down($nh);
 $nt->node_handler_end($nh);
 
-$elm = [qw( D R n0_0 n0_1 n0_2 T n0_2 n2_0 T T n2_1 n0_2 n1_0 n1_1 T n1_2)];
-$phase = 'Df 1';
-$fail = 0;
-$nt->traverse( $dom, $nt->C_NT_DEPTHFIRST1);
-$fail ? fail('Depth first method 1 failed')
-      : pass('Depth first method 1 passed');
+subtest 'depth first method 1' =>
+sub
+{
+  $elm = [qw( D R n0_0 T n0_1 n0_2 T T n0_2 n2_0 T T n2_1 T n0_2 n1_0 T n1_1 T T n1_2 T)];
+  $phase = 'Df 1';
+  $fail = 0;
+  $nt->traverse( $dom, $nt->C_NT_DEPTHFIRST1);
+  $fail ? fail('Depth first method 1 failed')
+        : pass('Depth first method 1 passed');
+};
 
-$elm = [qw( D R n0_0 n0_1 n0_2 T n0_2 n2_0 T n2_0 T n2_1 n0_2 n0_1 n0_2 n1_0 n1_1 T n1_2 n0_2 R D)];
-$phase = 'Df 2';
-$fail = 0;
-$nt->traverse( $dom, $nt->C_NT_DEPTHFIRST2);
-$fail ? fail('Depth first method 2 failed')
-      : pass('Depth first method 2 passed');
+subtest 'depth first method 2' =>
+sub
+{
+  $elm = [qw( D R n0_0 T n0_0 n0_1 n0_2 T n0_2 T n0_2
+              n2_0 T n2_0
+              T n2_1 T n2_1 n0_2 n0_1 
+              n0_2 n1_0 T n1_0 n1_1 T n1_1 T n1_2 T
+              n1_2 n0_2 R D)];
+  $phase = 'Df 2';
+  $fail = 0;
+  $nt->traverse( $dom, $nt->C_NT_DEPTHFIRST2);
+  $fail ? fail('Depth first method 2 failed')
+        : pass('Depth first method 2 passed');
+};
 
-$elm = [qw( D R n0_0 n0_1 n0_2 n0_2 T n0_2 n2_0 T n2_1 T n1_0 n1_1 T n1_2)];
-$phase = 'Bf 1';
-$fail = 0;
-$nt->traverse( $dom, $nt->C_NT_BREADTHFIRST1);
-$fail ? fail('Breadth first method 1 failed')
-      : pass('Breadth first method 1 passed');
+subtest 'breath first method 1' =>
+sub
+{
+  $elm = [qw( D R n0_0 n0_1 n0_2 T n0_2 T n0_2 T n2_0 T
+              n2_1 T T n1_0 n1_1 T n1_2 T T T)];
+  $phase = 'Bf 1';
+  $fail = 0;
+  $nt->traverse( $dom, $nt->C_NT_BREADTHFIRST1);
+  $fail ? fail('Breadth first method 1 failed')
+        : pass('Breadth first method 1 passed');
+};
 
-$elm = [qw( D R n0_0 n0_1 n0_2 n0_2 T n0_2 n1_0 n1_1 T n1_2 n2_0 T n2_1 T)];
-$phase = 'Bf 2';
-$fail = 0;
-$nt->traverse( $dom, $nt->C_NT_BREADTHFIRST2);
-$fail ? fail('Breadth first method 2 failed')
-      : pass('Breadth first method 2 passed');
+subtest 'breath first method 2' =>
+sub
+{
+  $elm = [qw( D R n0_0 n0_1 n0_2 T n0_2 T n0_2 n1_0 n1_1 T
+              n1_2 T n2_0 T n2_1 T T T T T)];
+  $phase = 'Bf 2';
+  $fail = 0;
+  $nt->traverse( $dom, $nt->C_NT_BREADTHFIRST2);
+  $fail ? fail('Breadth first method 2 failed')
+        : pass('Breadth first method 2 passed');
+};
 
 #-------------------------------------------------------------------------------
 # Drop the instance and remove directories

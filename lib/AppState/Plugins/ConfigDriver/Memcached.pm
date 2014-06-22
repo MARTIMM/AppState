@@ -97,6 +97,7 @@ sub writeTextToConfigFile
   $memd->enable_compress(1);
   my $sts = $memd->set( $self->sha1ConfigFile
                       , (Encode::encode( 'UTF-8', $self->_configText)
+                        )
                       );
   $self->wlog( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
 }

@@ -139,9 +139,7 @@ is( $child->name, 'R', "Below is a root node");
 #-------------------------------------------------------------------------------
 # Search for nodes using xpath like syntax
 #
-#$dom->xpathDebug(1);
 &doXPathAndTest( $dom, '/', 'D');
-#$dom->xpathDebug(0);
 
 &doXPathAndTest( $dom, '/R', 'R');
 &doXPathAndTest( $dom, '/R/n0_1', 'n0_1');
@@ -216,7 +214,7 @@ sub doXPathAndTest
 
   my $nodeStr = ref $node eq 'AppState::NodeTree::NodeDOM' ? 'D' : $node->name;
   my $message = sprintf "%-40.40s: %-30.30s", "$path", "$nodeList (From $nodeStr)";
-  $node->xpath( $path, $nodeList);
+  $node->xpath($path);
   my $str = join( ' '
                 , map { ref $_ eq 'AppState::NodeTree::NodeDOM'
                         ? 'D'
