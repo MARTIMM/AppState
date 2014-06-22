@@ -81,11 +81,12 @@ has _storeTypeObject =>
                            ]
     );
 
-# Subtype to be used to test location against.
+# Subtype to be used to test location against. Type must be 'Any' because
+# dualvars are used.
 #
 my $_test_location = sub {return 0;};
 subtype 'AppState::Ext::ConfigFile::Types::Location'
-    => as 'Int'
+    => as 'Any'
     => where {$_test_location->($_);}
     => message {'The location code is not correct'};
 
@@ -116,8 +117,8 @@ has location =>
 has requestFile =>
     ( is                => 'rw'
     , isa               => 'Str'
-#    , lazy             => 1
-#    , default          =>
+    , lazy             => 1
+    , default          => sub { return 'config.xyz'; }
 #      sub
 #      {
 #       my($self) = @_;
@@ -230,10 +231,10 @@ sub BUILD
     # Location values
     #
 #    $self->code_reset;
-    $self->const( 'C_CFF_CONFIGDIR',    'M_CODE');
-    $self->const( 'C_CFF_WORKDIR',      'M_CODE');
-    $self->const( 'C_CFF_FILEPATH',     'M_CODE');
-    $self->const( 'C_CFF_TEMPDIR',      'M_CODE');
+    $self->const( 'C_CFF_CONFIGDIR',    'M_CODE', 'Config dir location');
+    $self->const( 'C_CFF_WORKDIR',      'M_CODE', 'Workdir location');
+    $self->const( 'C_CFF_FILEPATH',     'M_CODE', 'Users filepath location');
+    $self->const( 'C_CFF_TEMPDIR',      'M_CODE', 'Tempdir location');
 
     # Reset values, only used locally
     #
@@ -250,10 +251,12 @@ sub BUILD
     $_test_location =
     sub
     {
+      # Codes are dualvars. doesn't matter if code is compared as string
+      # or as number.
+      #
       return $_[0] ~~ [ $self->C_CFF_CONFIGDIR, $self->C_CFF_WORKDIR
                       , $self->C_CFF_FILEPATH, $self->C_CFF_TEMPDIR
                       ];
-          ;
     };
 
     __PACKAGE__->meta->make_immutable;

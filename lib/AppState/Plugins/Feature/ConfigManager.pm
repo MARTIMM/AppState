@@ -126,7 +126,9 @@ sub initialize
   if( $self->nbrConfigObjects == 0 )
   {
     my $cff = AppState::Ext::ConfigFile->new;
+say STDERR "Loc: " . $cff->C_CFF_CONFIGDIR;
     $cff->store_type('Yaml');
+
     $cff->location($cff->C_CFF_CONFIGDIR);
     $cff->requestFile('config');
 

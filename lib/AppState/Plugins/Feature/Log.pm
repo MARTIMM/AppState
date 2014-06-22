@@ -684,28 +684,22 @@ sub write_log
   my( $self, $messages, $error, $call_level) = @_;
 
   my $message = '';
+  $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
 
   # Check if error has both an event code and a severity.
   #
-  if( ($error & $self->M_EVNTCODE) and ($error & $self->M_SEVERITY) )
+  if( !(($error & $self->M_EVNTCODE) and ($error & $self->M_SEVERITY)) )
   {
-    # Store error and message
-    #
-    $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
+    $error = $self->C_LOG_NOERRCODE;
+    $message = '' . $self->C_LOG_NOERRCODE;    
   }  
 
   # Rewrite message if there is no message.
   #
   elsif( !defined $message or !$message )
   {
-#    $message = "No message given to write_log";
+    $message = '' . $self->C_LOG_NOMSG;
     $error = $self->C_LOG_NOMSG;
-  }
-
-  else
-  {
-    $error = $self->C_LOG_NOERRCODE;
-#    $message = 'Error does not have an error code and/or severity code';
   }
 
 

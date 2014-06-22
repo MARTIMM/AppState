@@ -70,7 +70,7 @@ subtest 'Constants test and set constant' =>
 sub
 {
   ok( $self->M_SUCCESS == 0x01000000, 'Check constant success = 0x01000000');
-  ok( $self->N == $self->M_INFO | hex('7b'), 'Check number constant value N');
+  ok( $self->N == ($self->M_INFO | hex('7b')), 'Check number constant value N');
   is( $self->N, 'Message for constant N', 'Check text constant value N');
 
   eval('$self->N(11);');

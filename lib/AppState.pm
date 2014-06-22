@@ -335,7 +335,7 @@ sub get_app_object
   my $object = $plg->get_object
   ( { name => $name
     , create => $plg->C_PLG_CREATEIF
-    , initOptions => {appState => $self}
+#    , initOptions => {appState => $self}
     , modifyOptions => {%options}
     }
   );
