@@ -192,7 +192,7 @@ sub search_nodes
 
   $self->shared_data->_clear_found_nodes;
 
-  if( $type eq $self->C_NDM_CMP_NAME )
+  if( $type == $self->C_NDM_CMP_NAME )
   {
     foreach my $string (@$strings)
     {
@@ -200,7 +200,7 @@ sub search_nodes
     }
   }
 
-  elsif( $type eq $self->C_NDM_CMP_ATTR )
+  elsif( $type == $self->C_NDM_CMP_ATTR )
   {
     $searchCfg->{attrname} //= '';
     foreach my $string (@$strings)
@@ -209,7 +209,7 @@ sub search_nodes
     }
   }
 
-  elsif( $type eq $self->C_NDM_CMP_DATA )
+  elsif( $type == $self->C_NDM_CMP_DATA )
   {
     $searchCfg->{dataname} //= '';
     foreach my $string (@$strings)
