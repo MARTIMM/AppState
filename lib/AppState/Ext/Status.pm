@@ -100,6 +100,11 @@ sub is_info
 {
   my( $self) = @_;
 
+#say sprintf( "E=%08x & %08x & %08x"
+#           , $self->status->{error}
+#           , $self->M_NOTMSFF
+#           , $self->M_INFO
+#           );
   my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_INFO);
   return $ie;
 }
@@ -304,6 +309,16 @@ sub set_status
   # Return 0 on success
   #
   return $sts;
+}
+
+#-------------------------------------------------------------------------------
+# Compare the level numbers in the error and return -1, 0 or 1 for less, equal
+# or greater than resp.
+#
+sub cmp_levels
+{
+  my( $self, $error1, $error2) = @_;
+  return ($error1 & $self->M_LEVELMSK) <=> ($error2 & $self->M_LEVELMSK);
 }
 
 #-------------------------------------------------------------------------------

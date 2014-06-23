@@ -29,18 +29,18 @@ $log->log_mask($as->M_SEVERITY);
 $log->add_tag('350');
 
 
-$log->write_log( "Create tempfile $config_dir/Temp/abc.tmp", $log->M_INFO);
+$log->write_log( "Create tempfile $config_dir/Temp/abc.tmp", 1|$log->M_INFO);
 system( "touch $config_dir/Temp/abc.tmp");
 
 #-------------------------------------------------------------------------------
 BEGIN { use_ok('AppState::Ext::ConfigFile') };
 
-$log->write_log( "Test new()", $log->M_INFO);
+$log->write_log( "Test new()", 1|$log->M_INFO);
 my $cf = AppState::Ext::ConfigFile->new;
 is( ref $cf, 'AppState::Ext::ConfigFile', "Test new()");
 
 done_testing();
-File::Path::remove_tree( $config_dir, {verbose => 1});
+File::Path::remove_tree( $config_dir);
 exit(0);
 __END__
 

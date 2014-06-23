@@ -36,37 +36,38 @@ has M_ALL       => ( default => 0xFFFFFFFF, %_c_Attr);
 has M_NONE      => ( default => 0x00000000, %_c_Attr);
 
 has M_EVNTCODE  => ( default => 0x000003FF, %_c_Attr); # 1023 codes/module (no 0)
-has M_SEVERITY  => ( default => 0xFFF00000, %_c_Attr); # 12 bits for severity
-has M_MSGMASK   => ( default => 0xFFF003FF, %_c_Attr); # Severity and code
-has M_NOTMSFF   => ( default => 0xF0F00000, %_c_Attr); # Not Success failed etc
+has M_SEVERITY  => ( default => 0xFFFE0000, %_c_Attr); # 12 bits for severity
+has M_MSGMASK   => ( default => 0xFFFE03FF, %_c_Attr); # Severity and code
+has M_NOTMSFF   => ( default => 0x0FF00000, %_c_Attr); # Not Success failed etc
+has M_ISMSFF    => ( default => 0xF0000000, %_c_Attr); # Is Success failed etc
+has M_LEVELMSK  => ( default => 0x000E0000, %_c_Attr); # Level count field
 
-has M_RESERVED  => ( default => 0x000FFC00, %_c_Attr); # Reserved
+has M_RESERVED  => ( default => 0x0001FC00, %_c_Attr); # Reserved
 
 # Severity codes are bitmasks
 #
-has M_SUCCESS   => ( default => 0x01000000, %_c_Attr);
-has M_FAIL      => ( default => 0x02000000, %_c_Attr);
-has M_FORCED    => ( default => 0x04000000, %_c_Attr);  # Force logging
-has M_CODE      => ( default => 0x08000000, %_c_Attr);  # Used to define codes
+has M_SUCCESS   => ( default => 0x10000000, %_c_Attr);
+has M_FAIL      => ( default => 0x20000000, %_c_Attr);
+has M_FORCED    => ( default => 0x40000000, %_c_Attr);  # Force logging
+has M_CODE      => ( default => 0x80000000, %_c_Attr);  # Used to define codes
 
-has M_INFO      => ( default => 0x11000000, %_c_Attr);  # is success
-has M_WARNING   => ( default => 0x20000000, %_c_Attr);  # no success/fail
-has M_ERROR     => ( default => 0x42000000, %_c_Attr);  # is fail
-
-has M_TRACE     => ( default => 0x01100000, %_c_Attr);  # Log4perl codes
-has M_DEBUG     => ( default => 0x01200000, %_c_Attr);
-has M_WARN      => ( default => 0x20000000, %_c_Attr);  # same as M_WARNING
-has M_FATAL     => ( default => 0x02400000, %_c_Attr);
+has M_TRACE     => ( default => 0x10120000, %_c_Attr);  # is success
+has M_DEBUG     => ( default => 0x10240000, %_c_Attr);
+has M_INFO      => ( default => 0x11060000, %_c_Attr);
+has M_WARN      => ( default => 0x02080000, %_c_Attr);  # no success/fail
+has M_WARNING   => ( default => 0x02080000, %_c_Attr);  # same as M_WARNING
+has M_ERROR     => ( default => 0x240A0000, %_c_Attr);  # is fail
+has M_FATAL     => ( default => 0x204C0000, %_c_Attr);
 
 # Following are combinations with FORCED -> log always when log is opened
 #
-has M_F_INFO    => ( default => 0x15000000, %_c_Attr);
-has M_F_WARNING => ( default => 0x24000000, %_c_Attr);
-has M_F_ERROR   => ( default => 0x46000000, %_c_Attr);
-has M_F_TRACE   => ( default => 0x05100000, %_c_Attr);
-has M_F_DEBUG   => ( default => 0x05200000, %_c_Attr);
-has M_F_WARN    => ( default => 0x24000000, %_c_Attr);
-has M_F_FATAL   => ( default => 0x06400000, %_c_Attr);
+has M_F_TRACE   => ( default => 0x50120000, %_c_Attr); # With forced logging
+has M_F_DEBUG   => ( default => 0x50240000, %_c_Attr);
+has M_F_INFO    => ( default => 0x51060000, %_c_Attr);
+has M_F_WARN    => ( default => 0x42080000, %_c_Attr);
+has M_F_WARNING => ( default => 0x42080000, %_c_Attr);
+has M_F_ERROR   => ( default => 0x640A0000, %_c_Attr);
+has M_F_FATAL   => ( default => 0x604C0000, %_c_Attr);
 
 #-------------------------------------------------------------------------------
 # POSIX IPC constants
@@ -132,7 +133,7 @@ sub const       ## no critic (RequireArgUnpacking)
     # 3) Make sure that the users severity code is not larger than allowed.
     #
     $message //= '';
-    $const_code = $self->M_EVNTCODE & ($const_code // 1);
+    $const_code = $self->M_EVNTCODE & $const_code;
     $const_code |= $self->M_SEVERITY & $self->$modifier;
 
     # Make the code for the user. It boils down to moose's

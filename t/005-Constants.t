@@ -69,7 +69,7 @@ is( $log->get_log_tag(ref $self), '005', 'Check log tag');
 subtest 'Constants test and set constant' =>
 sub
 {
-  ok( $self->M_SUCCESS == 0x01000000, 'Check constant success = 0x01000000');
+  ok( $self->M_SUCCESS == 0x10000000, 'Check constant success = 0x10000000');
   ok( $self->N == ($self->M_INFO | hex('7b')), 'Check number constant value N');
   is( $self->N, 'Message for constant N', 'Check text constant value N');
 
@@ -82,25 +82,25 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-subtest 'Drop main and test again' =>
+subtest 'Drop main and test again 1' =>
 sub
 {
   $self = undef;
   $self = main->new;
 
-  ok( $self->M_FAIL == 0x02000000, 'Check constant fail = 0x02000000');
+  ok( $self->M_FAIL == 0x20000000, 'Check constant fail = 0x20000000');
   ok( $self->N == ($self->M_INFO | hex('7b')), 'Check new constant value N');
   is( $self->N, 'Message for constant N', 'Check text constant value N');
 };
 
 #-------------------------------------------------------------------------------
-subtest 'Drop main and test again' =>
+subtest 'Drop main and test again 2' =>
 sub
 {
   $self = undef;
   $self = main->new;
 
-  ok( $self->M_SUCCESS == 0x01000000, 'Check constant success = 0x01000000');
+  ok( $self->M_SUCCESS == 0x10000000, 'Check constant success = 0x10000000');
   ok( $self->M == ($self->M_INFO | hex('8b')), 'Check new constant value M');
   is( $self->M, 'Message for constant M', 'Check text constant value M');
 };
@@ -109,36 +109,39 @@ sub
 subtest 'Test all codes' =>
 sub
 {
-  $self->t_code( M_ALL          => 0xFFFFFFFF);
-  $self->t_code( M_NONE         => 0x00000000);
+  $self->t_all_code( M_ALL          => 0xFFFFFFFF);
+  $self->t_all_code( M_NONE         => 0x00000000);
 
-  $self->t_code( M_EVNTCODE     => 0x000003FF);
-  $self->t_code( M_SEVERITY     => 0xFFF00000);
-  $self->t_code( M_MSGMASK      => 0xFFF003FF);
-  $self->t_code( M_NOTMSFF      => 0xF0F00000);
+  $self->t_all_code( M_EVNTCODE     => 0x000003FF);
+  $self->t_all_code( M_SEVERITY     => 0xFFFE0000);
+  $self->t_all_code( M_MSGMASK      => 0xFFFE03FF);
+  $self->t_all_code( M_NOTMSFF      => 0x0FF00000);
+  $self->t_all_code( M_ISMSFF       => 0xF0000000);
+  $self->t_all_code( M_LEVELMSK     => 0x000E0000);
 
-  $self->t_code( M_RESERVED     => 0x000FFC00);
+  $self->t_all_code( M_RESERVED     => 0x0001FC00);
 
-  $self->t_code( M_SUCCESS      => 0x01000000);
-  $self->t_code( M_FAIL         => 0x02000000);
-  $self->t_code( M_FORCED       => 0x04000000);
+  $self->t_code( M_SUCCESS      => 0x10000000);
+  $self->t_code( M_FAIL         => 0x20000000);
+  $self->t_code( M_FORCED       => 0x40000000);
+  $self->t_code( M_CODE         => 0x80000000);
 
   $self->t_code( M_INFO         => 0x11000000);
-  $self->t_code( M_WARNING      => 0x20000000);
-  $self->t_code( M_ERROR        => 0x42000000);
+  $self->t_code( M_WARNING      => 0x02000000);
+  $self->t_code( M_ERROR        => 0x24000000);
 
-  $self->t_code( M_TRACE        => 0x01100000);
-  $self->t_code( M_DEBUG        => 0x01200000);
-  $self->t_code( M_WARN         => 0x20000000);
-  $self->t_code( M_FATAL        => 0x02400000);
+  $self->t_code( M_TRACE        => 0x10100000);
+  $self->t_code( M_DEBUG        => 0x10200000);
+  $self->t_code( M_WARN         => 0x02000000);
+  $self->t_code( M_FATAL        => 0x20400000);
 
-  $self->t_code( M_F_INFO       => 0x15000000);
-  $self->t_code( M_F_WARNING    => 0x24000000);
-  $self->t_code( M_F_ERROR      => 0x46000000);
-  $self->t_code( M_F_TRACE      => 0x05100000);
-  $self->t_code( M_F_DEBUG      => 0x05200000);
-  $self->t_code( M_F_WARN       => 0x24000000);
-  $self->t_code( M_F_FATAL      => 0x06400000);
+  $self->t_code( M_F_INFO       => 0x51000000);
+  $self->t_code( M_F_WARNING    => 0x42000000);
+  $self->t_code( M_F_ERROR      => 0x64000000);
+  $self->t_code( M_F_TRACE      => 0x50100000);
+  $self->t_code( M_F_DEBUG      => 0x50200000);
+  $self->t_code( M_F_WARN       => 0x42000000);
+  $self->t_code( M_F_FATAL      => 0x60400000);
 
 #  $self->t_code(  => 0x);
 };
@@ -156,7 +159,32 @@ sub t_code
 {
   my( $self, $name, $code) = @_;
 
-  is( $self->$name, $code, sprintf( "Code %s = 0x%08X", $name, $code));
+#say sprintf( "$name=%08x == %08x & %08x"
+#           , $self->$name
+#           , $code
+#           , ~$self->M_LEVELMSK
+#           );
+  is( $self->$name & ~$self->M_LEVELMSK
+    , $code
+    , sprintf( "Code %s = 0x%08X", $name, $code)
+    );
+}
+
+################################################################################
+#
+sub t_all_code
+{
+  my( $self, $name, $code) = @_;
+
+#say sprintf( "$name=%08x == %08x & %08x"
+#           , $self->$name
+#           , $code
+#           , ~$self->M_LEVELMSK
+#           );
+  is( $self->$name
+    , $code
+    , sprintf( "Code %s = 0x%08X", $name, $code)
+    );
 }
 
 

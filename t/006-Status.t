@@ -56,6 +56,7 @@ sub
 # -- Keep this line below for the test!!
 # line 51000 "test-file.pm"
   $sts->set_caller_info;
+# line 60 "006-Status.t"
   like( $sts->get_caller_info('file'), qr/test-file.pm/, 'File test-file.pm');
   ok( $sts->get_caller_info('line') == 51000, 'Line 51000');
   is( $sts->get_caller_info('package'), 'main', 'Package main');
@@ -85,6 +86,7 @@ sub
                   , file => __FILE__
                   , package => __PACKAGE__
                   );
+# line 90 "006-Status.t"
 
   # Test them
   #
@@ -141,6 +143,16 @@ sub
   like( $sts->get_file('file'), qr/test-file3.pm/, 'File test-file3.pm');
   ok( $sts->get_line('line') == 53000, 'Line 53000');
   is( $sts->get_package('package'), 'main', 'Package main');
+};
+
+#-------------------------------------------------------------------------------
+#
+subtest 'compare levels' =>
+sub
+{
+  ok( $sts->cmp_levels( $sts->M_FATAL, $sts->M_TRACE) == 1, 'Fatal higher than trace');
+  ok( $sts->cmp_levels( $sts->M_TRACE, $sts->M_DEBUG) == -1, 'Trace lower than debug');
+  ok( $sts->cmp_levels( $sts->M_WARN, $sts->M_WARNING) == 0, 'Warn equal to warning');
 };
 
 #-------------------------------------------------------------------------------

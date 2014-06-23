@@ -58,8 +58,8 @@ sub BUILD
 #    $self->code_reset;
     $self->const( 'C_PLG_PLGDELETED',   'M_INFO');
     $self->const( 'C_PLG_PLGREMOVED',   'M_INFO');
-    $self->const( 'C_PLG_PLGNOTDEF',    'M_F_ERROR');
-    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_F_ERROR');
+    $self->const( 'C_PLG_PLGNOTDEF',    'M_FATAL');
+    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL');
     $self->const( 'C_PLG_PLGDEFINED',   'M_INFO');
     $self->const( 'C_PLG_PLGCREATED',   'M_INFO');
     $self->const( 'C_PLG_PLGRETRVED',   'M_INFO');
