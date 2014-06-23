@@ -21,12 +21,12 @@ my $log = $app->get_app_object('Log');
 
 $log->show_on_error(0);
 #$log->show_on_warning(1);
-$log->do_append_log(0);
+#$log->do_append_log(0);
+#$log->do_flush_log(1);
 
 $log->start_logging;
 
-$log->do_flush_log(1);
-$log->log_mask($app->M_SEVERITY);
+$log->log_mask($app->M_ERROR);
 
 $log->add_tag('390');
 

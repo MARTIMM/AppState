@@ -22,13 +22,13 @@ $app->check_directories;
 my $log = $app->get_app_object('Log');
 #$log->die_on_error(1);
 #$log->show_on_error(0);
-$log->show_on_warning(1);
-$log->do_append_log(0);
+#$log->show_on_warning(1);
+#$log->do_append_log(0);
+#$log->do_flush_log(1);
 
 $log->start_logging;
 
-$log->do_flush_log(1);
-$log->log_mask($log->M_SEVERITY);
+$log->log_mask($log->M_ERROR);
 
 my $nt = $app->get_app_object('NodeTree');
 

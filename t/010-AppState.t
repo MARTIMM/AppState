@@ -86,14 +86,13 @@ ok( -d "$cdir/Temp", "Test temp directory $cdir/Temp");
 my $log = $a->get_app_object('Log');
 #$log->die_on_error(1);
 #$log->show_on_error(0);
-$log->show_on_warning(1);
-$log->do_append_log(0);
+#$log->show_on_warning(1);
+#$log->do_append_log(0);
+#$log->do_flush_log(1);
 
 $log->start_logging;
 
-$log->do_flush_log(1);
-#$log->log_mask($m->M_ALL);
-#$log->log_mask($m->M_WARNING | $m->M_ERROR);
+$log->log_mask($log->M_ERROR);
 
 my $tagName = '010';
 $log->add_tag($tagName);

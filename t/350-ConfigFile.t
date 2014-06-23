@@ -18,13 +18,13 @@ $as->check_directories;
 
 my $log = $as->get_app_object('Log');
 #$log->show_on_error(0);
-$log->show_on_warning(1);
-$log->do_append_log(0);
+#$log->show_on_warning(0);
+#$log->do_append_log(0);
+#$log->do_flush_log(1);
 
 $log->start_logging;
 
-$log->do_flush_log(1);
-$log->log_mask($as->M_SEVERITY);
+$log->log_mask($as->M_ERROR);
 
 $log->add_tag('350');
 
@@ -40,6 +40,8 @@ my $cf = AppState::Ext::ConfigFile->new;
 is( ref $cf, 'AppState::Ext::ConfigFile', "Test new()");
 
 done_testing();
+$as->cleanup;
+
 File::Path::remove_tree( $config_dir);
 exit(0);
 __END__

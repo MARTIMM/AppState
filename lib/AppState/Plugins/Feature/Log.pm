@@ -7,6 +7,7 @@ use version; our $VERSION = '' . version->parse("v0.3.11");
 use namespace::autoclean;
 
 use Moose;
+use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
 extends qw( Class::Publisher AppState::Ext::Constants);
 
@@ -83,9 +84,18 @@ has _log_tag =>
 # shown. Write gets a message mask with the message and is tested with this
 # mask before logging.
 #
+
+# Subtype to be used to test store_type against.
+#
+my $_test_levels = sub {return 0;};
+subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
+    => as 'Int'
+    => where { $_test_levels->($_); }
+    => message { "The store type '$_' is not correct" };
+
 has log_mask =>
     ( is                => 'rw'
-    , isa               => 'Int'
+    , isa               => 'AppState::Plugins::Feature::Log::Types::Log_level'
     , lazy              => 1
     , default           => sub { return $_[0]->M_ERROR; }
     , trigger           =>
@@ -219,14 +229,18 @@ has do_flush_log =>
     , trigger           =>
       sub
       {
-return;
         my( $self, $n, $o) = @_;
 
         $o //= 0;
         return if $n == $o;
-        return unless $self->isLogFileOpen;
+#        return unless $self->isLogFileOpen;
 
-        if( $n )
+        if( $self->logger_initialized )
+        {
+          $self->log($self->C_LOG_LOGALRINIT);
+        }
+        
+        elsif( $n )
         {
 #          $self->_logFileHandle->autoflush(1);
           $self->log($self->C_LOG_AUTOFLUSHON);
@@ -315,12 +329,29 @@ sub BUILD
     $self->const( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
     $self->const( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
     $self->const( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
+    $self->const( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
+
+    # Conveniance debug and trace message with one fillable field
+    #
+    $self->const( 'C_LOG_TRACE',        'M_TRACE', 'Trace line: %s');
+    $self->const( 'C_LOG_DEBUG',        'M_DEBUG', 'Debug line: %s');
 #    $self->const( 'C_LOG_', '');
 
     # Constant codes
     #
 #    $self->const( 'C_LOG_'     , '');
     $self->const( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
+
+    # Define the test routine to test level settings
+    #
+    $_test_levels = sub
+    {
+      return $_[0] ~~ [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
+                      , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
+                      , $self->M_FATAL  
+                      ];
+    };
+
     __PACKAGE__->meta->make_immutable;
   }
 }
@@ -683,6 +714,12 @@ sub write_log
 {
   my( $self, $messages, $error, $call_level) = @_;
 
+  my $status = AppState::Ext::Status->new;
+#say sprintf( "Logmask: %08x", $self->log_mask);
+
+  return unless $status->cmp_levels( $error, $self->log_mask) >= 0
+         or $status->is_forced($error);
+
   my $message = '';
   $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
 
@@ -718,7 +755,6 @@ sub write_log
   # a status object itself and must be returned immediately.
   # Any error logged in set_status comes here again -> deep recursion
   #
-  my $status = AppState::Ext::Status->new;
   $status->set_status( error     => $error
                      , message   => $message
                      , line      => $l

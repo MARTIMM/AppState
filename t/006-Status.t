@@ -146,6 +146,23 @@ sub
 };
 
 #-------------------------------------------------------------------------------
+subtest 'Test status with arguments' =>
+sub
+{
+  $sts->clear_error;
+  ok( !$sts->is_success($sts->C_STS_UNKNKEY), 'is not successfull');
+  ok( !$sts->is_fail($sts->C_STS_UNKNKEY), 'is not a failure');
+  ok( !$sts->is_info($sts->C_STS_UNKNKEY), 'is not info');
+  ok( $sts->is_warning($sts->C_STS_UNKNKEY), 'is a warning');
+  ok( !$sts->is_error($sts->C_STS_UNKNKEY), 'is not an error');
+  ok( $sts->is_trace($sts->C_STS_INITOK), 'is trace');
+  ok( !$sts->is_debug($sts->C_STS_INITOK), 'is not debug');
+  ok( !$sts->is_warn($sts->C_STS_INITOK), 'is not a warn');
+  ok( !$sts->is_fatal($sts->C_STS_INITOK), 'is not fatal');
+  ok( !$sts->is_forced($sts->C_STS_INITOK), 'is not forced');
+};
+
+#-------------------------------------------------------------------------------
 #
 subtest 'compare levels' =>
 sub

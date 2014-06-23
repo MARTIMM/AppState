@@ -68,9 +68,10 @@ sub BUILD
 #
 sub is_success
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
   
-  my $is = !!($self->status->{error} & $self->M_SUCCESS);
+  $error //= $self->status->{error};
+  my $is = !!( $error & $self->M_SUCCESS);
   return $is;
 }
 
@@ -78,9 +79,10 @@ sub is_success
 #
 sub is_fail
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_FAIL);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_FAIL);
   return $ie;
 }
 
@@ -88,9 +90,10 @@ sub is_fail
 #
 sub is_forced
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_FORCED);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_FORCED);
   return $ie;
 }
 
@@ -98,14 +101,15 @@ sub is_forced
 #
 sub is_info
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
 #say sprintf( "E=%08x & %08x & %08x"
 #           , $self->status->{error}
 #           , $self->M_NOTMSFF
 #           , $self->M_INFO
 #           );
-  my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_INFO);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_NOTMSFF & $self->M_INFO);
   return $ie;
 }
 
@@ -113,9 +117,10 @@ sub is_info
 #
 sub is_warning
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $iw = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARNING);
+  $error //= $self->status->{error};
+  my $iw = !!($error & $self->M_NOTMSFF & $self->M_WARNING);
   return $iw;
 }
 
@@ -123,9 +128,10 @@ sub is_warning
 #
 sub is_error
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_ERROR);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_NOTMSFF & $self->M_ERROR);
   return $ie;
 }
 
@@ -133,9 +139,10 @@ sub is_error
 #
 sub is_trace
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_TRACE);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_NOTMSFF & $self->M_TRACE);
   return $ie;
 }
 
@@ -143,9 +150,10 @@ sub is_trace
 #
 sub is_debug
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_DEBUG);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_NOTMSFF & $self->M_DEBUG);
   return $ie;
 }
 
@@ -154,9 +162,10 @@ sub is_debug
 #
 sub is_warn
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $iw = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARN);
+  $error //= $self->status->{error};
+  my $iw = !!($error & $self->M_NOTMSFF & $self->M_WARN);
   return $iw;
 }
 
@@ -164,9 +173,10 @@ sub is_warn
 #
 sub is_fatal
 {
-  my( $self) = @_;
+  my( $self, $error) = @_;
 
-  my $ie = !!($self->status->{error} & $self->M_NOTMSFF & $self->M_FATAL);
+  $error //= $self->status->{error};
+  my $ie = !!($error & $self->M_NOTMSFF & $self->M_FATAL);
   return $ie;
 }
 
@@ -318,6 +328,8 @@ sub set_status
 sub cmp_levels
 {
   my( $self, $error1, $error2) = @_;
+#say sprintf( "cmp: %08x <=> %08x === %d", $error1, $error2
+#  , ($error1 & $self->M_LEVELMSK) <=> ($error2 & $self->M_LEVELMSK));
   return ($error1 & $self->M_LEVELMSK) <=> ($error2 & $self->M_LEVELMSK);
 }
 

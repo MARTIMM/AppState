@@ -66,6 +66,7 @@ sub
 subtest 'last error tests' =>
 sub
 {
+  $log->log_mask($self->M_TRACE);
   my $lineNbr = __LINE__; $log->write_log( 'This has gone ok ....'
                                          , 0xAB | $a->M_INFO
                                          );
@@ -178,7 +179,7 @@ sub
   $log->do_append_log(0);
 
   $log->do_flush_log(1);
-  $log->log_mask($log->M_SEVERITY);
+  $log->log_mask($log->M_INFO);
 
 #  is( $log->isLogFileOpen, '', 'Logfile should still be closed');
 
@@ -214,7 +215,7 @@ sub
 subtest 'error checks' =>
 sub
 {
-  $log->log_mask($log->M_ERROR);
+  $log->log_mask($log->M_INFO);
 
   my $lineNbr = __LINE__; $log->write_log( 'This has gone ok ....'
                                          , 0x4B | $a->M_INFO
@@ -274,7 +275,7 @@ sub
 #};
 
 $log->log_mask($self->M_TRACE);
-foreach my $count1 (1..3)
+foreach my $count1 (1..2)
 {
   foreach my $count2 (1..10)
   {

@@ -80,16 +80,16 @@ sub BUILD
     # Error codes. Make handle in ConfigFile.
     #
 #    $self->code_reset;
-    $self->const( 'C_CIO_CFGREAD'       , 'M_INFO');
-    $self->const( 'C_CIO_CFGWRITTEN'    , 'M_INFO');
-    $self->const( 'C_CIO_CFGNOTREAD'    , 'M_WARNING');
-    $self->const( 'C_CIO_CFGNOTWRITTEN' , 'M_WARNING');
-    $self->const( 'C_CIO_IOERROR'       , 'M_ERROR');
-    $self->const( 'C_CIO_SERIALIZEFAIL' , 'M_ERROR');
-    $self->const( 'C_CIO_DESERIALFAIL'  , 'M_ERROR');
-    $self->const( 'C_CIO_CLONEFAIL'     , 'M_ERROR');
-    $self->const( 'C_CIO_DATACLONED'    , 'M_INFO');
-    $self->const( 'C_CIO_NOSERVER'      , 'M_ERROR');
+    $self->const( 'C_CIO_CFGREAD',        'M_INFO');
+    $self->const( 'C_CIO_CFGWRITTEN',     'M_INFO');
+    $self->const( 'C_CIO_CFGNOTREAD',     'M_F_WARNING');
+    $self->const( 'C_CIO_CFGNOTWRITTEN',  'M_F_WARNING');
+    $self->const( 'C_CIO_IOERROR',        'M_ERROR');
+    $self->const( 'C_CIO_SERIALIZEFAIL',  'M_ERROR');
+    $self->const( 'C_CIO_DESERIALFAIL',   'M_ERROR');
+    $self->const( 'C_CIO_CLONEFAIL',      'M_ERROR');
+    $self->const( 'C_CIO_DATACLONED',     'M_INFO');
+    $self->const( 'C_CIO_NOSERVER',       'M_ERROR');
 #    $self->const( 'C_CIO_'     , '');
 
     __PACKAGE__->meta->make_immutable;

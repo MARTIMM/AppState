@@ -19,14 +19,14 @@ $as->initialize( config_dir => 't/ConfigIO');
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
-$log->show_on_error(0);
+#$log->show_on_error(0);
 #$log->show_on_warning(1);
-$log->do_append_log(0);
+#$log->do_append_log(0);
+#$log->do_flush_log(1);
 
 $log->start_logging;
 
-$log->do_flush_log(1);
-$log->log_mask($as->M_SEVERITY);
+$log->log_mask($as->M_ERROR);
 
 $log->add_tag('300');
 
@@ -59,7 +59,9 @@ my $filename = "t/ConfigIO/WorkX/testConfigFile.yml";
 $self->_configFile($filename);
 $log->clear_last_error;
 my $docs = $self->load;
-is( $log->get_last_error, $self->C_CIO_CFGNOTREAD, 'Load error, path is wrong');
+ok( $log->get_last_error == $self->C_CIO_CFGNOTREAD
+  , 'Load error, path is wrong'
+  );
 
 # Change and try again
 #
