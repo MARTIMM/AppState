@@ -61,7 +61,7 @@ $log->do_append_log(0);
 $log->start_logging;
 
 $log->do_flush_log(1);
-$log->log_mask($as->M_TRACE);
+$log->log_level($as->M_TRACE);
 
 is( $log->get_log_tag(ref $self), '005', 'Check log tag');
 

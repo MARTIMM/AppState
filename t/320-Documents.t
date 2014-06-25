@@ -21,7 +21,7 @@ $log->show_on_error(0);
 
 $log->start_logging;
 
-$log->log_mask($as->M_ERROR);
+$log->log_level($as->M_ERROR);
 
 $log->add_tag('320');
 

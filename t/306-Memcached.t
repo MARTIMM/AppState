@@ -23,7 +23,7 @@ my $log = $as->get_app_object('Log');
 
 $log->start_logging;
 
-$log->log_mask($as->M_ERROR);
+$log->log_level($as->M_ERROR);
 
 $log->add_tag('306');
 
@@ -106,7 +106,7 @@ my $log = $as->get_app_object('Log');
 
 $log->start_logging;
 
-$log->log_mask($m->M_ERROR);
+$log->log_level($m->M_ERROR);
 
 #pass('Initialized');
 

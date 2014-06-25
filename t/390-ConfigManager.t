@@ -26,7 +26,7 @@ $log->show_on_error(0);
 
 $log->start_logging;
 
-$log->log_mask($app->M_ERROR);
+$log->log_level($app->M_ERROR);
 
 $log->add_tag('390');
 

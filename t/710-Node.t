@@ -27,7 +27,7 @@ $log->show_on_fatal(0);
 
 $log->start_logging;
 
-$log->log_mask($log->M_ERROR);
+$log->log_level($log->M_ERROR);
 $app->log_init('710');
 
 #-------------------------------------------------------------------------------

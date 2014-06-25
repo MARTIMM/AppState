@@ -2,7 +2,7 @@ package AppState::Plugins::Feature::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
-use version; our $VERSION = '' . version->parse("v0.3.11");
+use version; our $VERSION = '' . version->parse("v0.4.11");
 
 use namespace::autoclean;
 
@@ -35,6 +35,38 @@ has do_append_log =>
     , handles           =>
       { append          => 'set'
       , fresh           => 'unset'
+      }
+    );
+
+has do_flush_log =>
+    ( is                => 'rw'
+    , isa               => 'Bool'
+    , default           => 0
+    , trigger           =>
+      sub
+      {
+        my( $self, $n, $o) = @_;
+
+        $o //= 0;
+        return if $n == $o;
+#        return unless $self->isLogFileOpen;
+
+        if( $self->logger_initialized )
+        {
+          $self->log($self->C_LOG_LOGALRINIT);
+        }
+        
+        elsif( $n )
+        {
+#          $self->_logFileHandle->autoflush(1);
+          $self->log($self->C_LOG_AUTOFLUSHON);
+        }
+
+        else
+        {
+#          $self->_logFileHandle->autoflush(0);
+          $self->log($self->C_LOG_AUTOFLUSHOFF);
+        }
       }
     );
 
@@ -93,7 +125,7 @@ subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
     => where { $_test_levels->($_); }
     => message { "The store type '$_' is not correct" };
 
-has log_mask =>
+has log_level =>
     ( is                => 'rw'
     , isa               => 'AppState::Plugins::Feature::Log::Types::Log_level'
     , lazy              => 1
@@ -116,7 +148,7 @@ has log_mask =>
       }
     );
 
-has _toggle_forced =>
+has _logging_is_forced =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
@@ -154,6 +186,44 @@ has _toggle_forced =>
       }
     );
 
+has _is_logging =>
+    ( is                => 'ro'
+    , isa               => 'Bool'
+    , default           => 0
+    , lazy              => 1
+    , traits            => ['Bool']
+    , handles           =>
+      { _logging_on     => 'set'
+      , _logging_off    => 'unset'
+      }
+    , trigger           =>
+      sub
+      { my( $self, $n, $o) = @_;
+
+        state $curr_level = 0;
+        $o //= 0;
+        
+        # When setting logging off, save the previous log level and turn
+        # logging off.
+        #
+        if( $n == 0 and $o )
+        {
+          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          $curr_level = $logger->level;
+          $logger->level('OFF');
+        }
+        
+        # When turning logging on, get the previously saved log level
+        # and restore it
+        #
+        elsif( $o == 0 and $n )
+        {
+          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          $logger->level($curr_level);
+        }
+      }
+    );
+
 has die_on_error =>
     ( is                => 'rw'
     , isa               => 'Bool'
@@ -184,11 +254,15 @@ has show_on_fatal =>
     , default           => 1
     );
 
-has log_is_started =>
+has write_start_message =>
     ( is                => 'ro'
     , isa               => 'Bool'
-    , default           => 0
-    , writer            => '_set_started'
+    , default           => 1
+    , traits            => ['Bool']
+    , handles           =>
+      { log_start_message       => 'set'
+      , dont_log_start_message  => 'unset'
+      }
     );
 
 has logger_initialized =>
@@ -203,8 +277,8 @@ has _loggers =>
     , isa               => 'HashRef'
     , traits            => ['Hash']
     , handles           =>
-      { set_logger     => 'set'
-      , get_logger     => 'get'
+      { set_logger      => 'set'
+      , get_logger      => 'get'
       }
     , init_arg          => undef
     , default           => sub{ return {}; }
@@ -222,42 +296,10 @@ has _logger_layouts =>
     , default           => sub{ return {}; }
     );
 
-has do_flush_log =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 0
-    , trigger           =>
-      sub
-      {
-        my( $self, $n, $o) = @_;
-
-        $o //= 0;
-        return if $n == $o;
-#        return unless $self->isLogFileOpen;
-
-        if( $self->logger_initialized )
-        {
-          $self->log($self->C_LOG_LOGALRINIT);
-        }
-        
-        elsif( $n )
-        {
-#          $self->_logFileHandle->autoflush(1);
-          $self->log($self->C_LOG_AUTOFLUSHON);
-        }
-
-        else
-        {
-#          $self->_logFileHandle->autoflush(0);
-          $self->log($self->C_LOG_AUTOFLUSHOFF);
-        }
-      }
-    );
-
-has _OriginalFileOutputSetting =>
-    ( is                => 'rw'
-    , isa               => 'Any'
-    );
+#has _OriginalFileOutputSetting =>
+#    ( is                => 'rw'
+#    , isa               => 'Any'
+#    );
 
 has _previousMsg =>
     ( is                => 'rw'
@@ -321,8 +363,8 @@ sub BUILD
     $self->const( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
     $self->const( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
     $self->const( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
-    $self->const( 'C_LOG_LOGOPENED',    'M_F_INFO', 'Log level set to \'%s\'. %s');
-    $self->const( 'C_LOG_LOGCLOSED',    'M_F_INFO', 'Logfile closed');
+    $self->const( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
+    $self->const( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
     $self->const( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
     $self->const( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
     $self->const( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
@@ -335,21 +377,25 @@ sub BUILD
     #
     $self->const( 'C_LOG_TRACE',        'M_TRACE', 'Trace line: %s');
     $self->const( 'C_LOG_DEBUG',        'M_DEBUG', 'Debug line: %s');
-#    $self->const( 'C_LOG_', '');
 
     # Constant codes
     #
-#    $self->const( 'C_LOG_'     , '');
+#    $self->const( 'C_LOG_', '', '');
     $self->const( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
 
-    # Define the test routine to test level settings
+    # Overwrite the sub at _test_levels. It is used for testing the subtype
+    # 'AppState::Plugins::Feature::Log::Types::Log_level'. At that point we do
+    # not know the constant values to test against.
     #
     $_test_levels = sub
     {
-      return $_[0] ~~ [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
-                      , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
-                      , $self->M_FATAL  
-                      ];
+      # Codes are dualvars. doesn't matter if code is compared as string
+      # or as number. But using a number might compare quicker.
+      #
+      return 0 + $_[0] ~~ [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
+                          , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
+                          , $self->M_FATAL  
+                          ];
     };
 
     __PACKAGE__->meta->make_immutable;
@@ -388,8 +434,9 @@ sub start_logging
   $self->_previousDate('');
   $self->_previousTime('');
 
-  $self->_set_started(1);
+#  $self->_set_started(1);
   $self->_make_logger_objects unless $self->logger_initialized;
+  $self->_logging_on;
 
   # Check if user has a IO handler of his own. Use that instead.
 #  if( defined $LOG )
@@ -404,8 +451,8 @@ sub start_logging
 
   # Write first entry to log file
   #
-  my $level_str = $self->_get_log_level_name($self->log_mask);
-  $self->log( $self->C_LOG_LOGOPENED
+  my $level_str = $self->_get_log_level_name($self->log_level);
+  $self->log( $self->C_LOG_LOGSTARTED
             , [ $level_str
               , ( $self->do_append_log
                   ? "Appending to old log"
@@ -421,13 +468,14 @@ sub start_logging
 sub stop_logging
 {
   my($self) = @_;
-  $self->_set_started(0);
+#  $self->_set_started(0);
+  $self->log($self->C_LOG_LOGSTOPPED);
+  $self->_logging_off;
 return;
 
 #  return unless $self->isLogFileOpen;
 
-#  $self->log($self->C_LOG_LOGCLOSED);
-
+#
 #  my $log = $self->_logFileHandle;
 #  close $log;
 
@@ -458,12 +506,12 @@ sub _make_logger_objects
 
   # A layout for the time
   #
-  $layout = Log::Log4perl::Layout::PatternLayout->new('%n%d{HH:mm:ss}%n');
+  $layout = Log::Log4perl::Layout::PatternLayout->new('%n%d{HH:mm:ss} %m%n');
   $self->_set_layout('log.time' => $layout);
 
   # And a layout for the milliseconds and message
   #
-  $layout = Log::Log4perl::Layout::PatternLayout->new('%d{SSS} %m{chomp}%n');
+  $layout = Log::Log4perl::Layout::PatternLayout->new('     %d{SSS} %m{chomp}%n');
   $self->_set_layout('log.millisec' => $layout);
 
 
@@ -473,11 +521,13 @@ sub _make_logger_objects
   $self->set_logger('' . $self->C_LOG_LOGGERNAME => $logger);
 
   my %init_appender =
-     ( name         => '' . $self->C_LOG_LOGGERNAME
-     , filename     => $log_file
+     ( name             => '' . $self->C_LOG_LOGGERNAME
+     , filename         => $log_file
+     , syswrite         => 1
+     , mode             => $self->do_append_log ? 'append' : 'write'
+     , autoflush        => $self->do_flush_log ? 1 : 0
      );
-  $init_appender{mode} = 'write' unless $self->do_append_log;
-  $init_appender{autoflush} = 1 if $self->do_flush_log;
+
   my $appender = Log::Log4perl::Appender->new
                  ( "Log::Log4perl::Appender::File"
                  , %init_appender
@@ -489,9 +539,10 @@ sub _make_logger_objects
 
   # Finish setup, 
   #
+  $self->_logging_on;
   $self->_set_logger_initialized(1);
   $self->log($self->C_LOG_LOGINIT);
-  $self->log_mask($self->M_ERROR);
+  $self->log_level($self->M_ERROR);
 }
 
 #-------------------------------------------------------------------------------
@@ -501,14 +552,18 @@ sub _log_data_line
 {
   my( $self) = @_;
 
-  return unless $self->log_is_started;
+  return unless $self->_is_logging;
   
   $self->_forced_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
-  $appender->layout($self->_get_layout('log.startmsg'));
-  $logger->trace($self->_get_start_msg);
+  if( $self->write_start_message )
+  {
+    $appender->layout($self->_get_layout('log.startmsg'));
+    $logger->trace($self->_get_start_msg);
+  }
+
   $appender->layout($self->_get_layout('log.date'));
   $logger->trace('undispl. msg');
 
@@ -521,16 +576,17 @@ sub _log_data_line
 #
 sub _log_time_line
 {
-  my( $self) = @_;
+  my( $self, $msg, $forced) = @_;
 
-  return unless $self->log_is_started;
+  return unless $self->_is_logging;
   
   $self->_forced_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
   $appender->layout($self->_get_layout('log.time'));
-  $logger->trace('undispl. msg');
+#  $logger->trace($msg);
+  $self->_log_message( $msg, $forced);
 
   $appender->layout($self->_get_layout('log.millisec'));
   $self->_normal_log;
@@ -543,7 +599,7 @@ sub _log_message
 {
   my( $self, $msg, $forced) = @_;
 
-  return unless $self->log_is_started;
+  return unless $self->_is_logging;
   
   $forced //= 0;
   
@@ -668,17 +724,19 @@ sub _get_start_msg
   my $line = '-' x 80;
   return <<EOLEGEND;
 $line
-Format is as follows;
-[date][time][msec] tag line_number severity_code wrapped_message
+Logging format can be one of the following 3 possibilities;
+1) date
+2) time tag line_number severity_code wrapped_message
+3) msec tag line_number severity_code wrapped_message
 
-Date and time are shown on a separate line when it repeates
 Milliseconds are shown when date and time are not changing between logs
 
-Tag is a 3 letter code representing the logging module
+A tag is a 3 letter code representing the logging module. This is set when
+calling add_tag().
 
 Severity code is a 2 letter code.
-First is i, w, e, t, d and f for info, warning, error, trace, debug or fatal resp.
-Second is s and f for success or failure resp.
+First is i, w, e, t, d and f for info, warning, error, trace, debug or fatal
+respectively. The second letter is s and f for success or failure respectively.
 
 Uppercase letters mean that the log will be forced while otherwise the setting
 of loglevel would prevent it.
@@ -715,9 +773,7 @@ sub write_log
   my( $self, $messages, $error, $call_level) = @_;
 
   my $status = AppState::Ext::Status->new;
-#say sprintf( "Logmask: %08x", $self->log_mask);
-
-  return unless $status->cmp_levels( $error, $self->log_mask) >= 0
+  return unless $status->cmp_levels( $error, $self->log_level) >= 0
          or $status->is_forced($error);
 
   my $message = '';
@@ -775,21 +831,30 @@ sub write_log
 
   
   $self->_log_data_line if $dateTxt;
-  $self->_log_time_line if $timeTxt;
 
-  $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                     , $status->is_forced
-                     ) if $msgTxt;
+  if( $timeTxt )
+  {
+    $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                         , $status->is_forced
+                         );
+  }
+  
+  else
+  {
+    $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                       , $status->is_forced
+                       ) if $msgTxt;
 
-  $self->_log_message( join( ''
-                           , map { ' ' x 8 . "$_\n"}
-                                 $self->_get_stack($call_level + 1)
-                           )
-                     , $status->is_forced
-                     )
-     if $status->is_error
-     or $status->is_fatal
-     ;
+    $self->_log_message( join( ''
+                             , map { ' ' x 13 . "$_\n"}
+                                   $self->_get_stack($call_level + 1)
+                             )
+                       , $status->is_forced
+                       )
+       if $status->is_error
+       or $status->is_fatal
+       ;
+  }
 
   if( $status->is_error and $self->show_on_error
       or $status->is_warning and $self->show_on_warning
@@ -977,29 +1042,6 @@ sub add_tag
               );
   }
 }
-
-#-------------------------------------------------------------------------------
-# Set bits in the logmask using bitwise or.
-#
-#sub setMask
-#{
-#  my( $self, $mask) = @_;
-#
-#  $mask //= $self->M_SEVERITY;
-#  $self->log_mask($self->log_mask | $mask);
-#}
-#
-#-------------------------------------------------------------------------------
-# Clear bits in the logmask using bitwise and of negated mask.
-#
-#sub clrMask
-#{
-#  my( $self, $mask) = @_;
-#
-#  $mask //= $self->M_NONE;
-#  $self->log_mask($self->log_mask & ~$mask);
-#}
-
 
 #-------------------------------------------------------------------------------
 

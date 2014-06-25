@@ -252,11 +252,11 @@ sub BUILD
     sub
     {
       # Codes are dualvars. doesn't matter if code is compared as string
-      # or as number.
+      # or as number. But using a number might compare quicker.
       #
-      return $_[0] ~~ [ $self->C_CFF_CONFIGDIR, $self->C_CFF_WORKDIR
-                      , $self->C_CFF_FILEPATH, $self->C_CFF_TEMPDIR
-                      ];
+      return 0 + $_[0] ~~ [ $self->C_CFF_CONFIGDIR, $self->C_CFF_WORKDIR
+                          , $self->C_CFF_FILEPATH, $self->C_CFF_TEMPDIR
+                          ];
     };
 
     __PACKAGE__->meta->make_immutable;

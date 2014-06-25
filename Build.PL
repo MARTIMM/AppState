@@ -11,7 +11,7 @@ my $build = Module::Build->new
 , create_licence	=> 1
 , dist_author		=> 'Marcel Timmerman <mt1957@gmail.com>'
 , release_status	=> 'stable'
-, abstract_from		=> 'lib/AppState.pm'
+, abstract_from		=> 'lib/AppState.pod'
 
 , tap_harness_args	=> { timer => 1
 #			   , verbosity => 1

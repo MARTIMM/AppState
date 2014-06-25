@@ -19,7 +19,7 @@ my $log = $app->get_app_object('Log');
 
 $log->start_logging;
 
-$log->log_mask($log->M_ERROR);
+$log->log_level($log->M_ERROR);
 $app->log_init('701');
 
 #-------------------------------------------------------------------------------

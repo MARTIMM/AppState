@@ -21,7 +21,7 @@ $log->show_on_error(0);
 
 $log->start_logging;
 
-$log->log_mask($log->M_ERROR);
+$log->log_level($log->M_ERROR);
 $app->log_init('701');
 
 #-------------------------------------------------------------------------------
