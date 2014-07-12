@@ -16,7 +16,7 @@ has _code_count =>
     , isa        => 'Num'
     , init_arg   => undef
     , traits     => ['Counter']
-    , default    => 1
+    , default    => 10
     , reader     => 'get_code_count'
     , writer     => 'set_code_count'
     , handles    =>
@@ -85,8 +85,28 @@ has C_MSG_NOWAIT        => ( default => 1, %_c_Attr);
 #-------------------------------------------------------------------------------
 # Error codes for Constants module
 #
-my $_v = Scalar::Util::dualvar( 1 | 0x06400000, 'Module is immutable');
-has C_MODIMMUT  => ( default => $_v, %_c_Attr); # M_F_FATAL
+# 0x604C0000 == M_F_FATAL
+has C_MODIMMUT  =>
+    ( default => Scalar::Util::dualvar( 1 | 0x604C0000, 'Module is immutable')
+    , %_c_Attr
+    );
+
+# Convenience codes
+#
+# 0x1012000 == M_TRACE
+has C_LOG_TRACE =>
+    ( default => Scalar::Util::dualvar( 2 | 0x10120000, 'Trace: %s')
+    , %_c_Attr
+    );
+
+# 0x10240000 == M_DEBUG
+has C_LOG_DEBUG =>
+    ( default => Scalar::Util::dualvar( 3 | 0x10240000, 'Debug: %s')
+    , %_c_Attr
+    );
+#
+# !! Error start count at 10. increase when codes here gets there. !!
+#
 
 #-------------------------------------------------------------------------------
 # Do not make a BUILD subroutine because of init sequence and has no further

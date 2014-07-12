@@ -2,7 +2,7 @@ package AppState::Plugins::Feature::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
-use version; our $VERSION = '' . version->parse("v0.4.11");
+use version; our $VERSION = '' . version->parse("v0.4.12");
 
 use namespace::autoclean;
 
@@ -373,11 +373,6 @@ sub BUILD
     $self->const( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
     $self->const( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
 
-    # Conveniance debug and trace message with one fillable field
-    #
-    $self->const( 'C_LOG_TRACE',        'M_TRACE', 'Trace line: %s');
-    $self->const( 'C_LOG_DEBUG',        'M_DEBUG', 'Debug line: %s');
-
     # Constant codes
     #
 #    $self->const( 'C_LOG_', '', '');
@@ -506,7 +501,7 @@ sub _make_logger_objects
 
   # A layout for the time
   #
-  $layout = Log::Log4perl::Layout::PatternLayout->new('%n%d{HH:mm:ss} %m%n');
+  $layout = Log::Log4perl::Layout::PatternLayout->new('%d{HH:mm:ss} %m%n');
   $self->_set_layout('log.time' => $layout);
 
   # And a layout for the milliseconds and message
@@ -870,7 +865,7 @@ sub write_log
     )
   {
     $self->stop_logging;
-    exit(1);
+    $self->leave(1);
   }
 
   # Return status object
@@ -1022,8 +1017,8 @@ sub add_tag
     ($package) = caller($call_level);
   }
 
-  my $tagLabels = join( '|', $self->get_tag_labels);
-  if( $log_tag =~ m/^($tagLabels)$/ )
+  my @tagLabels = $self->get_tag_labels;
+  if( $log_tag ~~ \@tagLabels )
   {
     $self->log( $self->C_LOG_TAGLBLINUSE, [$log_tag]);
   }

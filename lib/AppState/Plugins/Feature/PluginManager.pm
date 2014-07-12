@@ -56,30 +56,28 @@ sub BUILD
     # Error codes
     #
 #    $self->code_reset;
-    $self->const( 'C_PLG_PLGDELETED',   'M_INFO');
-    $self->const( 'C_PLG_PLGREMOVED',   'M_INFO');
-    $self->const( 'C_PLG_PLGNOTDEF',    'M_FATAL');
-    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL');
-    $self->const( 'C_PLG_PLGDEFINED',   'M_INFO');
-    $self->const( 'C_PLG_PLGCREATED',   'M_INFO');
-    $self->const( 'C_PLG_PLGRETRVED',   'M_INFO');
-    $self->const( 'C_PLG_UNRECCREATE',  'M_INFO');
-    $self->const( 'C_PLG_APIFAIL',      'M_ERROR');
-    $self->const( 'C_PLG_APISTUB',      'M_F_WARNING');
-    $self->const( 'C_PLG_PLGCODEFAIL',  'M_ERROR');
-    $self->const( 'C_PLG_PLGEXISTS',    'M_F_ERROR');
+    $self->const( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
+    $self->const( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
+    $self->const( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
+    $self->const( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
+    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
+    $self->const( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
+    $self->const( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
+    $self->const( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
+    $self->const( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
+    $self->const( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
+    $self->const( 'C_PLG_PLGCODEFAIL',  'M_FATAL', 'Error evaluating code');
+    $self->const( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
 #    $self->const( 'C_PLG_', '');
 
     # Object creation codes
     #
-    $self->const( 'C_PLG_NOCREATE',     'M_CODE');
-    $self->const( 'C_PLG_CREATEIF',     'M_CODE');
-    $self->const( 'C_PLG_CREATEALW',    'M_CODE');
+    $self->const( 'C_PLG_NOCREATE',     'M_CODE', 'Do not create plugin if not exists');
+    $self->const( 'C_PLG_CREATEIF',     'M_CODE', 'Create plugin if not exists');
+    $self->const( 'C_PLG_CREATEALW',    'M_CODE', 'Create plugin always');
 
     __PACKAGE__->meta->make_immutable;
   }
-
-#say "C: C_PLG_CREATEIF = ", $self->C_PLG_CREATEIF;
 }
 
 #-------------------------------------------------------------------------------
@@ -112,9 +110,7 @@ sub cleanup
     my $c = $self->check_plugin($pluginName);
     if( ref $c )
     {
-      $self->wlog( "Plugin object '$pluginName' deleted (undefined)"
-                 , $self->C_PLG_PLGDELETED
-                 );
+      $self->log( $self->C_PLG_PLGDELETED, [$pluginName]);
       $c->cleanup(@arguments) if $c->can('cleanup');
       $self->get_plugin($pluginName)->{object} = undef;
     }
@@ -151,7 +147,6 @@ sub search_plugins
                        and ! -d "$path/$fname"
                      );
 
-#say "SP: $path, $fname: ", $pathOk ? 'Y' : 'N';
         push @modulePathList, "$path/$fname" if $pathOk;
       }
     }
@@ -173,7 +168,7 @@ sub search_plugins
 
     if( $self->plugin_exists($name) )
     {
-      $self->wlog( "Plugin exists, not added.", $self->C_PLG_PLGEXISTS);
+      $self->log($self->C_PLG_PLGEXISTS);
     }
 
     else
@@ -221,7 +216,7 @@ sub set_plugins
 
     if( $self->plugin_exists($name) )
     {
-      $self->wlog( "Plugin exists, not added.", $self->C_PLG_PLGEXISTS);
+      $self->wlog($self->C_PLG_PLGEXISTS);
     }
 
     else
@@ -282,9 +277,7 @@ sub cleanup_plugin
     if( ref $self->plugged_objects->{$name}{object} )
     {
       $self->get_plugin($name)->{object} = undef;
-      $self->wlog( "Plugin object '$name' deleted (undefined)"
-                 , $self->C_PLG_PLGDELETED
-                 );
+      $self->log( $self->C_PLG_PLGDELETED, [$name]);
     }
   }
 }
@@ -300,7 +293,7 @@ sub drop_plugin
   {
     $self->get_plugin($name)->{object} = undef;
     $self->delete_plugin($name);
-    $self->wlog( "Plugin entry '$name' removed", $self->C_PLG_PLGREMOVED);
+    $self->log( $self->C_PLG_PLGREMOVED, $name);
   }
 }
 
@@ -322,7 +315,7 @@ sub has_object
 
   else
   {
-    $self->wlog( "Plugin entry '$name' not defined", $self->C_PLG_PLGNOTDEF);
+    $self->log( $self->C_PLG_PLGNOTDEF, [$name]);
   }
 
   return $has_object
@@ -341,7 +334,7 @@ sub get_object
   my $name = $select->{name};
   unless( defined $name )
   {
-    $self->wlog( "Key 'name' not defined", $self->C_PLG_PLGKEYNOTDEF);
+    $self->log( $self->C_PLG_PLGKEYNOTDEF, [$name]);
     return undef;
   }
 
@@ -369,12 +362,15 @@ sub get_object
     if( $create == $self->C_PLG_NOCREATE )
     {
       $object = $plugin->{object};
-      $self->wlog( "Get object '$name', code C_PLG_NOCREATE. Object "
-                 . (defined $object ? 'defined' : 'undefined')
-                 , defined $object
-                    ? $self->C_PLG_PLGNOTDEF
-                    : $self->C_PLG_PLGDEFINED
-                 );
+      if( defined $object )
+      {
+        $self->log( $self->C_PLG_PLGNOTDEF, [$name]);
+      }
+      
+      else
+      {
+        $self->log( $self->C_PLG_PLGDEFINED, [$name]);
+      }
     }
 
     # Create only when there is no object. If it is there return that one
@@ -399,13 +395,15 @@ EOEVAL
       }
 
       $object = $self->plugged_objects->{$name}{object};
-
-      $self->wlog( "Get object '$name', code C_PLG_CREATEIF. Object "
-                 . ($classCreated ? "created" : "retrieved")
-                 , $classCreated
-                     ? $self->C_PLG_PLGCREATED
-                     : $self->C_PLG_PLGRETRVED
-                 );
+      if( $classCreated )
+      {
+        $self->log( $self->C_PLG_PLGCREATED, [$name]);
+      }
+      
+      else
+      {
+        $self->log( $self->C_PLG_PLGRETRVED, [$name]);
+      }
     }
 
     # Create always. This object will not be stored
@@ -425,15 +423,12 @@ EOEVAL
       $object = $class->new( %iOptions, %mOptions);
       $classCreated = 1;
 
-      $self->wlog( "Get object '$name', code C_PLG_CREATEALW."
-                 . ' Object is created but not stored.'
-                 , $self->C_PLG_PLGCREATED
-                 );
+      $self->log( $self->C_PLG_PLGCREATED, [$name]);
     }
 
     else
     {
-      $self->wlog( "Unrecognized create flag\n", $self->C_PLG_UNRECCREATE);
+      $self->log($self->C_PLG_UNRECCREATE);
       $object = undef;
     }
   }
@@ -441,9 +436,7 @@ EOEVAL
   else
   {
     my( $p, $f, $l, $s) = caller;
-    $self->wlog( "No '$name' plugin found at $f, line $l"
-               , $self->C_PLG_PLGNOTDEF
-               );
+    $self->log( $self->C_PLG_PLGNOTDEF, [$name]);
     $object = undef;
   }
 
@@ -478,7 +471,7 @@ EOEVAL
         my $class = $plugin->{class};
         if( !$object->can($f) )
         {
-          $self->wlog( "Object '$class' cannot do $f()", $self->C_PLG_APIFAIL);
+          $self->log($self->C_PLG_APIFAIL, [ $class, $f]);
 
           # Create function to prevent crashes
           #
@@ -486,11 +479,11 @@ EOEVAL
 sub ${class}::$f
 {
   say "Called generated stub ${class}::$f()";
-  \$self->wlog( "Called generated stub ${class}::$f()", $self->C_PLG_APISTUB);
+  \$self->log( $self->C_PLG_APISTUB, [ $class, $f]);
 }
 EOCODE
           eval($cmd);
-          $self->wlog( "Error evaluating code", $self->C_PLG_PLGCODEFAIL) if $@;
+          $self->log( "Error evaluating code", $self->C_PLG_PLGCODEFAIL) if $@;
         }
       }
     }

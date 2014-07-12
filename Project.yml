@@ -22,6 +22,21 @@ Application:
 # BugfixCount is reset on Release upgrade.
 #
 Bugs:
+ 2014 07 05:
+  - issue:
+     module: Log
+     version: 0.4.11
+     description: >
+      add_tag() generated errors when unusual characters were used in the tag
+      string. 
+    fix:
+     date: 2014 07 05
+     description: >
+      The test to check if the tag already existed, was a regular expression
+      match. This is changed by a smartmatch operation.
+     version: 0.4.12
+     module: Log
+
  2014 05 26:
   - &bi3
     issue:
@@ -119,6 +134,12 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
+  - date: 2014 06 20
+    module: Log
+    version: 0.4.11
+    descriptions:
+      - Changed module to use Log::Log4perl
+      - Moved convenience log constants to Constants module
   - date: 2014 04 24
     module: AppState::Ext::ConfigIO, AppState::Plugins::ConfigDriver::Memcached
     version: 0.1.4, 0.1.7 resp

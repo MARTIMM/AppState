@@ -116,9 +116,9 @@ sub BUILD
   if( $self->meta->is_mutable )
   {
     $self->code_reset;
-    $self->const( 'C_APP_UNLINKTEMP', 'M_F_WARNING');
-    $self->const( 'C_APP_APPDESTROY', 'M_F_WARNING');
-    $self->const( 'C_APP_ILLAPPINIT', 'M_F_ERROR');
+    $self->const( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
+    $self->const( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
+    $self->const( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -162,12 +162,7 @@ sub BUILD
   }
 #print STDERR "\n";
 
-  unless( $start and $found )
-  {
-    $self->wlog( "Called new() directly, use instance() instead! $callInfo"
-               , $self->C_APP_ILLAPPINIT
-               );
-  }
+  $self->log( $self->C_APP_ILLAPPINIT, [$callInfo]) unless $start and $found;
 
   return;
 }
@@ -299,15 +294,12 @@ sub cleanup
                              }
                            );
 
-    $self->write_log( "Unlink $temp_dir/$_", $self->C_APP_UNLINKTEMP)
-      for @$unlinkList;
+    $self->log( $self->C_APP_UNLINKTEMP, [ $temp_dir, $_]) for @$unlinkList;
   }
 
   # First make a log. After destroying plugins this will not be possible.
   #
-  $self->wlog( "AppState set to be deleted after destroying plugins"
-             , $self->C_APP_APPDESTROY
-             );
+  $self->log($self->C_APP_APPDESTROY);
 
   # Destroy plugin objects in this sequences
   #
