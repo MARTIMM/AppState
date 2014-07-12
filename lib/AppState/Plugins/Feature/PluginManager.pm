@@ -216,7 +216,7 @@ sub set_plugins
 
     if( $self->plugin_exists($name) )
     {
-      $self->wlog($self->C_PLG_PLGEXISTS);
+      $self->log($self->C_PLG_PLGEXISTS);
     }
 
     else
