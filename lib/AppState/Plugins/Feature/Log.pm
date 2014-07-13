@@ -255,7 +255,7 @@ has show_on_fatal =>
     );
 
 has write_start_message =>
-    ( is                => 'ro'
+    ( is                => 'rw'
     , isa               => 'Bool'
     , default           => 1
     , traits            => ['Bool']
