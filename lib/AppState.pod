@@ -1,0 +1,291 @@
+#-------------------------------------------------------------------------------
+# Documentation
+#
+=head1 NAME
+
+AppState - Module to give an application a base of utilities using plugins
+
+=head1 SYNOPSIS
+
+  use AppState;
+
+  my $app = AppState->instance;
+  $app->initialize( config_dir => 'LocalConfigDir', use_temp_dir => 0);
+  $app->check_directories;
+
+  # Get an AppState::Plugins::Feature::Log object
+  #
+  my $log = $app->get_app_object('Log');
+  $log->start_logging;
+  $log->add_tag('A01');
+
+  # Write a log message. For information about this plugin
+  # see C<AppState::Plugins::Feature::Log>.
+  #
+  $log->log_level($log->M_TRACE);
+  $log->write_log( "Hello World", 1 | $log->M_INFO);
+  
+  $app->cleanup;
+  exit(0);
+
+=head1 DESCRIPTION
+
+This module can be used to setup basic facilities used in almost every program
+without too much thinking. The module on itself does not do much but is the
+portal to other modules via a plugin mechanism. The important thing is that the
+AppState module is a singleton. This means that whereever you need the module
+in the program the address of the object will be the same. Because of that
+the modules instanciated via AppState are also having the same address when
+their objects are retreived. This is the main usage point of the AppState set
+of modules. 
+
+No plugin objects are instanciated when they are not used from AppState.
+
+The following facilities are supported;
+
+=over 2
+
+=item * I<Make use of configuration files>. Programs may make notes about some
+configurations which can be used the next time the program starts. Several
+formats are available such as YAML, JSON, DataDumper, Storable and Memcached.
+See L<AppState::Plugins::Feature::ConfigManager>.
+
+=item * I<Make use of logfiles>. Messages from several parts of the modules and
+also the user program can log messages into a logfile, The messages can be
+filtered before actually being written to the file. See L<AppState::Plugins::Feature::Log>.
+
+=item * I<Process commandline arguments and create help information>. A program
+can have options and arguments. The caller will setup a structure in which all
+options and arguments are described. Some of the sections are given to
+the Getopt::Long module and other sections are used to provide a good help info
+for the program. See L<AppState::Plugins::Feature::CommandLine>.
+
+=item * I<Constructing a nodetree from a specific datastructure>. After creation
+of the nodetree the tree can be traversed in several ways. The traversal program
+will be given one or more handlers from the caller. These handlers will be run
+when a node object is visited. See L<AppState::Plugins::Feature::NodeTree>.
+
+=item * I<Make use of client - server communication>. A process can be set
+running in the background as a daemon process after which another process can
+talk to the server using several methods. At the time of writing this is only by
+way of a messagequeue. See L<AppState::Plugins::Feature::Process>.
+
+=item * I<Make use of plugins for the program>. Plugins are an ideal way to add
+functionality without changing the main program. AppState itself is using this
+module to provide all the functionality described above.
+See L<AppState::Plugins::Feature::PluginManager>.
+
+
+=back
+
+
+=head1 INSTANCE METHODS
+
+=over 2
+
+=item B<instance(%options)>
+
+The AppState class is a singleton class. The instance() method will always
+return the same object. The options argument can only be given the first time it
+is called because then it will be created. Later calls will ignore the options
+and changes can be made only using methods to modify the object followed by a
+call to initialize(). See L<initialize()> for information.
+
+=over 2
+
+The following options can be used;
+
+=item I<config_dir =E<gt> $directory_path>
+
+=item I<work_dir =E<gt> $directory_path>
+
+=item I<temp_dir =E<gt> $temporary_files_path>
+
+=item I<cleanup_temp_dir =E<gt> 0|1>
+, clean temporary directory at cleanup()
+
+=item I<use_work_dir =E<gt> 0|1, create work directory or not>
+
+=item I<use_temp_dir =E<gt> 0|1, create temp directory or not>
+
+  my $app = AppState->instance( config_dir => './Config',
+                                use_work_dir => 0,
+                                use_temp_dir => 1,
+                                cleanup_temp_dir => 1,
+                              );
+
+=back
+
+=back
+
+
+=head1 METHODS
+
+=over 2
+
+=item B<initialize(%options)>
+
+Initialize module. Directories are set from given options but not yet created.
+Option keys in the hash are C<config_dir>, C<work_dir> and C<temp_dir>. The
+values are the paths to those directories. Any relative path is converted into
+an absolute path to the directory.
+
+Another key can be given as C<cleanup_temp_dir> which is a
+boolean. When set, the temp directory will be cleaned in the cleanup() method.
+The defaults are;
+
+  config_dir            <home_dir/.program_name>
+  work_dir              <home_dir/.program_name/Work>
+  temp_dir              <home_dir/.program_name/Temp>
+  cleanup_temp_dir      0 (false)
+  use_work_dir          1 (true)
+  use_temp_dir          1 (true)
+
+The config directory is a directory where files are stored such as a pidfile
+(see L<AppState::Plugins::Feature::Process>), configuration files
+(L<AppState::Plugins::Feature::ConfigManager>) and logfile
+(L<AppState::Plugins::Feature::Log>). The default location will be a directory
+derived from the programname and.the users home directory using C<File::HomeDir>.
+E.g. assume the program is C<myProgram.pl> and the username is C<thisUser> then
+the path to the configuration directory will be C</home/thisUser/.myProgram> on
+most unix systems.
+
+The work directory is a directory where to dispose other files. The AppState
+modules do not use it to store files. This argument can only be set when the
+object is created like the C<config_dir> argument.
+
+The temp directory is a directory where to store any files which can be deleted
+afterwards. This cleanup is left to the user when C<cleanup_temp_dir> is 0
+only the directory is created.
+
+C<use_work_dir> and C<use_temp_dir> controls if the work or temp directories are
+created or not.
+
+
+=item * config_dir()
+
+Get the path of the configuration directory.
+
+
+=item * work_dir()
+
+Get the path of the work directory.
+
+
+=item * use_work_dir($yes_no)
+
+=item * temp_dir()
+
+
+Get the path of the temporary files directory.
+
+=item * use_temp_dir($yes_no)
+
+
+=item * check_directories()
+
+Check directories for existence. Create the directories if they are not
+available. Call initialize() before this method if any default directories
+must be changed. Work and tem directories are not created when use_work_dir(0)
+and use_temp_dir(0) is called.
+
+
+=item * cleanup()
+
+When cleanup() is called it will destroy all plugin objects and finally it will
+destroy itself. Therefore when you want to use this method, always call
+instance() after that to get a new instance object and never rely on any saved
+addresses!
+
+
+
+=item * get_app_object( $name, %options)
+
+Get the object of a specific plugin. Use C<$name> to select the proper plugin.
+Use get_plugin_names() of the _plugin_manager to learn the found plugin names.
+C<%options> are the options given to the plugin when created or retrieved. Each
+call using the same plugin name will return the same object.
+
+
+=item * log( $messages, $msg_log_mask, $call_level)
+
+Make use of method write() from L<AppState::Plugins::Feature::Log>. It will only call write() when
+object is instantiated by the user program. This method is therefore mostly
+interresting for use in plugins. $call_level is set to 0 by default and
+incremented by one before calling write().
+
+
+=item * log_init( $prefix, $call_level)
+
+Some initialization before logging on behalf of the calling module. It will make
+use of method add_tag() of module L<AppState::Plugins::Feature::Log> but only if the user program
+has asked for the log object from AppState with get_app_object(). When not started
+the initialization will be deferred until later.
+
+
+#=item * _plugin_manager()
+#
+#Get the plugin manager object (L<AppState::Plugins::Feature::PluginManager>). A few calls are save
+#and usefull such as get_plugin_names(), plugin_defined(), check_plugin() and
+#nbr_plugins(). Other functions should not be used to prevent failure of the
+#installed plugins. Other functions are made available to access the plugin
+#manager indirectly.
+
+
+=item * version()
+
+Get current version of AppState module.
+
+=back
+
+
+
+=head1 PLUGIN MANAGER HANDLES
+
+This module make use of the plugin manager plugin. A few of the methods are
+placed in in this modules namespace. The list of the methods is:
+list_plugin_names(), check_plugin(), has_object(), get_object(),
+cleanup_plugin(), add_plugin, get_plugin(), get_plugin_names(), plugin_exists(),
+nbr_plugins() and add_subscriber(). For an explanation of these functions see
+L<AppState::Plugins::Feature::PluginManager>
+
+The method get_app_object() is calling get_object() with a fixed set of
+arguments like so;
+
+  my $object = $plgmngr_object->get_object
+  ( { name => $name
+    , create => $plg->C_PLG_CREATEIF
+    , initOptions => {appState => $self}
+    , modifyOptions => {%options}
+    }
+  );
+
+
+
+=head1 BUGS
+
+No bugs yet.
+
+
+=head1 SEE ALSO
+
+The use of the modules which are instantiated by AppState is described in the
+following manuals AppState::Plugins::Feature::Log, AppState::Plugins::Feature::ConfigManager, AppState::Plugins::Feature::Process,
+AppState::Plugins::Feature::CommandLine, AppState::Plugins::Feature::Constants, AppState::Plugins::Feature::PluginManager and
+AppState::Plugins::Feature::NodeTree
+
+
+=head1 AUTHOR
+
+Marcel Timmerman, E<lt>mt1957@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2013 by Marcel Timmerman
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.14.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+
+=cut
