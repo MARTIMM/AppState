@@ -17,11 +17,11 @@ has _code_count =>
     , init_arg   => undef
     , traits     => ['Counter']
     , default    => 10
-    , reader     => 'get_code_count'
-    , writer     => 'set_code_count'
+    , reader     => '_get_code_count'
+#    , writer     => '_set_code_count'
     , handles    =>
-      { _code_increment  => 'inc'
-      , code_reset       => 'reset'
+      { _code_increment => 'inc'
+#      , _code_reset     => 'reset'
       }
     );
 
@@ -35,14 +35,14 @@ my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
 has M_ALL       => ( default => 0xFFFFFFFF, %_c_Attr);
 has M_NONE      => ( default => 0x00000000, %_c_Attr);
 
-has M_EVNTCODE  => ( default => 0x000003FF, %_c_Attr); # 1023 codes/module (no 0)
+has M_EVNTCODE  => ( default => 0x000007FF, %_c_Attr); # 2046 codes (no 0)
 has M_SEVERITY  => ( default => 0xFFFE0000, %_c_Attr); # 12 bits for severity
-has M_MSGMASK   => ( default => 0xFFFE03FF, %_c_Attr); # Severity and code
+has M_MSGMASK   => ( default => 0xFFFE07FF, %_c_Attr); # Severity and code
 has M_NOTMSFF   => ( default => 0x0FF00000, %_c_Attr); # Not Success failed etc
 has M_ISMSFF    => ( default => 0xF0000000, %_c_Attr); # Is Success failed etc
 has M_LEVELMSK  => ( default => 0x000E0000, %_c_Attr); # Level count field
 
-has M_RESERVED  => ( default => 0x0001FC00, %_c_Attr); # Reserved
+has M_RESERVED  => ( default => 0x0001F800, %_c_Attr); # Reserved
 
 # Severity codes are bitmasks
 #
@@ -91,7 +91,7 @@ has C_MODIMMUT  =>
     , %_c_Attr
     );
 
-# Convenience codes
+# Convenience codes C_LOG_TRACE and C_LOG_DEBUG
 #
 # 0x1012000 == M_TRACE
 has C_LOG_TRACE =>
@@ -112,7 +112,10 @@ has C_LOG_DEBUG =>
 # Do not make a BUILD subroutine because of init sequence and has no further
 # use.
 #
-#sub BUILD {}
+#sub BUILD
+#{
+#  say "Cnst: " . __PACKAGE__, join( ', ', caller());
+#}
 
 #-------------------------------------------------------------------------------
 # Make a Moose constant in the callers namespace. First strip down some of
@@ -136,7 +139,7 @@ sub const       ## no critic (RequireArgUnpacking)
   # Get the rest from the stack
   #
   my( $self, $name, $modifier, $message) = @_[$stackPtr..$#_];
-  my $const_code = $self->get_code_count;
+  my $const_code = $self->_get_code_count;
   $self->_code_increment;
 
 #say "MM: ", ref $self
@@ -244,6 +247,24 @@ sub wlog
 }
 
 #-------------------------------------------------------------------------------
+# See wlog, change of argument sequence
+#
+sub write_log
+{
+  my( $self, $error_code, $messages, $call_level) = @_;
+
+  $call_level //= 0;
+
+  my $app = AppState->instance;
+  my $log = $app->check_plugin('Log');
+
+  $log->write_log( $messages, $error_code, $call_level + 1)
+    if ref $log eq 'AppState::Plugins::Feature::Log';
+
+  return;
+}
+
+#-------------------------------------------------------------------------------
 # Only write to the log file when there is already a log object created by
 # the user. There may be only 2 arguments.
 #
@@ -278,7 +299,6 @@ sub leave
 
 #-------------------------------------------------------------------------------
 __PACKAGE__->meta->make_immutable;
-
 1;
 
 __END__

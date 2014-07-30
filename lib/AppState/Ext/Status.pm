@@ -10,6 +10,18 @@ use namespace::autoclean;
 use Moose;
 extends qw(AppState::Ext::Constants);
 
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
+const( 'C_STS_UNKNKEY', 'M_WARN');
+
+# Codes
+#
+#    const( 'C_STS_', 0);
+
 #-------------------------------------------------------------------------------
 # Error codes for Constants module. The error code can be a dualvar which if so
 # will be a code together with its error message. In that case message wouldn't
@@ -44,24 +56,7 @@ sub BUILD
 {
   my( $self) = @_;
   
-  if( $self->meta->is_mutable )
-  {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
-    $self->const( 'C_STS_UNKNKEY', 'M_WARN');
-
-    # Codes
-    #
-#    $self->const( 'C_STS_', 0);
-
-    # Fill in the status value
-    #
-    $self->status->{error} = $self->C_STS_INITOK;
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->status->{error} = $self->C_STS_INITOK;
 }
 
 #-------------------------------------------------------------------------------
@@ -355,6 +350,7 @@ sub clear_error
 
 #-------------------------------------------------------------------------------
 #
+__PACKAGE__->meta->make_immutable;
 1;
 
 

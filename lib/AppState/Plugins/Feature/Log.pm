@@ -19,10 +19,31 @@ use Log::Log4perl;
 use Log::Log4perl::Layout;
 use Log::Log4perl::Level;
 use AppState::Ext::Status;
+use AppState::Ext::Meta_Constants;
 require Scalar::Util;
 
 use Text::Wrap ('$columns');
 $columns = 80;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
+const( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
+const( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
+const( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
+const( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
+const( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
+const( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
+const( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
+const( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
+const( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
+const( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
+const( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
+
+# Constant codes
+#
+const( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
 
 #-------------------------------------------------------------------------------
 # Switch to append to an existing log or to start a fresh one
@@ -355,29 +376,8 @@ sub BUILD
 {
   my($self) = @_;
 
-  if( $self->meta->is_mutable )
-  {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
-    $self->const( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
-    $self->const( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
-    $self->const( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
-    $self->const( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
-    $self->const( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
-    $self->const( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
-    $self->const( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
-    $self->const( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
-    $self->const( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
-    $self->const( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
-    $self->const( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
-
-    # Constant codes
-    #
-#    $self->const( 'C_LOG_', '', '');
-    $self->const( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
-
+#  if( $self->meta->is_mutable )
+#  {
     # Overwrite the sub at _test_levels. It is used for testing the subtype
     # 'AppState::Plugins::Feature::Log::Types::Log_level'. At that point we do
     # not know the constant values to test against.
@@ -392,9 +392,7 @@ sub BUILD
                           , $self->M_FATAL  
                           ];
     };
-
-    __PACKAGE__->meta->make_immutable;
-  }
+#  }
 }
 
 #-------------------------------------------------------------------------------
@@ -408,7 +406,7 @@ sub DEMOLISH
 
 #-------------------------------------------------------------------------------
 #
-sub cleanup
+sub plugin_cleanup
 {
   my($self) = @_;
   $self->stop_logging;
@@ -741,7 +739,7 @@ EOLEGEND
 
 #-------------------------------------------------------------------------------
 # Write message to log. This handles the code as a dualvar. Furthermore the
-# incorporated message cannot be an array reference. The message can now have
+# incorporated message cannot be an array reference. The message can also have
 # sprintf markup which is substituted with values from message_values, 
 # an optional array reference. If the call_level must be used and no values
 # are needed use an empty array ref [].
@@ -817,7 +815,8 @@ sub write_log
   # Notify subscribed users when error is worse than info
   #
   $self->notify_subscribers( $log_tag, $status)
-    if $status->is_warning or $status->is_error or $status->is_fatal;
+#    if $status->is_warning or $status->is_error or $status->is_fatal;
+    if $status->cmp_levels( $error, $self->M_WARNING) >= 0;
 
   # Create the message for the log
   #
@@ -846,9 +845,8 @@ sub write_log
                              )
                        , $status->is_forced
                        )
-       if $status->is_error
-       or $status->is_fatal
-       ;
+#       if $status->is_error or $status->is_fatal;
+       if $status->cmp_levels( $error, $self->M_ERROR) >= 0;
   }
 
   if( $status->is_error and $self->show_on_error
@@ -1039,7 +1037,7 @@ sub add_tag
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

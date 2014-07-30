@@ -16,14 +16,14 @@ extends qw(AppState::Ext::ConfigIO);
 
 #-------------------------------------------------------------------------------
 #
-has '+fileExt' => ( default => 'memcached');
+has '+file_ext' => ( default => 'memcached');
 
 # When the config file is set, calculate a key from this value.
 #
 after '_configFile' => sub
 {
   my( $self) = @_;
-  $self->_sha1ConfigFile(Digest::SHA::sha1_hex($self->configFile));
+  $self->_sha1ConfigFile(Digest::SHA::sha1_hex($self->config_file));
 };
 
 # Key to be used to store the documents on the memcached server
@@ -39,13 +39,7 @@ has sha1ConfigFile =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('==M');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('==M');
 }
 
 #-------------------------------------------------------------------------------
@@ -53,22 +47,25 @@ sub BUILD
 sub _selectMemcachedOptions
 {
   my($self) = @_;
+
   my $c = {};
-  $c->{servers} = $self->getControl('servers');
-  $c->{compress_threshold} = $self->getControl('compress_threshold');
-  $c->{no_rehash} = $self->getControl('no_rehash');
-  $c->{readonly} = $self->getControl('readonly');
-  $c->{namespace} = $self->getControl('namespace');
-  $c->{connect_timeout} = $self->getControl('connect_timeout');
-  $c->{select_timeout} = $self->getControl('select_timeout');
-  $c->{debug} = $self->getControl('debug');
+  $c->{servers} = $self->get_control('servers');
+  $c->{compress_threshold} = $self->get_control('compress_threshold');
+  $c->{no_rehash} = $self->get_control('no_rehash');
+  $c->{readonly} = $self->get_control('readonly');
+  $c->{namespace} = $self->get_control('namespace');
+  $c->{connect_timeout} = $self->get_control('connect_timeout');
+  $c->{select_timeout} = $self->get_control('select_timeout');
+  $c->{debug} = $self->get_control('debug');
+
   return $c;
 }
 
 #-------------------------------------------------------------------------------
 # Get text from server
 #
-sub readTextFromConfigFile
+override read_text_from_config_file =>
+sub
 {
   my($self) = @_;
 
@@ -77,30 +74,30 @@ sub readTextFromConfigFile
   my $data = $memd->get($self->sha1ConfigFile);
   if( defined $data )
   {
-    $self->_configText(Encode::decode( 'UTF-8', $data));
+    $self->_config_text(Encode::decode( 'UTF-8', $data));
   }
 
   else
   {
     $self->wlog( "Data not retrieved", $self->C_CIO_CFGNOTREAD);
   }
-}
+};
 
 #-------------------------------------------------------------------------------
 # Save text to server
 #
-sub writeTextToConfigFile
+override write_text_to_config_file =>
+sub
 {
   my($self) = @_;
 
   my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
   $memd->enable_compress(1);
   my $sts = $memd->set( $self->sha1ConfigFile
-                      , (Encode::encode( 'UTF-8', $self->_configText)
-                        )
+                      , (Encode::encode( 'UTF-8', $self->_config_text))
                       );
   $self->wlog( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
-}
+};
 
 #-------------------------------------------------------------------------------
 # Serialize to text
@@ -125,11 +122,11 @@ sub serialize
   # Evaluate and check for errors.
   #
   eval $script;
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to serialize Memcached file using Storable:", $e
-               , $self->C_CIO_SERIALIZEFAIL
-               );
+    $self->log( $self->C_CIO_SERIALIZEFAIL
+              , [ 'Memcached', $self->config_file, $err]
+              );
   }
 
   return $result;
@@ -159,12 +156,11 @@ sub deserialize
   # Evaluate and check for errors.
   #
   eval $script;
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to deserialize Memcached file using Storable. "
-               . $self->configFile . ": $e"
-               , $self->C_CIO_DESERIALFAIL
-               );
+    $self->log( $self->C_CIO_DESERIALFAIL
+              , [ 'Memcached', $self->config_file, $err]
+              );
   }
 
   return $result;
@@ -188,14 +184,12 @@ sub stats
   my( $self, $items) = @_;
   my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
   my $hr = $memd->stats($items);
-  $self->wlog( 'No server available', $self->C_CIO_NOSERVER)
-    unless keys %$hr;
-
+  $self->log($self->C_CIO_NOSERVER) unless keys %$hr;
   return $hr;
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

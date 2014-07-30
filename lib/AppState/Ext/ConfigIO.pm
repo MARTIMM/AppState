@@ -13,9 +13,22 @@ extends qw(AppState::Ext::Constants);
 
 use AppState;
 require Encode;
+use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
-has fileExt =>
+# Error codes. Make handle in ConfigFile.
+#
+const( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');      
+const( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');      
+const( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent'); 
+const( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s'); 
+const( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');     
+const( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');     
+const( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');     
+const( 'C_CIO_NOSERVER',      'M_ERROR', 'No server available');     
+
+#-------------------------------------------------------------------------------
+has file_ext =>
     ( is                => 'ro'
     , isa               => 'Str'
     , default           => 'dunno'
@@ -29,14 +42,14 @@ has encoding =>
     , init_arg         => undef
     );
 
-has _configText =>
+has _config_text =>
     ( is                => 'rw'
 #    , isa              => 'Str'
     , default           => ''
     , init_arg          => undef
     );
 
-has configFile =>
+has config_file =>
     ( is                => 'ro'
     , isa               => 'Str'
     , default           => 'config.xyz'
@@ -52,7 +65,7 @@ has control =>
     , default           => sub{ return {}; }
     , traits            => ['Hash']
     , handles           =>
-      { getControl      => 'get'
+      { get_control      => 'get'
       }
     );
 
@@ -72,34 +85,13 @@ has options =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=IO');
-
-    # Error codes. Make handle in ConfigFile.
-    #
-#    $self->code_reset;
-    $self->const( 'C_CIO_CFGREAD',        'M_INFO');
-    $self->const( 'C_CIO_CFGWRITTEN',     'M_INFO');
-    $self->const( 'C_CIO_CFGNOTREAD',     'M_F_WARNING');
-    $self->const( 'C_CIO_CFGNOTWRITTEN',  'M_F_WARNING');
-    $self->const( 'C_CIO_IOERROR',        'M_ERROR');
-    $self->const( 'C_CIO_SERIALIZEFAIL',  'M_ERROR');
-    $self->const( 'C_CIO_DESERIALFAIL',   'M_ERROR');
-    $self->const( 'C_CIO_CLONEFAIL',      'M_ERROR');
-    $self->const( 'C_CIO_DATACLONED',     'M_INFO');
-    $self->const( 'C_CIO_NOSERVER',       'M_ERROR');
-#    $self->const( 'C_CIO_'     , '');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('=IO');
 };
 
 #-------------------------------------------------------------------------------
 # Cleanup
 #
-sub cleanup
+sub plugin_cleanup
 {
 #  my( $self, $ds) = @_;
 #  $self->save($ds);
@@ -112,8 +104,8 @@ sub load
 {
   my($self) = @_;
 
-  $self->readTextFromConfigFile;
-  my $docs = $self->deserialize($self->_configText);
+  $self->read_text_from_config_file;
+  my $docs = $self->deserialize($self->_config_text);
 #say "Docs: ", ref $docs;
 #say "N docs: ", ref $docs eq 'ARRAY' ? scalar(@$docs) : 'No docs';
   return ref $docs eq 'ARRAY' ? $docs : [];
@@ -126,87 +118,72 @@ sub save
 {
   my( $self, $documents) = @_;
 
-  $self->_configText($self->serialize($documents));
-  $self->writeTextToConfigFile;
+  $self->_config_text($self->serialize($documents));
+  $self->write_text_to_config_file;
 }
 
 #-------------------------------------------------------------------------------
 # Read text from configfile before deserialization
 #
-sub readTextFromConfigFile
+sub read_text_from_config_file
 {
   my($self) = @_;
 
-  my $configText = undef;
-  my $configFile = $self->configFile;
-  if( -r $configFile )
+  my $config_text = undef;
+  my $config_file = $self->config_file;
+  if( -r $config_file )
   {
     local $INPUT_RECORD_SEPARATOR;
 
-    my $sts = open my $text, '<', $configFile;
+    my $sts = open my $text, '<', $config_file;
     if( !$sts )
     {
-      $self->wlog( "$configFile: $!", $self->C_CIO_IOERROR);
+      $self->log( $self->C_CIO_IOERROR, [ $config_file, $!]);
     }
 
     else
     {
-      $configText = <$text>;
+      $config_text = <$text>;
       $text->close;
-
-      $self->wlog( "Config text read from file $configFile"
-                 , $self->C_CIO_CFGREAD
-                 );
+      $self->log( $self->C_CIO_CFGREAD, [$config_file]);
     }
   }
 
   else
   {
-    $self->wlog( "File $configFile not readable or not existent"
-               , $self->C_CIO_CFGNOTREAD
-               );
+    $self->log( $self->C_CIO_CFGNOTREAD, [$config_file]);
   }
 
-  $self->_configText(Encode::decode( 'UTF-8', $configText));
+  $self->_config_text(Encode::decode( 'UTF-8', $config_text));
 }
 
 #-------------------------------------------------------------------------------
 # Write text to configfile after serialization
 #
-sub writeTextToConfigFile
+sub write_text_to_config_file
 {
   my($self) = @_;
 
-  my $configFile = $self->configFile;
-#  if( !-e $configFile or -w $configFile )
-#  {
-    local $INPUT_RECORD_SEPARATOR;
+  my $config_file = $self->config_file;
+#  local $INPUT_RECORD_SEPARATOR;
 
-    my $sts = open my $textf, '>', $configFile;
-    if( !$sts )
-    {
-      $self->wlog( "$configFile: $!", $self->C_CIO_CFGNOTWRITTEN);
-    }
+  my $sts = open my $textf, '>', $config_file;
+  if( !$sts )
+  {
+    $self->log( $self->C_CIO_CFGNOTWRITTEN, [ $config_file, $!]);
+  }
 
-    else
-    {
-      $textf->print(Encode::encode( 'UTF-8', $self->_configText));
-      $textf->close;
+  else
+  {
+    $textf->print(Encode::encode( 'UTF-8', $self->_config_text));
+    $textf->close;
 
-      $self->wlog( "Data written to file $configFile"
-                 , $self->C_CIO_CFGWRITTEN
-                 );
-    }
-#  }
-#
-#  else
-#  {
-#    $self->wlog( "File $configFile not writable", $self->C_CIO_CFGNOTWRITTEN);
-#  }
+    $self->log( $self->C_CIO_CFGWRITTEN, [$config_file]);
+  }
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

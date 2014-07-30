@@ -11,6 +11,18 @@ use Moose::Util::TypeConstraints;
 extends 'AppState::Ext::Constants';
 
 use AppState;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes. These codes must also be handled by ConfigManager.
+#
+const( 'C_DOC_SELOUTRANGE'  , 'M_ERROR', 'Document number %s out of range, document not %s');
+const( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');      
+const( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available'); 
+const( 'C_DOC_NOHASHREF'    , 'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
+const( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');     
+const( 'C_DOC_NOVALUE'      , 'M_WARNING', 'No value found at %s');
+const( 'C_DOC_NOKEY'        , 'M_ERROR', 'Key not defined');
 
 #-------------------------------------------------------------------------------
 # Documents is an array reference, each entry in the array is a document. For
@@ -50,26 +62,7 @@ has _current_document =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=DC');
-
-    # Error codes. These codes must also be handled by ConfigManager.
-    #
-#    $self->code_reset;
-    $self->const( 'C_DOC_SELOUTRANGE'   , 'M_ERROR');
-    $self->const( 'C_DOC_DOCRETRIEVED'  , 'M_INFO');
-    $self->const( 'C_DOC_NODOCUMENTS'   , 'M_F_WARNING');
-    $self->const( 'C_DOC_NOHASHREF'     , 'M_ERROR');
-    $self->const( 'C_DOC_EVALERROR'     , 'M_ERROR');
-    $self->const( 'C_DOC_NOVALUE'       , 'M_WARNING');
-    $self->const( 'C_DOC_NOKEY'         , 'M_ERROR');
-
-#    $self->const( 'C_DOC_'             , '');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('=DC');
 }
 
 #-------------------------------------------------------------------------------
@@ -90,15 +83,13 @@ sub get_document
 #say "DN: $document > $nbrDocs";
     if( $document >= 0 and $document < $nbrDocs )
     {
-      $self->wlog( "Document $document retrieved", $self->C_DOC_DOCRETRIEVED);
+      $self->log( $self->C_DOC_DOCRETRIEVED, [$document]);
       $docs = $self->_get_document($document);
     }
 
     else
     {
-      $self->wlog( "Document number $document out of range"
-                 , $self->C_DOC_SELOUTRANGE
-                 );
+      $self->log( $self->C_DOC_SELOUTRANGE, [ $document, 'retrieved']);
 #      $document = 0;
 #      $docs = $self->_get_document($document);
     }
@@ -106,7 +97,7 @@ sub get_document
 
   else
   {
-    $self->wlog( "No documents available", $self->C_DOC_NODOCUMENTS);
+    $self->log($self->C_DOC_NODOCUMENTS);
   }
 
   return $docs;
@@ -128,21 +119,19 @@ sub select_document
   else
   {
     $self->_select_document( $nbrDocs ? 0 : undef);
-    $self->wlog( "Document number $document out of range, document not selected"
-               , $self->C_DOC_SELOUTRANGE
-               );
+    $self->log( $self->C_DOC_SELOUTRANGE, [ $document, 'selected']);
   }
 }
 
 #-------------------------------------------------------------------------------
 # Set a document to $newData. If doc nbr is not defined select the current
-# document. If doc nbr is out of range, select first one.
+# document.
 #
 sub set_document
 {
   my( $self, $document, $newData) = @_;
-
-  $document //= $self->get_current_document;
+  $document //= $self->get_current_document // 0;
+say "Set doc: $document, $newData";
   if( $document >= 0 and $document < $self->nbr_documents )
   {
     $self->_set_document( $document, $newData);
@@ -150,9 +139,7 @@ sub set_document
 
   else
   {
-    $self->wlog( "Document number $document out of range, document not set"
-               , $self->C_DOC_SELOUTRANGE
-               );
+    $self->log( $self->C_DOC_SELOUTRANGE, [ $document, 'set']);
   }
 }
 
@@ -187,10 +174,7 @@ sub _path2hashref
   else
   {
     $cfg = {};
-    $self->wlog( "Config root nor config hook into data is a hash reference. "
-               . "Returned an empty hash reference, perhaps no document selected"
-               , $self->C_DOC_NOHASHREF
-               );
+    $self->log($self->C_DOC_NOHASHREF);
   }
 
   $path =~ s@/{2,}@/@g;         # Remove any repetition of slashes
@@ -208,8 +192,10 @@ sub _path2hashref
     #
     my $l = '$cfg->' . join( '', map { "{'$_'}" } split( '/', $path));
     eval("\$ref = \\$l;");
-
-    $self->wlog( "Error eval path $path ($@)\n", $self->C_DOC_EVALERROR) if $@;
+    if( my $err = $@ )
+    {
+      $self->log( $self->C_DOC_EVALERROR, [$path, $err]);
+    }
   }
 
   # If empty, return the root of the data
@@ -232,7 +218,7 @@ sub get_keys
   my $hashref = $self->_path2hashref( $path, $startRef);
   $keys = [keys %{$$hashref}] if ref $$hashref eq 'HASH';
 
-#  $self->wlog( [ "get_keys from '$path'"], $m->M_INFO);
+  $self->write_log( $self->C_LOG_TRACE, "get_keys from '$path'");
   return $keys;
 }
 
@@ -243,18 +229,13 @@ sub get_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-#  $self->wlog( [ "get_value from '$path'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
-
-#say "GV: $path, ", (defined $hashref ? $hashref : 'href=-');
   my $v;
   $v = $$hashref if ref $hashref;# =~ m/^(REF|SCALAR|ARRAY|HASH)$/;
-  $self->wlog( "No value found at '$path'", $self->C_DOC_NOVALUE)
-    unless ref $hashref;
-
+  $self->log( $self->C_DOC_NOVALUE, [$path]) unless ref $hashref;
+  $self->write_log( $self->C_LOG_TRACE
+                  , "get_value from '$path' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
   return $v;
 }
 
@@ -273,12 +254,10 @@ sub set_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
   $$hashref = $value;
-
-#  $self->wlog( [ "set_value, $path, '$value'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "set_value, $path, '$value' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 }
 
 #-------------------------------------------------------------------------------
@@ -295,15 +274,13 @@ sub drop_value
   if( defined $$hashref->{$spath} )
   {
     $value = $$hashref->{$spath};
-#say "DV: $value, $hashref";
     delete $$hashref->{$spath} if ref $$hashref eq 'HASH';
   }
 
-#  $self->wlog( ["drop_value, '$path'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "drop_value, '$path' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 
   return $value;
 }
@@ -314,15 +291,15 @@ sub get_kvalue
 {
   my( $self, $path, $key, $startRef) = @_;
 
-  $self->wlog( "Key not defined", $self->C_DOC_NOKEY) unless defined $key;
+  $self->log($self->C_DOC_NOKEY) unless defined $key;
   $key //= '';
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-#  $self->wlog( "get_kvalue from '$path' and '$key'"
-#            . ref $startRef eq 'HASH' ? 'with hook' : ''
-#            , $self->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "get_kvalue from '$path' and '$key' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
   return $$hashref->{$key};
 }
 
@@ -332,8 +309,8 @@ sub set_kvalue
 {
   my( $self, $path, $key, $value, $startRef) = @_;
 
-  $self->wlog( "Key not defined", $self->C_DOC_NOKEY) unless defined $key;
-  $self->wlog( "Value not defined", $self->C_DOC_NOVALUE) unless defined $value;
+  $self->log($self->C_DOC_NOKEY) unless defined $key;
+  $self->log( $self->C_DOC_NOVALUE, [$path]) unless defined $value;
 
   $key //= '';
   $value //= '';
@@ -341,11 +318,10 @@ sub set_kvalue
   my $hashref = $self->_path2hashref( $path, $startRef);
   $$hashref //= {};
   $$hashref->{$key} = $value;
-#  $self->wlog( [ "set_kvalue, '$path', '$key', '$value'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "set_kvalue, '$path', '$key', '$value' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 }
 
 #-------------------------------------------------------------------------------
@@ -360,11 +336,10 @@ sub drop_kvalue
 #say "DV: $value, $hashref";
   delete $$hashref->{$key} if ref $$hashref eq 'HASH';
 
-#  $self->wlog( [ "drop_kvalue from '$path' and '$key'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "drop_kvalue from '$path' and '$key' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
   return $value;
 }
 
@@ -376,11 +351,10 @@ sub pop_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-#  $self->wlog( [ "pop_value from '$path'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "pop_value from '$path' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
   return pop @{$$hashref};
 }
 
@@ -394,11 +368,10 @@ sub push_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   push @{$$hashref}, @$values;
 
-#  $self->wlog( [ "push_value, '$path', @$values"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "push_value, '$path', @$values "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 }
 
 #-------------------------------------------------------------------------------
@@ -409,11 +382,10 @@ sub shift_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-#  $self->wlog( [ "shift_value from '$path'"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "shift_value from '$path' "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
   return shift @{$$hashref};
 }
 
@@ -426,11 +398,10 @@ sub unshift_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   unshift @{$$hashref}, @$values;
 
-#  $self->wlog( [ "unshift_value, '$path', @$values"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "unshift_value, '$path', @$values "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 }
 
 #-------------------------------------------------------------------------------
@@ -443,15 +414,14 @@ sub splice_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   splice @{$$hashref}, @$spliceArgs;
 
-#  $self->wlog( [ "push_value, '$path', @$values"
-#              , ref $startRef eq 'HASH' ? 'with hook' : ''
-#              ]
-#            , $m->M_INFO
-#            );
+  $self->write_log( $self->C_LOG_TRACE
+                  , "push_value, '$path', @$spliceArgs "
+                  . ref $startRef eq 'HASH' ? 'with hook' : ''
+                  );
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

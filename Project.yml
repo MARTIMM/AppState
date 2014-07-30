@@ -134,6 +134,17 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
+  - date: 2014 07 29
+    descriptions:
+      - Changed from one const() method to the new one.
+      - Changes from camelback names to underscore ones
+      - Plugin manager search_plugins() modified
+      - Added test programs and changed others
+  - date: 2014 07 15
+    module: Meta_Constants
+    version: 0.0.1
+    descriptions:
+      - New module to create a better const() method
   - date: 2014 06 20
     module: Log
     version: 0.4.11

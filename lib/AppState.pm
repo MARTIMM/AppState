@@ -7,18 +7,27 @@ use 5.10.1;
 
 use namespace::autoclean;
 
-use Moose;
-use MooseX::NonMoose;
-use MooseX::NonMoose::Meta::Role::Constructor;
-
-extends qw( Class::Singleton AppState::Ext::Constants);
-
 require Cwd;
 require File::Basename;
 require File::HomeDir;
 require File::Path;
 
 use AppState::Plugins::Feature::PluginManager;
+use AppState::Ext::Meta_Constants;
+
+use Moose;
+use MooseX::NonMoose;
+#use MooseX::NonMoose::Meta::Role::Constructor;
+
+extends qw( Class::Singleton AppState::Ext::Constants);
+
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
+const( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
+const( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
 
 #-------------------------------------------------------------------------------
 #
@@ -111,18 +120,6 @@ sub BUILD
   # and when executing a line such as 'AppState->instance()' the program will
   # get into deep recursion loop.
 
-  # Error codes
-  #
-  if( $self->meta->is_mutable )
-  {
-    $self->code_reset;
-    $self->const( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
-    $self->const( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
-    $self->const( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
-
-    __PACKAGE__->meta->make_immutable;
-  }
-
   # Check the call stack. On this stack there must be the following entries in
   # the proper order to see to it that the new() function is not called
   # directly. Throw an exeption when the tests fail. This is maybe a costly
@@ -203,18 +200,14 @@ sub initialize
     my $path = Cwd::realpath($INC{"AppState.pm"});
     $path =~ s@/AppState.pm@@;
 
-    # Number of separators in the path is the depth of the base
-    #
-    my(@lseps) = $path =~ m@(/)@g;
-
     # Search for any modules
     #
     $pm->search_plugins( { base => $path
-                        , depthSearch => 3 + @lseps
-                        , searchRegex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
-                        , apiTest => [ qw()]
-                        }
-                      );
+                         , max_depth => 4
+                         , search_regex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
+                         , api_test => [ qw()]
+                         }
+                       );
 #say "Features: ";
 #$pm->list_plugin_names;
 #say "Keys: ", join( ', ', $pm->get_plugin_names);
@@ -286,7 +279,7 @@ sub cleanup
   if( $self->cleanup_temp_dir )
   {
     my $temp_dir = $self->temp_dir;
-    my $cdir = Cwd::cwd;
+    my $cdir = Cwd::cwd();
     $temp_dir =~ s@$cdir/?@@;
     File::Path::remove_tree( $self->temp_dir
                            , { keep_root => 1
@@ -345,6 +338,7 @@ sub get_app_object
 }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 no Moose;
 
 1;

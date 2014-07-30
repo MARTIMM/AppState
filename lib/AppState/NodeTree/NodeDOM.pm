@@ -11,6 +11,19 @@ extends qw(AppState::Ext::Constants);
 
 require AppState::NodeTree::NodeGlobal;
 require Tree::XPathEngine;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_NDM_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
+const( 'C_NDM_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
+const( 'C_NDM_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
+                                      . 'AppState::NodeTree::Node. Node ref = %s');
+
+const( 'C_NDM_CMP_NAME', 'M_CODE', 'Search comparing name of node');
+const( 'C_NDM_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
+const( 'C_NDM_CMP_DATA', 'M_CODE', 'Search comparing data of node');
 
 #-------------------------------------------------------------------------------
 has child =>
@@ -18,7 +31,6 @@ has child =>
     , isa               => 'AppState::NodeTree::NodeRoot'
     , writer            => 'set_child'
     , predicate         => 'has_child'
-#    , clearer           => 'clear_child'
     , init_arg          => undef
     );
 
@@ -57,8 +69,6 @@ has xpath_debug =>
 has _xpath_regexpr =>
     ( is                => 'rw'
     , isa               => 'Regexp'
-# Problems with :, xpath expression gets demolished e.g. [attribute::class]
-#    , default          => sub { return qr/[A-Za-z_][\w.:-]*/; }
     , default           => sub { return qr/[A-Za-z_][\w.-]*/; }
     , trigger           =>
       sub
@@ -70,30 +80,11 @@ has _xpath_regexpr =>
     );
 
 #-------------------------------------------------------------------------------
+#
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=ND');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_NDM_NODENOTROOT',  'M_ERROR');
-    $self->const( 'C_NDM_NODENOTNODE',  'M_ERROR');
-    $self->const( 'C_NDM_NODENOTNTA',   'M_ERROR');
-#    $self->const( 'C_NDM_', '');
-
-
-#    $self->code_reset;
-    $self->const( 'C_NDM_CMP_NAME', 'M_CODE');
-    $self->const( 'C_NDM_CMP_ATTR', 'M_CODE');
-    $self->const( 'C_NDM_CMP_DATA', 'M_CODE');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('=ND');
 }
 
 #-------------------------------------------------------------------------------
@@ -127,10 +118,7 @@ sub link_with_node
 
       else
       {
-        $self->wlog( 'Node not of proper type. Must be a root node. Type = '
-                   . ref $node
-                   , $self->C_NDM_NODENOTROOT
-                   );
+        $self->log( $self->C_NDM_NODENOTROOT, [ref $node]);
       }
     }
 
@@ -144,9 +132,7 @@ sub link_with_node
 
       else
       {
-        $self->wlog( 'Node not of proper type. Type = ' . ref $node
-                   , $self->C_NDM_NODENOTNODE
-                   );
+        $self->log( $self->C_NDM_NODENOTNODE, [ref $node]);
       }
     }
 
@@ -172,10 +158,7 @@ sub link_with_node
 
       else
       {
-        $self->wlog( 'Child node not of proper type, This node is '
-                   . 'AppState::NodeTree::Node. Node ref =', ref $node
-                   , $self->C_NDM_NODENOTNTA
-                   );
+        $self->log( $self->C_NDM_NODENOTNTA, [ref $node]);
       }
     }
   }
@@ -398,6 +381,7 @@ sub xpath_get_parent_node       { return; }
 #sub xpath_string_value         { return; }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 
 1;
 

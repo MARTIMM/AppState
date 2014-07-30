@@ -16,23 +16,49 @@ require Storable;
 use AppState;
 use AppState::Ext::Documents;
 
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes. These codes must also be handled by ConfigManager.
+#
+const( 'C_CFF_STORETYPESET', 'M_INFO', 'Store type set to %s');
+const( 'C_CFF_LOCCODESET',   'M_INFO', 'Location code set to %s');
+const( 'C_CFF_REQFILESET',   'M_INFO', 'Request for file %s');
+const( 'C_CFF_CFGFILESET',   'M_INFO', 'Config filename set to %s');
+const( 'C_CFF_CANNOTDELDOC', 'M_WARNING', 'Cannot delete() documents');
+const( 'C_CFF_DOCCLONED',    'M_INFO', 'Document cloned = %s');
+const( 'C_CFF_CANNOTCLODOC', 'M_WARNING', 'Cannot clone() documents in %s');
+const( 'C_CFF_STOREPLGINIT', 'M_INFO', 'Config %s initialized');
+
+# Location values
+#
+const( 'C_CFF_CONFIGDIR',    'M_CODE', 'Config dir location');
+const( 'C_CFF_WORKDIR',      'M_CODE', 'Workdir location');
+const( 'C_CFF_FILEPATH',     'M_CODE', 'Users filepath location');
+const( 'C_CFF_TEMPDIR',      'M_CODE', 'Tempdir location');
+
+# Reset values, only used locally
+#
+const( 'C_CFF_NORESETCFG',   'M_CODE', 'Do not reset the plugin configuration');
+const( 'C_CFF_RESETCFG',     'M_CODE', 'Reset the plugin configuration');
+
 #-------------------------------------------------------------------------------
 # Possible types for storage. This is set by the plugin manager default
 # initialization. Need to use non-moose variable because of test in subtype
 # can not use $self to use a getter such as $self->storeTypes().
 #
-my $__storeTypes__ = '';
+my $__store_types__ = '';
 has _storeTypes =>
     ( is                => 'ro'
     , isa               => 'Str'
     , init_arg          => undef
-    , writer            => '_setStoreTypes'
+    , writer            => '_set_store_types'
 #    , default          => ''
     , trigger           =>
       sub
       {
         my( $self, $n, $o) = @_;
-        $__storeTypes__ = $n;
+        $__store_types__ = $n;
       }
     );
 
@@ -40,7 +66,7 @@ has _storeTypes =>
 #
 subtype 'AppState::Ext::ConfigFile::Types::Storage'
     => as 'Str'
-    => where { $_ =~ m/$__storeTypes__/ }
+    => where { $_ =~ m/$__store_types__/ }
     => message { "The store type '$_' is not correct" };
 
 
@@ -57,22 +83,22 @@ has store_type =>
         my( $self, $n, $o) = @_;
         if( !defined $o or $n ne $o )
         {
-          $self->wlog( "Store type set to $n", $_[0]->C_CFF_STORETYPESET);
-          $self->_setConfigFile($self->C_CFF_RESETCFG);
+          $self->log( $_[0]->C_CFF_STORETYPESET, [$n]);
+          $self->_set_config_file($self->C_CFF_RESETCFG);
         }
       }
     );
 
-has _storeTypeObject =>
+has _store_type_object =>
     ( is                => 'ro'
     , isa               => 'Maybe[Object]'
     , init_arg          => undef
-    , writer            => '_setStoreTypeObject'
-    , predicate         => '_hasStoreTypeObject'
+    , writer            => '_set_store_type_object'
+    , predicate         => '_has_store_type_object'
     , handles           => [
-                                # Make handle in ConfigManager.
-                                #
-                            qw( configFile
+                            # Make handle in ConfigManager.
+                            #
+                            qw( config_file
                                 C_CIO_CFGREAD C_CIO_CFGWRITTEN C_CIO_CFGNOTREAD
                                 C_CIO_CFGNOTWRITTEN C_CIO_IOERROR
                                 C_CIO_SERIALIZEFAIL C_CIO_DESERIALFAIL
@@ -104,48 +130,30 @@ has location =>
 
         if( !defined $o or $n != $o )
         {
-          $self->wlog( "Location code set to $n"
-                     , $self->C_CFF_LOCCODESET
-                     );
-          $self->_setConfigFile($self->C_CFF_NORESETCFG);
+          $self->log( $self->C_CFF_LOCCODESET, [$n]);
+          $self->_set_config_file($self->C_CFF_NORESETCFG);
         }
       }
     );
 
 # Path of file as input, relative or absolute
 #
-has requestFile =>
+has request_file =>
     ( is                => 'rw'
     , isa               => 'Str'
     , lazy             => 1
     , default          => sub { return 'config.xyz'; }
-#      sub
-#      {
-#       my($self) = @_;
-#       my $defFilename = 'config.xyz';
-#       return $defFilename;
-#      }
     , trigger           =>
       sub
       {
         my( $self, $n, $o) = @_;
         if( !defined $o or $n ne $o )
         {
-          $self->wlog( "Request for file $n", $self->C_CFF_REQFILESET);
-          $self->_setConfigFile($self->C_CFF_NORESETCFG);
+          $self->log( $self->C_CFF_REQFILESET, [$n]);
+          $self->_set_config_file($self->C_CFF_NORESETCFG);
         }
       }
     );
-
-# Name/path of the file given to by the storage plugins.
-#
-#has configFile =>
-#    ( is               => 'ro'
-#    , isa              => 'Str'
-#    , default          => 'config.xyz'
-#    , writer           => '_configFile'
-#    , init_arg         => undef
-#    );
 
 # The documents object
 #
@@ -170,7 +178,7 @@ has documents =>
       ]
     );
 
-has _pluginManager =>
+has _plugin_manager =>
     ( is                => 'ro'
     , isa               => 'AppState::Plugins::Feature::PluginManager'
     , init_arg          => undef
@@ -185,21 +193,17 @@ has _pluginManager =>
         my $path = Cwd::realpath($INC{"AppState.pm"});
         $path =~ s@/AppState.pm@@;
 
-        # Number of separators in the path is the depth of the base
-        #
-        my(@lseps) = $path =~ m@(/)@g;
-
         # Search for any modules
         #
         $pm->search_plugins( { base => $path
-                            , depthSearch => 3 + @lseps
-                            , searchRegex => qr@/AppState/Plugins/ConfigDriver/[A-Z][\w]+.pm$@
-                            , apiTest => [ qw()]
-                            }
-                          );
+                             , max_depth => 4
+                             , search_regex => qr@/AppState/Plugins/ConfigDriver/[A-Z][\w]+.pm$@
+                             , api_test => [ qw()]
+                             }
+                           );
 
         $pm->initialize;
-        $self->_setStoreTypes(join '|', $pm->get_plugin_names);
+        $self->_set_store_types(join '|', $pm->get_plugin_names);
 
         return $pm;
       }
@@ -211,39 +215,10 @@ sub BUILD
 {
   my($self) = @_;
 
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=CF');
+  $self->log_init('=CF');
 
-    # Error codes. These codes must also be handled by ConfigManager.
-    #
-#    $self->code_reset;
-    $self->const( 'C_CFF_STORETYPESET', 'M_INFO');
-    $self->const( 'C_CFF_LOCCODESET',   'M_INFO');
-    $self->const( 'C_CFF_REQFILESET',   'M_INFO');
-    $self->const( 'C_CFF_CFGFILESET',   'M_INFO');
-    $self->const( 'C_CFF_CREATEALW',    'M_INFO');
-    $self->const( 'C_CFF_CANNOTDELDOC', 'M_WARNING');
-    $self->const( 'C_CFF_DOCCLONED',    'M_INFO');
-    $self->const( 'C_CFF_CANNOTCLODOC', 'M_WARNING');
-    $self->const( 'C_CFF_STOREPLGINIT', 'M_INFO');
-
-    # Location values
-    #
-#    $self->code_reset;
-    $self->const( 'C_CFF_CONFIGDIR',    'M_CODE', 'Config dir location');
-    $self->const( 'C_CFF_WORKDIR',      'M_CODE', 'Workdir location');
-    $self->const( 'C_CFF_FILEPATH',     'M_CODE', 'Users filepath location');
-    $self->const( 'C_CFF_TEMPDIR',      'M_CODE', 'Tempdir location');
-
-    # Reset values, only used locally
-    #
-#    $self->code_reset;
-    $self->const( 'C_CFF_NORESETCFG',   'M_CODE');
-    $self->const( 'C_CFF_RESETCFG',     'M_CODE');
-
-    my $meta = $self->meta;
-
+#  if( $self->meta->is_mutable )
+#  {
     # Overwrite the sub at _test_location. It is used for testing the subtype
     # 'AppState::Ext::ConfigFile::Types::Location'. At that point we do not
     # know the constant values to test against.
@@ -259,61 +234,19 @@ sub BUILD
                           ];
     };
 
-    __PACKAGE__->meta->make_immutable;
-  }
+#  }
 }
 
 #-------------------------------------------------------------------------------
 #
 sub initialize
 {
-  my( $self) = @_;
-
-  # Initialize plugin manager
-  #
-#  if( !$self->nbr_plugins )
-  if( 0 )
-  {
-    my $pm = $self->_pluginManager;
-
-    # Prepare search of feature plugins
-    #
-    my $path = Cwd::realpath($INC{"AppState.pm"});
-    $path =~ s@/AppState.pm@@;
-
-    # Number of separators in the path is the depth of the base
-    #
-    my(@lseps) = $path =~ m@(/)@g;
-
-    # Search for any modules
-    #
-    $pm->search_plugins( { base => $path
-                        , depthSearch => 3 + @lseps
-                        , searchRegex => qr@/AppState/Plugins/ConfigDriver/[A-Z][\w]+.pm$@
-                        , apiTest => [ qw()]
-                        }
-                      );
-#    $pm->add_plugin( Constants => { class => 'AppState::Ext::Constants'
-#                               , libdir => $path
-#                               }
-#                );
-
-say "Features: ", $pm->list_plugin_names;
-say "Keys: ", join( ', ', $pm->get_plugin_names);
-    $pm->initialize;
-    $self->_setStoreTypes(join '|', $pm->get_plugin_names);
-
-    # Initialize attributes
-    #
-#    $self->store_type('Yaml');
-#    $self->location($self->C_CFF_CONFIGDIR);
-#    $self->requestFile('config.xyz');
-  }
+#  my( $self) = @_;
 }
 
 #-------------------------------------------------------------------------------
 #
-sub _setConfigFile
+sub _set_config_file
 {
   my( $self, $reset) = @_;
 
@@ -325,9 +258,9 @@ sub _setConfigFile
 #  say join( ', ', @sr[2,0]);
 #}
 
-  my $requestFilename = $self->requestFile;
+  my $requestFilename = $self->request_file;
   my $location = $self->location;
-  my $configFile;
+  my $config_file;
 
   return unless defined $requestFilename
             and defined $location
@@ -340,38 +273,38 @@ sub _setConfigFile
   if( $location == $self->C_CFF_CONFIGDIR )
   {
     my $config_dir = AppState->instance->config_dir;
-    $configFile = "$config_dir/$basename";
+    $config_file = "$config_dir/$basename";
   }
 
   elsif( $location == $self->C_CFF_WORKDIR )
   {
     my $work_dir = AppState->instance->work_dir;
-    $configFile = "$work_dir/$basename";
+    $config_file = "$work_dir/$basename";
   }
 
   elsif( $location == $self->C_CFF_TEMPDIR )
   {
     my $temp_dir = AppState->instance->temp_dir;
-    $configFile = "$temp_dir/$basename";
+    $config_file = "$temp_dir/$basename";
   }
 
   elsif( $location == $self->C_CFF_FILEPATH )
   {
-    $configFile = Cwd::realpath($requestFilename);
+    $config_file = Cwd::realpath($requestFilename);
   }
 
   # Change the filename extension and save the filename in the store object.
   #
   my $plObj = $self->_getStoragePlugin( undef, undef, $reset);
-  my $extension = $plObj->fileExt;
-  if( $configFile !~ m/\.$extension$/ )
+  my $extension = $plObj->file_ext;
+  if( $config_file !~ m/\.$extension$/ )
   {
-    $configFile =~ s/\.\w+$//;
-    $configFile .= ".$extension";
+    $config_file =~ s/\.\w+$//;
+    $config_file .= ".$extension";
   }
 
-  $plObj->_configFile($configFile);
-  $self->wlog( "Config filename set to $configFile", $self->C_CFF_CFGFILESET);
+  $plObj->_configFile($config_file);
+  $self->log( $self->C_CFF_CFGFILESET, [$config_file]);
 }
 
 #-------------------------------------------------------------------------------
@@ -383,16 +316,23 @@ sub _getStoragePlugin
   $reset //= $self->C_CFF_NORESETCFG;
   my $storeObject;
 
-  # Check if object is stored before
+  # Check if object is stored before and if we do not have to reset object.
   #
-  if( $self->_hasStoreTypeObject and $reset == $self->C_CFF_NORESETCFG )
+  if( $self->_has_store_type_object and $reset == $self->C_CFF_NORESETCFG )
   {
-    $storeObject = $self->_storeTypeObject;
+    $storeObject = $self->_store_type_object;
   }
 
   else
   {
-    my $pm = $self->_pluginManager;
+    if( $self->_has_store_type_object )
+    {
+#      $storeObject = $self->_store_type_object;
+#      $storeObject->cleanup if $storeObject->can('cleanup');
+#      delete $storeObject;
+    }
+
+    my $pm = $self->_plugin_manager;
 
     # Always use C_PLG_CREATEALW to get a new object because it is possible
     # to get the same object for other config files.
@@ -403,7 +343,7 @@ sub _getStoragePlugin
                      }
                    );
 
-    $self->_setStoreTypeObject($storeObject);
+    $self->_set_store_type_object($storeObject);
   }
 
   $storeObject->options($options) if ref $options eq 'HASH';
@@ -417,10 +357,7 @@ sub init
 {
   my( $self, $options, $control) = @_;
   my $storagePlugin = $self->_getStoragePlugin( $options, $control);
-
-  $self->wlog( "Config", $storagePlugin->configFile, "initialized"
-             , $self->C_CFF_STOREPLGINIT
-             );
+  $self->log( $self->C_CFF_STOREPLGINIT, [$storagePlugin->config_file]);
 }
 
 #-------------------------------------------------------------------------------
@@ -457,13 +394,13 @@ sub delete
 
   else
   {
-    $self->wlog( "Cannot delete() documents", $self->C_CFF_CANNOTDELDOC);
+    $self->log($self->C_CFF_CANNOTDELDOC);
   }
 }
 
 #-------------------------------------------------------------------------------
 #
-sub cloneDocuments
+sub clone_documents
 {
   my($self) = @_;
 
@@ -474,7 +411,7 @@ sub cloneDocuments
 
 #-------------------------------------------------------------------------------
 #
-sub cloneDocument
+sub clone_document
 {
   my( $self, $documentNbr) = @_;
 
@@ -483,24 +420,6 @@ sub cloneDocument
   local $Storable::Deparse = 1;
   local $Storable::Eval = 1;
   return Storable::dclone($doc);
-
-#==========
-  my $clonedData = undef;
-  my $storagePlugin = $self->_getStoragePlugin;
-  if( $storagePlugin->can('clone') )
-  {
-    $clonedData = $storagePlugin->clone($self->get_document($documentNbr));
-    # test for wrong doc nbr!!!!!!!!!!
-  }
-
-  else
-  {
-    $self->wlog( "Cannot clone() documents in", ref $storagePlugin
-               , $self->C_CFF_CANNOTCLODOC
-               );
-  }
-
-  return $clonedData;
 }
 
 #-------------------------------------------------------------------------------
@@ -512,26 +431,10 @@ sub clone
   local $Storable::Deparse = 1;
   local $Storable::Eval = 1;
   return Storable::dclone($data);
-
-#==========
-#  my( $self) = @_;
-  my $clonedDocs = undef;
-  my $storagePlugin = $self->_getStoragePlugin;
-  if( $storagePlugin->can('clone') )
-  {
-    $clonedDocs = $storagePlugin->clone($self->get_documents);
-    $self->wlog( "Document cloned = $clonedDocs", $self->C_CFF_DOCCLONED);
-  }
-
-  else
-  {
-    $self->wlog( "Cannot clone() documents", $self->C_CFF_CANNOTCLODOC);
-  }
-
-  return $clonedDocs;
 }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 
 1;
 

@@ -12,6 +12,12 @@ extends 'AppState::NodeTree::NodeRoot';
 
 require AppState;
 require AppState::NodeTree::NodeAttr;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_NDE_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
 
 #-------------------------------------------------------------------------------
 has name =>
@@ -68,21 +74,11 @@ has _local_data =>
     );
 
 #-------------------------------------------------------------------------------
+#
 sub BUILD
 {
   my($self) = @_;
-
   AppState->instance->log_init('==N');
-
-  if( $self->meta->is_mutable )
-  {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_NDE_ATTROVERWR', 'M_WARNING');
-
-    $self->meta->make_immutable;
-  }
 }
 
 #-------------------------------------------------------------------------------
@@ -184,7 +180,7 @@ sub insert_after_node
 #  {
 #    if( $self->get_child($i) == $node )
 #    {
-#      $self->setChild( $i, $newNode);
+#      $self->set_child( $i, $newNode);
 #      last;
 #    }
 #  }
@@ -262,10 +258,7 @@ sub push_attribute
 #say "PA 1: ", $attrNode1->name, " == ", $attrNode2->name;
     if( $attrNode1->name eq $attrNode2->name )
     {
-      $self->wlog( "Attribute name '" . $attrNode1->name
-                 . "' overwritten with new value"
-                 , $self->C_NDE_ATTROVERWR
-                 );
+      $self->log( $self->C_NDE_ATTROVERWR, [$attrNode1->name]);
       $attrNode2->value($attrNode1->value);
       $found = $attrNode2;
       last;
@@ -278,7 +271,7 @@ sub push_attribute
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

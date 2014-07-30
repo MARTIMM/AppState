@@ -15,7 +15,33 @@ require AppState::NodeTree::Node;
 require AppState::NodeTree::NodeDOM;
 require AppState::NodeTree::NodeText;
 require AppState::NodeTree::NodeAttr;
+use AppState::Ext::Meta_Constants;
 
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::NodeTree::Node/NodeRoot');
+const( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');           
+const( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');           
+const( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');           
+const( 'C_NT_ADDATTRTOPARENT' ,'M_INFO', 'Add attr %s=%s to parent=%s');
+const( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');          
+const( 'C_NT_MODINIT'         ,'M_INFO', 'Object from module %s initialized properly');
+const( 'C_NT_MISSMETHODS'     ,'M_FATAL', 'Missing methods [%s] in module %s');
+const( 'C_NT_NOHANDLER'       ,'M_F_WARNING', 'No %s handler. No use to traverse tree1(%s)');
+
+# Tree traversing codes
+#
+const('C_NT_DEPTHFIRST1'      ,'M_CODE', 'Depth first method 1');
+const('C_NT_DEPTHFIRST2'      ,'M_CODE', 'Depth first method 2');
+const('C_NT_BREADTHFIRST1'    ,'M_CODE', 'Breadth first method 1');
+const('C_NT_BREADTHFIRST2'    ,'M_CODE', 'Breadth first method 2');
+
+# Tree building codes
+#
+const('C_NT_NODEMODULE'       ,'M_CODE', 'Perl module producing nodes');
+const('C_NT_VALUEDMODULE'     ,'M_CODE', 'Perl module producing a value');
+const('C_NT_ATTRIBUTEMODULE'  ,'M_CODE', 'Perl module producing an attribute value');
 
 #-------------------------------------------------------------------------------
 #
@@ -92,47 +118,12 @@ has node_handler_end =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('NT');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_NT_NOTNODE',               'M_ERROR');
-    $self->const( 'C_NT_ADDATTR',               'M_INFO');
-    $self->const( 'C_NT_NODEADDTOPARENT',       'M_INFO');
-    $self->const( 'C_NT_ADDTEXTTOPARENT',       'M_INFO');
-    $self->const( 'C_NT_ADDATTRTOPARENT',       'M_INFO');
-    $self->const( 'C_NT_FORCEDINFO',            'M_F_INFO');
-    $self->const( 'C_NT_PARSEERROR',            'M_ERROR');
-    $self->const( 'C_NT_MODINIT',               'M_INFO');
-    $self->const( 'C_NT_MODINCOMPLETE',         'M_F_WARNING');
-    $self->const( 'C_NT_NOUPHANDLER',           'M_F_WARNING');
-    $self->const( 'C_NT_NOHANDLER',             'M_F_WARNING');
-#    $self->const( 'C_NT_', 'M_INFO');
-
-    # Tree traversing codes
-    #
-    $self->const('C_NT_DEPTHFIRST1',            'M_CODE');
-    $self->const('C_NT_DEPTHFIRST2',            'M_CODE');
-    $self->const('C_NT_BREADTHFIRST1',          'M_CODE');
-    $self->const('C_NT_BREADTHFIRST2',          'M_CODE');
-
-    # Tree building codes
-    #
-    $self->const('C_NT_NODEMODULE',             'M_CODE');
-    $self->const('C_NT_VALUEDMODULE',           'M_CODE');
-    $self->const('C_NT_ATTRIBUTEMODULE',        'M_CODE');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('NT');
 }
 
 #-------------------------------------------------------------------------------
 #
-sub cleanup
+sub plugin_cleanup
 {
   my($self) = @_;
 }
@@ -154,10 +145,7 @@ sub convert_to_node_tree
 
   elsif( ref $node )
   {
-    $self->wlog( "Cannot use other types of node than"
-               . " 'AppState::NodeTree::Node or NodeRoot'"
-               , $self->C_NT_NOTNODE
-               );
+    $self->log($self->C_NT_NOTNODE);
     return undef;
   }
 
@@ -315,7 +303,7 @@ sub _convert_to_node_tree
           $node->add_attribute($exAk => $attrVal);
         }
 
-        $self->wlog( 'Add attrs to node=' . $node->name, $self->C_NT_ADDATTR);
+        $self->log( $self->C_NT_ADDATTR, [$node->name]);
       }
 
       # Process children of node
@@ -388,23 +376,20 @@ sub _mkNode
     #
     $node = AppState::NodeTree::NodeText->new( value => '' . $rawDataNode);
     $parent_node->link_with_node($node);
-    $self->wlog( 'Add text to parent=' . $parent_node->name, $self->C_NT_ADDTEXTTOPARENT);
+    $self->log( $self->C_NT_ADDTEXTTOPARENT, [$parent_node->name]);
   }
 
   else
   {
     $node = AppState::NodeTree::Node->new( name => $nodename);
     $parent_node->link_with_node($node);
-    $self->wlog( 'Add node ' . $node->name
-               . ' to parent ' . $parent_node->name
-               , $self->C_NT_NODEADDTOPARENT
-               );
+    $self->log( $self->C_NT_NODEADDTOPARENT, [ $node->name, $parent_node->name]);
 
     if( defined $value )
     {
       my $nodeT = AppState::NodeTree::NodeText->new( value => '' . $value);
       $node->link_with_node($nodeT);
-      $self->wlog( 'Add text to parent=' . $node->name, $self->C_NT_ADDTEXTTOPARENT );
+      $self->log( $self->C_NT_ADDTEXTTOPARENT, [$node->name]);
     }
 
     $self->_setAttributes( $node, $rawDataNode);
@@ -459,9 +444,7 @@ sub _setAttributes
                                                  , value => '' . $ov
                                                  );
     $node->link_with_node($nodeA);
-    $self->wlog( "Add attr $ok=$ov to parent=" . $node->name
-               , $self->C_NT_ADDATTRTOPARENT
-               );
+    $self->log( $self->C_NT_ADDATTRTOPARENT, [ $ok, $ov, $node->name]);
   }
 }
 
@@ -488,16 +471,12 @@ EOPCD
     # Evaluate code
     #
     eval($code);
-    if( my $e = $@ )
+    if( my $err = $@ )
     {
       # Failure. If logging is on the informational messages must always be
       # written.
       #
-      $self->wlog( "Parsing error found in module $modName"
-                 , $self->C_NT_FORCEDINFO
-                 );
-      $self->wlog( "Error: " . $e, $self->C_NT_FORCEDINFO);
-      $self->wlog( "Code: " . $code, $self->C_NT_PARSEERROR);
+      $self->log( $self->C_NT_PARSEERROR, [ $modName, $err]);
     }
 
     else
@@ -506,31 +485,19 @@ EOPCD
     }
   }
 
-#  else
+  # Module loaded. Check if new() and process() can be run.
+  #
+  if( $modName->can('new') and $modName->can('process') )
   {
-    # Module loaded. Check if new() and process() can be run.
-    #
-    if( $modName->can('new') and $modName->can('process') )
-    {
-      $mobj = $modName->new(object_data => $object_data);
-      $self->wlog( "Object from module $modName initialized properly"
-                 , $self->C_NT_MODINIT
-                 );
-
-#      $processResult = $mobj->process;
-      $mobj->process;
-    }
-
-    else
-    {
-      $self->wlog( 'Object of class $modName not initialized,'
-                 . ' new() and or process() not found.'
-                 , $self->M_WARNING
-                 );
-    }
+    $mobj = $modName->new(object_data => $object_data);
+    $self->log( $self->C_NT_MODINIT, [$modName]);
+    $mobj->process;
   }
 
-#  return ( $processResult, $mobj);
+  else
+  {
+    $self->log( $self->C_NT_MISSMETHODS, [ ' new, process', $modName]);
+  }
 }
 
 
@@ -553,9 +520,7 @@ sub traverse
 
     else
     {
-      $self->wlog( "No 'up'-handler. No use to traverse tree1(DF1)."
-                 , $self->C_NT_NOUPHANDLER
-                 );
+      $self->log( $self->C_NT_NOHANDLER, [ 'up', $self->C_NT_DEPTHFIRST1]);
     }
   }
 
@@ -588,9 +553,7 @@ sub traverse
 
     else
     {
-      $self->wlog( 'No handler. No use to traverse tree(BF1).'
-                 , $self->C_NT_NOHANDLER
-                 );
+      $self->log( $self->C_NT_NOHANDLER, [ '', $self->C_NT_BREADTHFIRST1]);
     }
   }
 
@@ -606,9 +569,7 @@ sub traverse
 
     else
     {
-      $self->wlog( 'No handler. No use to traverse tree(BF2).'
-                 , $self->C_NT_NOHANDLER
-                 );
+      $self->log( $self->C_NT_NOHANDLER, [ '', $self->C_NT_BREADTHFIRST2]);
     }
   }
 }
@@ -690,7 +651,7 @@ sub _traverseBF2
   }
 }
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

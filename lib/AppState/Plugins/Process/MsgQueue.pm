@@ -18,18 +18,18 @@ use IPC::SysV (qw( ftok IPC_CREAT IPC_NOWAIT S_IRUSR S_IWUSR));
 #my $m = AppState::Ext::Constants->new;
 
 #-------------------------------------------------------------------------------
-has msgQueue =>
+has msg_queue =>
     ( is                => 'ro'
     , isa               => 'IPC::Msg'
     , writer            => '_msgQueue'
-    , predicate         => 'hasQueue'
+    , predicate         => 'has_queue'
     , clearer           => '_clearMsgQueue'
     );
 
-has queueKey =>
+has queue_key =>
     ( is                => 'rw'
     , isa               => 'Str'
-    , predicate         => 'hasQueueKey'
+    , predicate         => 'has_queue_key'
     , writer            => '_queueKey'
     );
 
@@ -38,21 +38,26 @@ has queueKey =>
 sub BUILD
 {
   my($self) = @_;
-
   AppState->instance->log_init('=MQ');
-
-  $self->_queueKey($self->genQueueKey) unless $self->hasQueueKey;
 }
 
 #-------------------------------------------------------------------------------
 #
-sub cleanup
+sub plugin_initialize
+{
+  my($self) = @_;
+  $self->_queueKey($self->gen_queue_key) unless $self->has_queue_key;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub plugin_cleanup
 {
   my($self) = @_;
 
-  if( $self->hasQueue )
+  if( $self->has_queue )
   {
-    $self->msgQueue->remove;
+    $self->msg_queue->remove;
     $self->_clearMsgQueue;
   }
 }
@@ -65,11 +70,11 @@ sub send
   my $type = $arguments->{type};
   my $msg = $arguments->{message};
 
-  if( !$self->hasQueue )
+  if( !$self->has_queue )
   {
     # Server needs to read from the queue to read the urls from it.
     #
-    my $mq = IPC::Msg->new( $self->queueKey
+    my $mq = IPC::Msg->new( $self->queue_key
                           , IPC_CREAT | S_IRUSR | S_IWUSR
                           );
 
@@ -88,9 +93,9 @@ sub send
     }
   }
 
-  if( $self->hasQueue )
+  if( $self->has_queue )
   {
-    $self->msgQueue->snd( $type, $msg);
+    $self->msg_queue->snd( $type, $msg);
     $self->wlog( "Message '$msg' of type '$type' sent.", $m->M_INFO);
   }
 
@@ -106,9 +111,9 @@ sub receive
 {
   my( $self, $arguments) = @_;
 
-  if( !$self->hasQueue )
+  if( !$self->has_queue )
   {
-    my $mq = IPC::Msg->new( $self->queueKey
+    my $mq = IPC::Msg->new( $self->queue_key
                           , IPC_CREAT | S_IRUSR | S_IWUSR
                           );
     if( ref $mq eq 'IPC::Msg' )
@@ -126,7 +131,7 @@ sub receive
     }
   }
 
-  if( $self->hasQueue )
+  if( $self->has_queue )
   {
     $arguments->{msg} = '';
     $arguments->{async} //= 0;
@@ -134,7 +139,7 @@ sub receive
     $arguments->{flags} = $m->MSG_NOERROR;
     $arguments->{flags} |= $arguments->{async} ? IPC_NOWAIT : 0;
 
-    $arguments->{type} = $self->msgQueue->rcv
+    $arguments->{type} = $self->msg_queue->rcv
                          ( $arguments->{msg}
                          , $arguments->{size}
                          , undef
@@ -163,7 +168,7 @@ sub receive
 # we need to write our own. It is some mapping of the path and key to a
 # 4 byte number.
 #
-sub genQueueKey
+sub gen_queue_key
 {
   my( $self) = @_;
 

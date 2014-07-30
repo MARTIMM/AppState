@@ -15,20 +15,14 @@ use Text::Tabs ();
 
 #-------------------------------------------------------------------------------
 #
-has '+fileExt' => ( default => 'yml');
+has '+file_ext' => ( default => 'yml');
 
 #-------------------------------------------------------------------------------
 #
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('==Y');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('==Y');
 }
 
 #-------------------------------------------------------------------------------
@@ -53,11 +47,9 @@ sub serialize
   # Evaluate and check for errors.
   #
   eval $script;
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to serialize YAML file:", $e
-               , $self->C_CIO_SERIALIZEFAIL
-               );
+    $self->log( $self->C_CIO_SERIALIZEFAIL, [ 'YAML', $self->config_file, $err]);
   }
 
   return $result;
@@ -86,55 +78,16 @@ sub deserialize
   # Evaluate and check for errors.
   #
   eval $script;
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to deserialize YAML file "
-               . $self->configFile . ": $e"
-               , $self->C_CIO_DESERIALFAIL
-               );
+    $self->log( $self->C_CIO_DESERIALFAIL, [ 'YAML', $self->config_file, $err]);
   }
 
   return $result;
 }
 
 #-------------------------------------------------------------------------------
-# Deserialize to data
-#
-sub XYZdeserialize
-{
-  my( $self, $text) = @_;
-  my( $script, $result);
-
-  $script = '';
-  $text //= '';
-
-#  eval
-  {
-    # Get all options and set them locally
-    #
-    for my $o (keys %{$self->options})
-    {
-#      eval {local '$YAML::$o = ' . $self->options->{$o};};
-    }
-
-    # Load yaml text and convert into result
-    #
-    $result = $text eq "" ? undef : [YAML::Load(Text::Tabs::expand($text))];
-  }
-
-  if( my $e = $@ )
-  {
-    $self->wlog( "Failed to deserialize YAML file "
-               . $self->configFile . ": $e"
-               , $self->C_CIO_DESERIALFAIL
-               );
-  }
-
-  return $result;
-}
-
-#-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

@@ -18,6 +18,16 @@ Getopt::Long::Configure(qw(bundling_override auto_abbrev no_getopt_compat));
 use Text::Wrap ('$columns');
 local $columns = 80;
 
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_CMD_OPTPROCESSED', 'M_INFO', 'Options processed');
+const( 'C_CMD_OPTCHANGED',   'M_INFO', 'Option processing changed: %s');
+const( 'C_CMD_OPTPROCFAIL',  'M_F_WARNING', 'There are errors processing commandline options');
+const( 'C_CMD_NODESCRIPTION','M_F_WARNING', 'Description of command not defined');
+
 #-------------------------------------------------------------------------------
 
 has _arguments =>
@@ -61,26 +71,12 @@ sub BUILD
 {
   my($self) = @_;
 
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=CL');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_CMD_OPTPROCESSED', 'M_INFO');
-    $self->const( 'C_CMD_OPTCHANGED',   'M_INFO');
-    $self->const( 'C_CMD_OPTPROCFAIL',  'M_F_WARNING');
-    $self->const( 'C_CMD_NODESCRIPTION','M_F_WARNING');
-#    $self->const( 'C_CMD_', 'M_INFO');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('=CL');
 }
 
 #-------------------------------------------------------------------------------
 #
-sub cleanup
+sub plugin_cleanup
 {
   my($self) = @_;
 }
@@ -93,9 +89,7 @@ sub config_getopt_long
   my( $self, @processingOptions) = @_;
 
   Getopt::Long::Configure(@processingOptions);
-  $self->wlog( "Option processing changed: " . join( ' ', @processingOptions)
-             , $self->C_CMD_OPTCHANGED
-             );
+  $self->log( $self->C_CMD_OPTCHANGED, [join( ' ', @processingOptions)]);
 }
 
 #-------------------------------------------------------------------------------
@@ -106,13 +100,7 @@ sub initialize
 {
   my( $self, $description, $argumentSet, $optionSet, $usersUsage, $examples) = @_;
 
-  if( !defined $description )
-  {
-#    $self->wlog( 'Description of command not defined'
-#               , $self->C_CMD_NODESCRIPTION
-#               );
-    return;
-  }
+  return $self->log($self->C_CMD_NODESCRIPTION) unless defined $description;
 
   # Initialize arguments.
   #
@@ -254,7 +242,7 @@ sub initialize
     $self->_set_options($options);
     $self->_set_arguments([@ARGV]);
 
-    $self->wlog( "Options processed", $self->C_CMD_OPTPROCESSED);
+    $self->log($self->C_CMD_OPTPROCESSED);
   }
 
   else
@@ -262,14 +250,12 @@ sub initialize
     $self->_set_options({});
     $self->_set_arguments([]);
 
-    $self->wlog( "There are errors processing commandline options"
-               , $self->C_CMD_OPTPROCFAIL
-               );
+    $self->log($self->C_CMD_OPTPROCFAIL);
   }
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

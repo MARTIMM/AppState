@@ -13,19 +13,13 @@ extends qw(AppState::Ext::ConfigIO);
 
 #-------------------------------------------------------------------------------
 #
-has '+fileExt' => ( default => 'stb');
+has '+file_ext' => ( default => 'stb');
 
 #-------------------------------------------------------------------------------
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('==S');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('==S');
 }
 
 #-------------------------------------------------------------------------------
@@ -49,11 +43,11 @@ sub serialize
   # Evaluate and check for errors.
   #
   eval($script);
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to serialize storable file: $e"
-               , $self->C_CIO_SERIALIZEFAIL
-               );
+    $self->log( $self->C_CIO_SERIALIZEFAIL
+              , [ 'Storable', $self->config_file, $err]
+              );
   }
 
   return $result;
@@ -83,19 +77,18 @@ sub deserialize
   # Evaluate and check for errors.
   #
   eval($script);
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to deserialize Storable file"
-               . $self->configFile . ": $e"
-               , $self->C_CIO_DESERIALFAIL
-               );
+    $self->log( $self->C_CIO_DESERIALFAIL
+              , [ 'Storable', $self->config_file, $err]
+              );
   }
 
   return $result;
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

@@ -13,19 +13,13 @@ use Data::Dumper ();
 
 #-------------------------------------------------------------------------------
 #
-has '+fileExt' => ( default => 'dd');
+has '+file_ext' => ( default => 'dd');
 
 #-------------------------------------------------------------------------------
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('==D');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('==D');
 }
 
 #-------------------------------------------------------------------------------
@@ -48,11 +42,11 @@ sub serialize
   # Evaluate and check for errors.
   #
   eval($script);
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( "Failed to serialize data dumper file: $e"
-               , $self->C_CIO_SERIALIZEFAIL
-               );
+    $self->log( $self->C_CIO_SERIALIZEFAIL
+              , [ 'DataDumper', $self->config_file, $err]
+              );
   }
 
   return $result;
@@ -81,21 +75,18 @@ sub deserialize
   # Evaluate and check for errors.
   #
   eval($script);
-  if( my $e = $@ )
+  if( my $err = $@ )
   {
-    $self->wlog( [ "Failed to deserialize data dumper file"
-                 , $self->configFile . ":"
-                 , $e
-                 ]
-               , $self->C_CIO_DESERIALFAIL
-               );
+    $self->log( $self->C_CIO_DESERIALFAIL
+              , [ 'DataDumper', $self->config_file, $err]
+              );
   }
 
   return $documents;
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

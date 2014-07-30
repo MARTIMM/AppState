@@ -16,19 +16,6 @@ has value =>
     , isa               => 'Str'
     );
 
-#has parent =>
-#    ( is               => 'rw'
-#    , isa              => 'AppState::NodeTree::Node'
-#    , predicate        => 'has_parent'
-#    , clearer          => 'reset_parent'
-#    );
-
-#-------------------------------------------------------------------------------
-#sub BUILD
-#{
-#  my($self) = @_;
-#}
-
 #-------------------------------------------------------------------------------
 sub xpath_is_document_node              { return 0; }
 sub xpath_is_element_node               { return 0; }
@@ -58,9 +45,7 @@ sub get_children                        { return (); }
 #sub children                           { return []; }
 sub name                               { return 'T'; }
 #-------------------------------------------------------------------------------
-
 __PACKAGE__->meta->make_immutable;
-
 1;
 
 __END__

@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::PluginManager;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.6");
+use version; our $VERSION = '' . version->parse("v0.1.7");
 use 5.010001;
 
 use namespace::autoclean;
@@ -14,8 +14,32 @@ extends qw( Class::Publisher AppState::Ext::Constants);
 
 use AppState;
 
-require File::Find;
+require File::Find::Rule;
 require Cwd;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
+const( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
+const( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
+const( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
+const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
+const( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
+const( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
+const( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
+const( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
+const( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
+const( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');
+const( 'C_PLG_FUNCSTUBFAIL', 'M_FATAL', 'Error evaluating function stub %s::%s. err: %s');
+const( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
+
+# Object creation codes
+#
+const( 'C_PLG_NOCREATE',     'M_CODE', 'Do not create plugin if not exists');
+const( 'C_PLG_CREATEIF',     'M_CODE', 'Create plugin if not exists');
+const( 'C_PLG_CREATEALW',    'M_CODE', 'Create plugin always');
 
 #-------------------------------------------------------------------------------
 # Structure with all objects
@@ -39,59 +63,37 @@ has plugged_objects =>
     );
 
 #-------------------------------------------------------------------------------
-#
-sub BUILD
+sub DEMOLISH
 {
-  my($self) = @_;
-
-  # Cannot use methods here which use an instance of AppState because
-  # plugin_manager is created when the AppState is in its instantiation phase
-  # and when executing a line such as 'AppState->instance()' the program will
-  # get into deep recursion loop.
-  #
-  #$self->log_init('=PM');
-
-  if( $self->meta->is_mutable )
-  {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
-    $self->const( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
-    $self->const( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
-    $self->const( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
-    $self->const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
-    $self->const( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
-    $self->const( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
-    $self->const( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
-    $self->const( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
-    $self->const( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
-    $self->const( 'C_PLG_PLGCODEFAIL',  'M_FATAL', 'Error evaluating code');
-    $self->const( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
-#    $self->const( 'C_PLG_', '');
-
-    # Object creation codes
-    #
-    $self->const( 'C_PLG_NOCREATE',     'M_CODE', 'Do not create plugin if not exists');
-    $self->const( 'C_PLG_CREATEIF',     'M_CODE', 'Create plugin if not exists');
-    $self->const( 'C_PLG_CREATEALW',    'M_CODE', 'Create plugin always');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  my ( $self) = @_;
+  $self->delete_all_subscribers;
 }
 
 #-------------------------------------------------------------------------------
-sub initialize
+# Initialize plugin manager when used as a plugin
+#
+sub plugin_initialize
 {
   my ( $self) = @_;
   $self->log_init('=PM');
 }
 
 #-------------------------------------------------------------------------------
-sub DEMOLISH
+# Clean plugin manager when used as a plugin
+#
+sub plugin_cleanup
 {
   my ( $self) = @_;
-  $self->delete_all_subscribers;
+  $self->cleanup;
+}
+
+#-------------------------------------------------------------------------------
+# Initialize plugin manager when used as a plugin
+#
+sub initialize
+{
+  my ( $self) = @_;
+  $self->log_init('=PM');
 }
 
 #-------------------------------------------------------------------------------
@@ -111,7 +113,7 @@ sub cleanup
     if( ref $c )
     {
       $self->log( $self->C_PLG_PLGDELETED, [$pluginName]);
-      $c->cleanup(@arguments) if $c->can('cleanup');
+      $c->plugin_cleanup(@arguments) if $c->can('plugin_cleanup');
       $self->get_plugin($pluginName)->{object} = undef;
     }
   }
@@ -120,45 +122,40 @@ sub cleanup
 #-------------------------------------------------------------------------------
 # Search for plugins in directories.
 #
+# $base         Start directory to begin search. Default current dir.
+# $max_depth    Maximum number of levels deep starting from base. Default is 1;
+# $search_regex Regular expression to match files. Default only perl modules.
+# $api_test     The methods which the module must have. When missing, a stub
+#               is generated. Default no methods needed.
+#
 sub search_plugins
 {
   my( $self, $search) = @_;
 
-  my $baseDir = $search->{base};
-  my $depthSearch = $search->{depthSearch};
-  my $searchRegex = $search->{searchRegex};
-  my $apiTest = $search->{apiTest};
+  my $base = $search->{base} // '.';
+  my $max_depth = $search->{max_depth} // 1;
+  my $search_regex = $search->{search_regex} // qr/.*\.pm/;
+  my $api_test = $search->{api_test} // [];
+#say "SP 0: $search, $base, $max_depth, $search_regex";
+#say "SP 1: ", join( ', ', caller);
 
-  my @modulePathList;
-
-  my $spl = File::Find::find
-  ( { bydepth => 1
-    , follow => 0
-    , wanted =>
-      sub
-      { my $path = $File::Find::dir;
-        my $fname = $_;
-
-        # The depth of a path is measured by the number of separators (/)
-        #
-        my $lseps = $path =~ m@(/)@g;
-        my $pathOk = ( $depthSearch >= 0 + $lseps
-                       and "$path/$fname" =~ $searchRegex
-                       and ! -d "$path/$fname"
-                     );
-
-        push @modulePathList, "$path/$fname" if $pathOk;
-      }
-    }
-  , $baseDir
-  );
+  my @module_path_list =
+    File::Find::Rule->file()
+      ->maxdepth($max_depth)
+      ->exec( sub
+              { my( $fname, $bname, $path) = @_;
+                return $path =~ $search_regex;
+              }
+            )
+      ->in($base)
+      ;
 
   # Initialize the plugin objects
   #
-  foreach my $mp (@modulePathList)
+  foreach my $mp (@module_path_list)
   {
     my $namespace = $mp;
-    $namespace =~ s/$baseDir\/?//;
+    $namespace =~ s/$base\/?//;
     my $name = $namespace;
     $name =~ s@[^/]+/@@g;
     $name =~ s/\.[^.]+$//;
@@ -175,8 +172,8 @@ sub search_plugins
     {
       $self->add_plugin( $name => { object => undef
                                   , class => $namespace
-                                  , libdir => $baseDir
-                                  , apiTest => $apiTest
+                                  , lib_root => $base
+                                  , api_test => $api_test
                                   }
                        );
     }
@@ -191,16 +188,16 @@ sub set_plugins
   my( $self, $set) = @_;
 
   my $baseDir = $set->{base};
-  my $apiTest = $set->{apiTest};
+  my $api_test = $set->{api_test};
   my $modules = $set->{modules};
 
   # When path doesn't exist, realpath() will return undef.
   #
-  my @modulePathList = map {Cwd::realpath($_)} @$modules;
+  my @module_path_list = map {Cwd::realpath($_)} @$modules;
 
   # Initialize the plugin objects
   #
-  foreach my $mp (@modulePathList)
+  foreach my $mp (@module_path_list)
   {
     next unless defined $mp;
 
@@ -223,8 +220,8 @@ sub set_plugins
     {
       $self->add_plugin( $name => { object => undef
                                   , class => $namespace
-                                  , libdir => $baseDir
-                                  , apiTest => $apiTest
+                                  , lib_root => $baseDir
+                                  , api_test => $api_test
                                   }
                        );
     }
@@ -350,9 +347,7 @@ sub get_object
   my %mOptions = ref $select->{modifyOptions} eq 'HASH'
                  ? %{$select->{modifyOptions}}
                  : ();
-  my $apiTest;
-
-#say "GO: $name, $create, $self";
+  my $api_test;
 
   # Check if there is a plugin by that name
   #
@@ -380,13 +375,15 @@ sub get_object
       if( !defined $plugin->{object} )
       {
         my $class = $plugin->{class};
-        my $lib = $plugin->{libdir};
+        my $lib = $plugin->{lib_root};
 
         eval(<<EOEVAL);
 push \@INC, '$lib';
 require $class;
 EOEVAL
-        die "\nModule $class has problems\n\n$@" if $@;
+        my $err = $@;
+#say STDERR "Plmgr: $err";
+        $self->log( $self->C_PLG_CODEFAIL, [ $class, $err]) if $err;
 
         # Create new object with init options
         #
@@ -411,7 +408,7 @@ EOEVAL
     elsif( $create == $self->C_PLG_CREATEALW )
     {
       my $class = $plugin->{class};
-      my $lib = $plugin->{libdir};
+      my $lib = $plugin->{lib_root};
       eval(<<EOEVAL);
 push \@INC, '$lib';
 require $class;
@@ -446,7 +443,7 @@ EOEVAL
     #
     if( $classCreated )
     {
-      $object->initialize if $object->can('initialize');
+      $object->plugin_initialize if $object->can('plugin_initialize');
       $self->notify_subscribers( ref $object, object => $object);
     }
 
@@ -463,10 +460,10 @@ EOEVAL
     # Check object for obligatory functions
     #
     my $plugin = $self->get_plugin($name);
-    $apiTest = $plugin->{apiTest};
-    if( ref $apiTest eq 'ARRAY' )
+    $api_test = $plugin->{api_test};
+    if( ref $api_test eq 'ARRAY' )
     {
-      for my $f (@$apiTest)
+      for my $f (@$api_test)
       {
         my $class = $plugin->{class};
         if( !$object->can($f) )
@@ -483,7 +480,8 @@ sub ${class}::$f
 }
 EOCODE
           eval($cmd);
-          $self->log( "Error evaluating code", $self->C_PLG_PLGCODEFAIL) if $@;
+          my $err = $@;
+          $self->log( $self->C_PLG_CODEFAIL, [ $class, $f, $err]) if $err;
         }
       }
     }
@@ -493,8 +491,8 @@ EOCODE
 }
 
 #-------------------------------------------------------------------------------
-no Moose;
-#__PACKAGE__->meta->make_immutable;
+#no Moose;
+__PACKAGE__->meta->make_immutable;
 
 1;
 #-------------------------------------------------------------------------------

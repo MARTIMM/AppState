@@ -11,13 +11,26 @@ extends qw(AppState::Ext::Constants);
 
 use AppState;
 use AppState::Ext::ConfigFile;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_CFM_CFGSELECTED'   , 'M_INFO', 'Config %s selected');
+const( 'C_CFM_CFGNOTEXIST'   , 'M_F_WARNING', 'Config %s not existent');
+const( 'C_CFM_CFGADDED'      , 'M_INFO', 'Config %s added');
+const( 'C_CFM_CFGEXISTS'     , 'M_F_WARNING', 'Config %s already exists');
+const( 'C_CFM_CFGMODIFIED'   , 'M_INFO', 'Config %s modified and selected');
+const( 'C_CFM_CFGDROPPED'    , 'M_INFO', 'Config %s dropped');
+const( 'C_CFM_CFGSELDEFAULT' , 'M_INFO', 'Current config set to %s');
+const( 'C_CFM_CFGFLREMOVED'  , 'M_INFO', 'Config %s removed');
 
 #-------------------------------------------------------------------------------
 # Config objects is a hash which is used to find an AppState::Ext::ConfigFile
 # object. There is always one object used as a default. The purpose of that
 # object is to keep track of where a storage is to be found and what type of
 # storage is used. The following fields are needed but can be set later;
-# store_type, location and requestFile.
+# store_type, location and request_file.
 #
 has _config_objects =>
     ( is                => 'ro'
@@ -27,9 +40,9 @@ has _config_objects =>
     , handles           =>
       { _set_config_object      => 'set'
       , _get_config_object      => 'get'
-      , nbrConfigObjects        => 'count'
-      , hasConfigObject         => 'exists'
-      , getConfigObjectNames    => 'keys'
+      , nbr_config_objects        => 'count'
+      , has_config_object         => 'exists'
+      , get_config_object_names    => 'keys'
       , _drop_config_object     => 'delete'
       }
     );
@@ -50,15 +63,15 @@ has _current_config_object =>
     , handles           =>
       [ qw( get_documents set_documents get_current_document
             select_document nbr_documents add_documents
-            get_document set_document requestFile
+            get_document set_document request_file
 
             get_keys get_value set_value drop_value get_kvalue
             set_kvalue drop_kvalue pop_value push_value
             shift_value unshift_value
 
-            store_type location configFile
-            load save cloneDocuments
-            cloneDocument init delete
+            store_type location config_file
+            load save clone_documents
+            clone_document init delete
           )
 
         # From ConfigFile
@@ -90,46 +103,38 @@ has _current_config_object =>
 sub BUILD
 {
   my($self) = @_;
+  $self->log_init('=CM');
+}
 
-  if( $self->meta->is_mutable )
+#-------------------------------------------------------------------------------
+# Remove all but the default config
+#
+sub plugin_cleanup
+{
+  my($self) = @_;
+
+  foreach my $config_object_name ($self->get_config_object_names)
   {
-    # When logging gets active, set the label for this module
-    #
-    $self->log_init('=CM');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_CFM_CFGSELECTED'   , 'M_INFO');
-    $self->const( 'C_CFM_CFGNOTEXIST'   , 'M_F_WARNING');
-    $self->const( 'C_CFM_CFGADDED'      , 'M_INFO');
-    $self->const( 'C_CFM_CFGEXISTS'     , 'M_INFO');
-    $self->const( 'C_CFM_CFGMODIFIED'   , 'M_INFO');
-    $self->const( 'C_CFM_CFGDROPPED'    , 'M_INFO');
-    $self->const( 'C_CFM_CFGSELDEFAULT' , 'M_INFO');
-    $self->const( 'C_CFM_CFGFLREMOVED'  , 'M_INFO');
-#    $self->const( 'C_CFM_', 'M_INFO');
-#    $self->const( 'C_CFM_', 'M_INFO');
-
-    __PACKAGE__->meta->make_immutable;
+    next if $config_object_name eq 'defaultConfigObject';
+    $self->drop_config_object($config_object_name);
   }
 }
 
 #-------------------------------------------------------------------------------
 #
-sub initialize
+sub plugin_initialize
 {
   my($self) = @_;
 
   # Create default config object
   #
-  if( $self->nbrConfigObjects == 0 )
+  if( $self->nbr_config_objects == 0 )
   {
     my $cff = AppState::Ext::ConfigFile->new;
     $cff->store_type('Yaml');
 
     $cff->location($cff->C_CFF_CONFIGDIR);
-    $cff->requestFile('config');
+    $cff->request_file('config');
 
     # Place it in the _config_objects HashRef
     #
@@ -147,26 +152,22 @@ sub initialize
 #
 sub select_config_object
 {
-  my( $self, $configObjectName) = @_;
+  my( $self, $config_object_name) = @_;
 
-  if( $self->hasConfigObject($configObjectName) )
+  if( $self->has_config_object($config_object_name) )
   {
-    $self->wlog( "Config '$configObjectName' selected"
-               , $self->C_CFM_CFGSELECTED
-               );
+    $self->log( $self->C_CFM_CFGSELECTED, [$config_object_name]);
     if( !defined $self->_current_config_object
-     or $configObjectName ne $self->_current_config_object )
+     or $config_object_name ne $self->_current_config_object )
     {
-      $self->_set_current_config_object_name($configObjectName);
-      $self->_set_current_config_object($self->_get_config_object($configObjectName));
+      $self->_set_current_config_object_name($config_object_name);
+      $self->_set_current_config_object($self->_get_config_object($config_object_name));
     }
   }
 
   else
   {
-    $self->wlog( "Config '$configObjectName' not existent"
-               , $self->C_CFM_CFGNOTEXIST
-               );
+    $self->log( $self->C_CFM_CFGNOTEXIST, [$config_object_name]);
   }
 }
 
@@ -176,26 +177,24 @@ sub select_config_object
 #
 sub add_config_object
 {
-  my( $self, $configObjectName, $configStruct) = @_;
+  my( $self, $config_object_name, $config_struct) = @_;
 
-  if( $self->hasConfigObject($configObjectName) )
+  if( $self->has_config_object($config_object_name) )
   {
-    $self->wlog( "Config '$configObjectName' already exists"
-               , $self->C_CFM_CFGEXISTS
-               );
-    $self->select_config_object($configObjectName);
+    $self->log( $self->C_CFM_CFGEXISTS, [$config_object_name]);
+    $self->select_config_object($config_object_name);
   }
 
   else
   {
-    $self->wlog( "Config '$configObjectName' added", $self->C_CFM_CFGADDED);
-    my $configObject = AppState::Ext::ConfigFile->new(%$configStruct);
-    $self->_set_config_object( $configObjectName, $configObject);
-    $self->_set_current_config_object_name($configObjectName);
-    $self->_set_current_config_object($configObject);
+    $self->log( $self->C_CFM_CFGADDED, [$config_object_name]);
+    my $config_object = AppState::Ext::ConfigFile->new(%$config_struct);
+    $self->_set_config_object( $config_object_name, $config_object);
+    $self->_set_current_config_object_name($config_object_name);
+    $self->_set_current_config_object($config_object);
   }
 
-  $self->wlog( "Config '$configObjectName' selected", $self->C_CFM_CFGSELECTED);
+  $self->log( $self->C_CFM_CFGSELECTED, [$config_object_name]);
 }
 
 #-------------------------------------------------------------------------------
@@ -204,33 +203,27 @@ sub add_config_object
 #
 sub modify_config_object
 {
-  my( $self, $configObjectName, $configStruct) = @_;
+  my( $self, $config_object_name, $config_struct) = @_;
 
-  if( $self->hasConfigObject($configObjectName) )
+  if( $self->has_config_object($config_object_name) )
   {
-    $self->_set_current_config_object_name($configObjectName);
-    $self->_set_current_config_object($self->_get_config_object($configObjectName));
-    $self->wlog( "Config '$configObjectName' selected"
-               , $self->C_CFM_CFGSELECTED
-               );
+    $self->_set_current_config_object_name($config_object_name);
+    $self->_set_current_config_object($self->_get_config_object($config_object_name));
+    $self->log( $self->C_CFM_CFGSELECTED, [$config_object_name]);
 
-    $self->store_type($configStruct->{store_type})
-      if defined $configStruct->{store_type};
-    $self->location($configStruct->{location})
-      if defined $configStruct->{location};
-    $self->requestFile($configStruct->{requestFile})
-      if defined $configStruct->{requestFile};
+    $self->store_type($config_struct->{store_type})
+      if defined $config_struct->{store_type};
+    $self->location($config_struct->{location})
+      if defined $config_struct->{location};
+    $self->request_file($config_struct->{request_file})
+      if defined $config_struct->{request_file};
 
-    $self->wlog( "Config '$configObjectName' modified and selected"
-               , $self->C_CFM_CFGMODIFIED
-               );
+    $self->log( $self->C_CFM_CFGMODIFIED, [$config_object_name]);
   }
 
   else
   {
-    $self->wlog( "Config '$configObjectName' not found"
-               , $self->C_CFM_CFGNOTEXIST
-               );
+    $self->log( $self->C_CFM_CFGNOTEXIST);
   }
 }
 
@@ -242,30 +235,26 @@ sub modify_config_object
 #
 sub drop_config_object
 {
-  my( $self, $configObjectName) = @_;
+  my( $self, $config_object_name) = @_;
 
-  if( $configObjectName ne 'defaultConfigObject'
-  and $self->hasConfigObject($configObjectName)
+  if( $config_object_name ne 'defaultConfigObject'
+  and $self->has_config_object($config_object_name)
     )
   {
-    if( $configObjectName eq $self->current_config_object_name )
+    if( $config_object_name eq $self->current_config_object_name )
     {
       $self->_set_current_config_object_name('defaultConfigObject');
       $self->_set_current_config_object($self->_get_config_object('defaultConfigObject'));
-      $self->wlog( "Current config set to 'defaultConfigObject'"
-                 , $self->C_CFM_CFGSELDEFAULT
-                 );
+      $self->log( $self->C_CFM_CFGSELDEFAULT, [$config_object_name]);
     }
 
-    $self->_drop_config_object($configObjectName);
-    $self->wlog( "Config '$configObjectName' dropped", $self->C_CFM_CFGDROPPED);
+    $self->_drop_config_object($config_object_name);
+    $self->log( $self->C_CFM_CFGDROPPED, [$config_object_name]);
   }
 
   else
   {
-    $self->wlog( "Config '$configObjectName' not found"
-               , $self->C_CFM_CFGNOTEXIST
-               );
+    $self->log( $self->C_CFM_CFGNOTEXIST, [$config_object_name]);
   }
 }
 
@@ -276,43 +265,36 @@ sub drop_config_object
 #
 sub remove_config_object
 {
-  my( $self, $configObjectName) = @_;
+  my( $self, $config_object_name) = @_;
 
-  if( $configObjectName ne 'defaultConfigObject'
-  and $self->hasConfigObject($configObjectName)
+  if( $config_object_name ne 'defaultConfigObject'
+  and $self->has_config_object($config_object_name)
     )
   {
-    if( $configObjectName eq $self->current_config_object_name )
+    if( $config_object_name eq $self->current_config_object_name )
     {
       $self->_set_current_config_object_name('defaultObjectConfig');
       $self->_set_current_config_object($self->_get_config_object('defaultConfigObject'));
-      $self->wlog( "Current config set to 'defaultObjectConfig'"
-                 , $self->C_CFM_CFGSELDEFAULT
-                 );
+      $self->log( $self->C_CFM_CFGSELDEFAULT, [$config_object_name]);
     }
 
-    my $configFile = $self->_get_config_object($configObjectName)->configFile;
+    my $config_file = $self->_get_config_object($config_object_name)->config_file;
 
-    $self->_drop_config_object($configObjectName);
-    $self->wlog( "Config '$configObjectName' removed"
-               , $self->C_CFM_CFGDROPPED
-               );
-    unlink $configFile;
-    $self->wlog( "Configfile '$configFile' removed"
-               , $self->C_CFM_CFGFLREMOVED
-               );
+    $self->_drop_config_object($config_object_name);
+    $self->log( $self->C_CFM_CFGDROPPED, [$config_object_name]);
+    unlink $config_file;
+    $self->log( $self->C_CFM_CFGFLREMOVED, [$config_object_name]);
 
   }
 
   else
   {
-    $self->wlog( "Config '$configObjectName' not found"
-               , $self->C_CFM_CFGNOTEXIST
-               );
+    $self->log( $self->C_CFM_CFGNOTEXIST, [$config_object_name]);
   }
 }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 
 1;
 

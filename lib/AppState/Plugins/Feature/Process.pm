@@ -23,9 +23,32 @@ require IPC::Msg;
 require Digest::MD5;
 require Proc::ProcessTable;
 
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+const( 'C_PRC_PIDFILEREMOVED',  'M_INFO', 'Pid file %s removed');
+const( 'C_PRC_CLEANCOMM',       'M_INFO', 'Cleanup communication');
+const( 'C_PRC_PIDFILECREATED',  'M_INFO', 'Pid file %s created for server with pid %s');
+const( 'C_PRC_PARENTSTOPPED',   'M_INFO', 'Parent process stopped');
+const( 'C_PRC_SERVERSTARTED',   'M_INFO', 'Server process started with pid %s');
+const( 'C_PRC_SIGNALSENT',      'M_INFO', 'Sent signal to server');
+const( 'C_PRC_SERVERINTERRUPT', 'M_F_WARNING', 'Server interrupted');
+const( 'C_PRC_PIDOK',           'M_INFO', 'Pid %s checked and is ok');
+const( 'C_PRC_PIDNOTFOUND',     'M_F_WARNING', 'Pid %s checked but not found');
+const( 'C_PRC_RECEIVE',         'M_INFO', 'Receive using %s type config');
+const( 'C_PRC_NOPLUGIN',        'M_ERROR', 'Method %s plugin not loaded for receiving');
+
+# Server status codes
+#
+const( 'C_PRC_SRVROK',          'M_CODE', 'Server started ok');
+const( 'C_PRC_SRVRASTRTD',      'M_CODE', 'Server already started');
+
+
 #-------------------------------------------------------------------------------
 
-has pidFile =>
+has pid_file =>
     ( is                => 'ro'
     , isa               => 'Str'
     , default           =>
@@ -35,13 +58,13 @@ has pidFile =>
       }
     );
 
-has cmmType =>
+has cmm_type =>
     ( is                => 'rw'
     , isa               => 'Str'
     , default           => 'MsgQueue'
     );
 
-has plugin_manager =>
+has _plugin_manager =>
     ( is                => 'ro'
     , isa               => 'AppState::Plugins::Feature::PluginManager'
     , init_arg          => undef
@@ -56,18 +79,14 @@ has plugin_manager =>
         my $path = Cwd::realpath($INC{"AppState.pm"});
         $path =~ s@/AppState.pm@@;
 
-        # Number of separators in the path is the depth of the base
-        #
-        my(@lseps) = $path =~ m@(/)@g;
-
         # Search for any modules
         #
         $pm->search_plugins( { base => $path
-                            , depthSearch => 2 + @lseps
-                            , searchRegex => qr@/AppState/Process/[A-Z][\w]+.pm$@
-                            , apiTest => [ qw( send receive)]
-                            }
-                          );
+                             , max_depth => 3
+                             , search_regex => qr@/AppState/Process/[A-Z][\w]+.pm$@
+                             , api_test => [ qw( send receive)]
+                             }
+                           );
 #$pm->list_plugin_names;
 
         return $pm;
@@ -89,78 +108,48 @@ has plugin_manager =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('PRC');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_PRC_PIDFILEREMOVED',       'M_INFO');
-    $self->const( 'C_PRC_CLEANCOMM',            'M_INFO');
-    $self->const( 'C_PRC_PIDFILECREATED',       'M_INFO');
-    $self->const( 'C_PRC_PARENTSTOPPED',        'M_INFO');
-    $self->const( 'C_PRC_SERVERSTARTED',        'M_INFO');
-    $self->const( 'C_PRC_SIGNALSENT',           'M_INFO');
-    $self->const( 'C_PRC_SERVERINTERRUPT',      'M_F_WARNING');
-    $self->const( 'C_PRC_PIDOK',                'M_INFO');
-    $self->const( 'C_PRC_PIDNOTFOUND',          'M_F_WARNING');
-    $self->const( 'C_PRC_RECEIVE',              'M_INFO');
-    $self->const( 'C_PRC_NOPLUGIN',             'M_ERROR');
-    $self->const( 'C_PRC_RECEIVE',              'M_INFO');
-#    $self->const( '', '');
-
-    # Server status codes
-    #
-    $self->const( 'C_PRC_SRVROK',               'M_CODE');
-    $self->const( 'C_PRC_SRVRNOK',              'M_CODE');
-    $self->const( 'C_PRC_SRVRASTRTD',           'M_CODE');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('PRC');
 }
 
 #--[ Any ]----------------------------------------------------------------------
 # Cleanup
 #
-sub cleanup
+sub plugin_cleanup
 {
   my($self) = @_;
 
   # Check if server runs and if this process's id is the same as the
-  # one returned by the checkServer function.
+  # one returned by the check_server function.
   #
-  my $pidServer = $self->checkServer;
+  my $pidServer = $self->check_server;
   if( $$ == $pidServer )
   {
     my $config_dir = AppState->instance->config_dir;
-    my $pidFile = $config_dir . '/' . $self->pidFile;
-    unlink $pidFile;
-    $self->wlog( "Pid file " . $self->pidFile . " removed"
-               , $self->C_PRC_PIDFILEREMOVED
-               );
+    my $pid_file = $config_dir . '/' . $self->pid_file;
+    unlink $pid_file;
+    $self->log( $self->C_PRC_PIDFILEREMOVED, [$self->pid_file]);
 
-    # Remove communication only when server stops
+    # Remove communication only when server stops. The program needs to cleanup
+    # its own used plugins.
     #
-    $self->wlog( "Cleanup communication", $self->C_PRC_CLEANCOMM);
-    $self->plugin_manager->cleanup;
+    $self->log($self->C_PRC_CLEANCOMM);
+    $self->_plugin_manager->cleanup;
   }
 }
 
 #--[ Client ]-------------------------------------------------------------------
 # Start as a server
 #
-sub startServer
+sub start_server
 {
   my($self) = @_;
 
   # Check if server exists we don't need a second one
   #
-  return $self->C_PRC_SRVRASTRTD if $self->checkServer;
+  return $self->C_PRC_SRVRASTRTD if $self->check_server;
 
   my $config_dir = AppState->instance->config_dir;
-  my $pidFile = $config_dir . '/' . $self->pidFile;
+  my $pid_file = $config_dir . '/' . $self->pid_file;
 
   # First do fork.
   # If $pid is set then the process is the parent process and we need to exit
@@ -170,19 +159,20 @@ sub startServer
   my $pid = fork;
   if( defined $pid and $pid )
   {
-    open( PIDF, "> $pidFile");
+    open( PIDF, "> $pid_file");
     print PIDF "$pid\n";
     close(PIDF);
 
-    $self->wlog( "Pid file " . $self->pidFile
-               . " created for server with pid $pid"
-               , $self->C_PRC_PIDFILECREATED
-               );
+    # Log messsage in client log
+    #
+    $self->log( $self->C_PRC_PIDFILECREATED, [ $self->pid_file, $pid]);
 
+    # Get a new log file for server log
+    #
     my $log = AppState->instance->checkAppPlugin('Log');
     if( ref $log eq 'AppState::Plugins::Feature::Log' )
     {
-      $log->wlog( "Parent process stopped", $self->C_PRC_PARENTSTOPPED);
+      $log->log($self->C_PRC_PARENTSTOPPED);
       $log->stop_logging;
     }
 
@@ -208,12 +198,12 @@ sub startServer
 
   # Setup log to logfile
   #
-  $self->wlog( "Server process started with pid $$", $self->C_PRC_SERVERSTARTED);
+  $self->log( $self->C_PRC_SERVERSTARTED, [$$]);
 
-  # Setup kill signals TERM and INT to call stopServer()
+  # Setup kill signals TERM and INT to call stop_server()
   #
-  $SIG{TERM} = sub { $self->stopServer; };
-  $SIG{INT} = sub { $self->stopServer; };
+  $SIG{TERM} = sub { $self->stop_server; };
+  $SIG{INT} = sub { $self->stop_server; };
 
   return $self->C_PRC_SRVROK;
 }
@@ -221,30 +211,30 @@ sub startServer
 #--[ Client ]-------------------------------------------------------------------
 # Kill server process. Is called from non-server process.
 #
-sub killServer
+sub kill_server
 {
   my($self) = @_;
 
-  my $pid = $self->checkServer;
+  my $pid = $self->check_server;
   kill 'TERM', $pid if $pid;
-  $self->wlog( "Sent signal to server", $self->C_PRC_SIGNALSENT);
+  $self->log($self->C_PRC_SIGNALSENT);
 }
 
 #--[ Server ]-------------------------------------------------------------------
 # End of the spiderServer. This function is triggerd after a TERM or INT signal.
 #
-sub stopServer
+sub stop_server
 {
   my($self) = @_;
 
   # Kill this server
   #
-  $self->wlog( "Server interrupted.", $self->C_PRC_SERVERINTERRUPT);
+  $self->log($self->C_PRC_SERVERINTERRUPT);
 
   # Clear the appstate object which will trigger the demolition of
   # the other objects in the set.
   #
-  AppState->instance->cleanup;
+  $self->leave;
   exit(0);
 }
 
@@ -252,16 +242,16 @@ sub stopServer
 # Check if a server runs already. Return 0 (an unused pid number) if no
 # server is running. Otherwise return pid of server process.
 #
-sub checkServer
+sub check_server
 {
   my($self) = @_;
 
   my $config_dir = AppState->instance->config_dir;
   my $pid = 0;
-  my $pidFile = $config_dir . '/' . $self->pidFile;
-  if( -r $pidFile )
+  my $pid_file = $config_dir . '/' . $self->pid_file;
+  if( -r $pid_file )
   {
-    open( PIDF, "< $pidFile");
+    open( PIDF, "< $pid_file");
     $pid = <PIDF>;
     close(PIDF);
     chomp($pid);
@@ -288,20 +278,18 @@ sub checkServer
     #
     if( $pidFound )
     {
-      $self->wlog( "Pid $pid checked and is ok.", $self->C_PRC_PIDOK);
+      $self->log( $self->C_PRC_PIDOK, [$pid]);
     }
 
     else
     {
-      $self->wlog( "Pid $pid checked and is not found, server crashed?"
-                 , $self->C_PRC_PIDNOTFOUND
-                 );
+      $self->log( $self->C_PRC_PIDNOTFOUND, [$pid]);
       $pid = 0;
-      unlink $pidFile;
+      unlink $pid_file;
     }
   }
 
-#say "CS: $pidFile, $pid";
+#say "CS: $pid_file, $pid";
   return $pid;
 }
 
@@ -311,18 +299,16 @@ sub receive
 {
   my( $self, $arguments) = @_;
 
-  my $cmmType = $self->cmmType;
-  if( defined $self->plugin_manager->check_plugin($cmmType) )
+  my $cmm_type = $self->cmm_type;
+  if( defined $self->_plugin_manager->check_plugin($cmm_type) )
   {
-    $self->wlog( "Receive using $cmmType type config", $self->C_PRC_RECEIVE);
-    $self->plugin_manager->get_object({name => $cmmType})->receive($arguments);
+    $self->log( $self->C_PRC_RECEIVE, [$cmm_type]);
+    $self->_plugin_manager->get_object({name => $cmm_type})->receive($arguments);
   }
 
   else
   {
-    $self->wlog( "Method $cmmType plugin not loaded for receiving"
-               , $self->C_PRC_NOPLUGIN
-               );
+    $self->log( $self->C_PRC_NOPLUGIN, [$cmm_type]);
   }
 }
 
@@ -332,24 +318,22 @@ sub send
 {
   my( $self, $arguments) = @_;
 
-  my $cmmType = $self->cmmType;
-  my $pmgr = $self->plugin_manager;
-  if( defined $pmgr->check_plugin($cmmType) )
+  my $cmm_type = $self->cmm_type;
+  my $pmgr = $self->_plugin_manager;
+  if( defined $pmgr->check_plugin($cmm_type) )
   {
-    $self->wlog( "Send using $cmmType type config", $self->C_PRC_RECEIVE);
-    $pmgr->get_object({name => $cmmType})->send($arguments);
+    $self->wlog( $self->C_PRC_RECEIVE, [$cmm_type]);
+    $pmgr->get_object({name => $cmm_type})->send($arguments);
   }
 
   else
   {
-    $self->wlog( "Method $cmmType plugin not loaded for sending"
-               , $self->C_PRC_NOPLUGIN
-               );
+    $self->log( $self->C_PRC_NOPLUGIN, [$cmm_type]);
   }
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

@@ -42,13 +42,12 @@ has children =>
       , get_children    => 'elements'
       , get_child       => 'get'
       , push_child      => 'push'
-      , popChild        => 'pop'
-      , unshiftChild    => 'unshift'
-      , shiftChild      => 'shift'
-      , setChild        => 'set'
-#      , deleteChild    => 'delete'
+      , pop_child        => 'pop'
+      , unshift_child    => 'unshift'
+      , shift_child      => 'shift'
+      , set_child        => 'set'
       , splice_children  => 'splice'
-      , clearChildren   => 'clear'
+      , clear_children   => 'clear'
       }
     );
 
@@ -56,18 +55,7 @@ has children =>
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('=NR');
-
-    # Error codes
-    #
-#    $self->code_reset;
-#    $self->const( 'C_NRT_', 'M_INFO');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('=NR');
 
   return;
 }
@@ -422,7 +410,7 @@ say "XP 2L: ";
 } # only if you want to use findnodes_as_string or findvalue
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 

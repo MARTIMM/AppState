@@ -12,19 +12,13 @@ extends qw(AppState::Ext::ConfigIO);
 require FreezeThaw;
 
 #-------------------------------------------------------------------------------
-has '+fileExt' => ( default => 'fth');
+has '+file_ext' => ( default => 'fth');
 
 #-------------------------------------------------------------------------------
 sub BUILD
 {
   my($self) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('==F');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  $self->log_init('==F');
 }
 
 #-------------------------------------------------------------------------------
@@ -33,7 +27,16 @@ sub BUILD
 sub serialize
 {
   my( $self, $documents) = @_;
-  return FreezeThaw::freeze(@$documents);
+  my $frozen;
+  eval('$frozen = FreezeThaw::freeze(@$documents)');
+  if( my $err = $@ )
+  {
+    $self->log( $self->C_CIO_SERIALIZEFAIL
+              , [ 'FreezeThaw', $self->config_file, $err]
+              );
+  }
+
+  return $frozen;
 }
 
 #-------------------------------------------------------------------------------
@@ -43,12 +46,29 @@ sub deserialize
 {
   my( $self, $text) = @_;
   $text //= '';
-  my $documents = $text eq '' ? undef : [FreezeThaw::thaw($text)];
+  my $documents;
+
+  if( $text eq '' )
+  {
+    $documents = undef;
+  }
+
+  else
+  {
+    eval('$documents = [FreezeThaw::thaw($text)]');
+    if( my $err = $@ )
+    {
+      $self->log( $self->C_CIO_DESERIALIZEFAIL
+                , [ 'FreezeThaw', $self->config_file, $err]
+                );
+    }
+  }
+
   return $documents;
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__
