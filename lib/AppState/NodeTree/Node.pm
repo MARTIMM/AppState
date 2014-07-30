@@ -1,7 +1,7 @@
 package AppState::NodeTree::Node;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.0.3');
+use version; our $VERSION = version->parse('v0.0.4');
 use 5.010001;
 
 use namespace::autoclean;

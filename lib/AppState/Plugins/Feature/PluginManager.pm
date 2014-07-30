@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::PluginManager;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.7");
+use version; our $VERSION = '' . version->parse("v0.1.8");
 use 5.010001;
 
 use namespace::autoclean;
@@ -361,7 +361,7 @@ sub get_object
       {
         $self->log( $self->C_PLG_PLGNOTDEF, [$name]);
       }
-      
+
       else
       {
         $self->log( $self->C_PLG_PLGDEFINED, [$name]);
@@ -396,7 +396,7 @@ EOEVAL
       {
         $self->log( $self->C_PLG_PLGCREATED, [$name]);
       }
-      
+
       else
       {
         $self->log( $self->C_PLG_PLGRETRVED, [$name]);

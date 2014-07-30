@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::NodeTree;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.3.4");
+use version; our $VERSION = '' . version->parse("v0.3.5");
 use 5.010001;
 
 use namespace::autoclean;
@@ -21,11 +21,11 @@ use AppState::Ext::Meta_Constants;
 # Error codes
 #
 const( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::NodeTree::Node/NodeRoot');
-const( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');           
-const( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');           
-const( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');           
+const( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');
+const( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');
+const( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');
 const( 'C_NT_ADDATTRTOPARENT' ,'M_INFO', 'Add attr %s=%s to parent=%s');
-const( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');          
+const( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');
 const( 'C_NT_MODINIT'         ,'M_INFO', 'Object from module %s initialized properly');
 const( 'C_NT_MISSMETHODS'     ,'M_FATAL', 'Missing methods [%s] in module %s');
 const( 'C_NT_NOHANDLER'       ,'M_F_WARNING', 'No %s handler. No use to traverse tree1(%s)');

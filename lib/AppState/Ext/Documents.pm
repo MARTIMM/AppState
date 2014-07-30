@@ -1,7 +1,7 @@
 package AppState::Ext::Documents;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.0.2');
+use version; our $VERSION = version->parse('v0.0.3');
 use 5.010001;
 
 use namespace::autoclean;
@@ -17,10 +17,10 @@ use AppState::Ext::Meta_Constants;
 # Error codes. These codes must also be handled by ConfigManager.
 #
 const( 'C_DOC_SELOUTRANGE'  , 'M_ERROR', 'Document number %s out of range, document not %s');
-const( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');      
-const( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available'); 
+const( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');
+const( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available');
 const( 'C_DOC_NOHASHREF'    , 'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
-const( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');     
+const( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');
 const( 'C_DOC_NOVALUE'      , 'M_WARNING', 'No value found at %s');
 const( 'C_DOC_NOKEY'        , 'M_ERROR', 'Key not defined');
 

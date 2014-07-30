@@ -1,7 +1,7 @@
 package AppState::Plugins::ConfigDriver::FreezeThaw;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.3");
+use version; our $VERSION = '' . version->parse("v0.1.4");
 use 5.010001;
 
 use namespace::autoclean;

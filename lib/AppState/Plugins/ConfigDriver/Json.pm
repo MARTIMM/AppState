@@ -1,7 +1,7 @@
 package AppState::Plugins::ConfigDriver::Json;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.2");
+use version; our $VERSION = '' . version->parse("v0.1.3");
 use 5.010001;
 
 use namespace::autoclean;

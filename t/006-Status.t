@@ -35,7 +35,7 @@ sub
   #
   $sts->set_message( 'test', 'of');
   $sts->set_error($sts->M_F_ERROR | 24);
-  
+
   # Test them
   #
   ok( !$sts->is_success, 'is not successfull');

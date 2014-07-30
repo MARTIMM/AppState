@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::CommandLine;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.2.2');
+use version; our $VERSION = version->parse('v0.2.3');
 use 5.010001;
 
 #use namespace::autoclean -also => qr/^_/;
@@ -48,9 +48,9 @@ has _options =>
     , traits            => ['Hash']
     , default           => sub { return {}; }
     , handles           =>
-      { get_option      => 'get'    
-      , set_option      => 'set'    
-      , option_exists   => 'exists' 
+      { get_option      => 'get'
+      , set_option      => 'set'
+      , option_exists   => 'exists'
       , get_options     => 'keys'
       }
     , writer            => '_set_options'

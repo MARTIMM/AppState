@@ -1,8 +1,8 @@
 package AppState::Ext::Status;
 
 use Modern::Perl;
- 
-use version; our $VERSION = version->parse('v0.0.2');
+
+use version; our $VERSION = version->parse('v0.0.3');
 use 5.010001;
 
 use namespace::autoclean;
@@ -34,7 +34,7 @@ has status =>
     , default           =>
       sub
       { my( $self) = @_;
-      
+
         # Must be done later if not set yet
         #
         my $error = 0;
@@ -55,7 +55,7 @@ has status =>
 sub BUILD
 {
   my( $self) = @_;
-  
+
   $self->status->{error} = $self->C_STS_INITOK;
 }
 
@@ -64,7 +64,7 @@ sub BUILD
 sub is_success
 {
   my( $self, $error) = @_;
-  
+
   $error //= $self->status->{error};
   my $is = !!( $error & $self->M_SUCCESS);
   return $is;
@@ -181,7 +181,7 @@ sub set_message
 {
   my( $self, @msgs) = @_;
   $self->status->{message} = join( ' ', @msgs);
-  
+
   return '';
 }
 
@@ -198,7 +198,7 @@ sub set_error
 {
   my( $self, $error) = @_;
   $self->status->{error} = $error;
-  
+
   return '';
 }
 
@@ -279,7 +279,7 @@ sub get_package
 }
 
 #-------------------------------------------------------------------------------
-# Set the status fields in one go. 
+# Set the status fields in one go.
 #
 sub set_status
 {

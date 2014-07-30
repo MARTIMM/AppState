@@ -2,7 +2,7 @@ package AppState::Plugins::Feature::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
-use version; our $VERSION = '' . version->parse("v0.4.12");
+use version; our $VERSION = '' . version->parse("v0.4.13");
 
 use namespace::autoclean;
 
@@ -76,7 +76,7 @@ has do_flush_log =>
         {
           $self->log($self->C_LOG_LOGALRINIT);
         }
-        
+
         elsif( $n )
         {
 #          $self->_logFileHandle->autoflush(1);
@@ -158,7 +158,7 @@ has log_level =>
 
         $o //= 0;
         return if $n == $o;
-        
+
         my $n_str = $self->_get_log_level_name($n);
         my $o_str = $self->_get_log_level_name($o);
         $self->log( $self->C_LOG_BMCHANGED, [ $o_str, $n_str]);
@@ -185,7 +185,7 @@ has _logging_is_forced =>
 
         state $curr_level = 0;
         $o //= 0;
-        
+
         # When setting forced logging, save the previous log level and set
         # new level to accept all messages
         #
@@ -195,7 +195,7 @@ has _logging_is_forced =>
           $curr_level = $logger->level;
           $logger->level('ALL');
         }
-        
+
         # When resetting forced logging, get the previously saved log level
         # and restore the old level
         #
@@ -223,7 +223,7 @@ has _is_logging =>
 
         state $curr_level = 0;
         $o //= 0;
-        
+
         # When setting logging off, save the previous log level and turn
         # logging off.
         #
@@ -233,7 +233,7 @@ has _is_logging =>
           $curr_level = $logger->level;
           $logger->level('OFF');
         }
-        
+
         # When turning logging on, get the previously saved log level
         # and restore it
         #
@@ -389,7 +389,7 @@ sub BUILD
       #
       return 0 + $_[0] ~~ [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
                           , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
-                          , $self->M_FATAL  
+                          , $self->M_FATAL
                           ];
     };
 #  }
@@ -530,7 +530,7 @@ sub _make_logger_objects
   $logger->level('ALL');
   $appender->layout($self->_get_layout('log.millisec'));
 
-  # Finish setup, 
+  # Finish setup,
   #
   $self->_logging_on;
   $self->_set_logger_initialized(1);
@@ -546,7 +546,7 @@ sub _log_data_line
   my( $self) = @_;
 
   return unless $self->_is_logging;
-  
+
   $self->_forced_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
@@ -572,7 +572,7 @@ sub _log_time_line
   my( $self, $msg, $forced) = @_;
 
   return unless $self->_is_logging;
-  
+
   $self->_forced_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
@@ -593,9 +593,9 @@ sub _log_message
   my( $self, $msg, $forced) = @_;
 
   return unless $self->_is_logging;
-  
+
   $forced //= 0;
-  
+
   # Get the logger and the function name from the error message. Then
   # log the message with that function.
   #
@@ -740,7 +740,7 @@ EOLEGEND
 #-------------------------------------------------------------------------------
 # Write message to log. This handles the code as a dualvar. Furthermore the
 # incorporated message cannot be an array reference. The message can also have
-# sprintf markup which is substituted with values from message_values, 
+# sprintf markup which is substituted with values from message_values,
 # an optional array reference. If the call_level must be used and no values
 # are needed use an empty array ref [].
 #
@@ -777,8 +777,8 @@ sub write_log
   if( !(($error & $self->M_EVNTCODE) and ($error & $self->M_SEVERITY)) )
   {
     $error = $self->C_LOG_NOERRCODE;
-    $message = '' . $self->C_LOG_NOERRCODE;    
-  }  
+    $message = '' . $self->C_LOG_NOERRCODE;
+  }
 
   # Rewrite message if there is no message.
   #
@@ -823,7 +823,7 @@ sub write_log
   my( $dateTxt, $timeTxt, $msgTxt) =
      $self->_create_message( $log_tag, $call_level + 1);
 
-  
+
   $self->_log_data_line if $dateTxt;
 
   if( $timeTxt )
@@ -832,7 +832,7 @@ sub write_log
                          , $status->is_forced
                          );
   }
-  
+
   else
   {
     $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)

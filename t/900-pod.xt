@@ -24,6 +24,6 @@ exit(0);
 sub testPod
 {
   my( $file) = @_;
-  
+
   pod_file_ok( $file, "Valid POD in file $file" );
 }

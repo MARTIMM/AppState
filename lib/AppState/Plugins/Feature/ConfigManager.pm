@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::ConfigManager;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse("v0.9.5");
+use version; our $VERSION = version->parse("v0.9.6");
 use 5.010001;
 
 use namespace::autoclean;

@@ -27,7 +27,7 @@ $app->log_init('710');
 
 #-------------------------------------------------------------------------------
 my $ng;
-subtest 'Create global node' => 
+subtest 'Create global node' =>
 sub
 {
   $ng = AppState::NodeTree::NodeGlobal->new;
@@ -41,7 +41,7 @@ sub
 
 #-------------------------------------------------------------------------------
 my $ng2;
-subtest 'Create second global node' => 
+subtest 'Create second global node' =>
 sub
 {
   $ng2 = AppState::NodeTree::NodeGlobal->new;
@@ -51,7 +51,7 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-subtest 'Check data via second node, set in first node' => 
+subtest 'Check data via second node, set in first node' =>
 sub
 {
   is( $ng2->get_global_data('a'), 5, 'Check data in global store 1');
@@ -68,7 +68,7 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-subtest 'Check deletion of data via first node, check via second node' => 
+subtest 'Check deletion of data via first node, check via second node' =>
 sub
 {
   my $a = $ng->del_global_data('a');

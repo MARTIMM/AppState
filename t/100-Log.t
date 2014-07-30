@@ -89,7 +89,7 @@ sub
   my $lineNbr = __LINE__;
   my $eobj = $log->write_log( 'Tracing this time', 0x2A9 | $a->M_F_TRACE);
   isa_ok( $eobj, 'AppState::Ext::Status');
-  
+
   ok( $eobj->is_success == 1, 'Is success');
   ok( $eobj->is_fail == 0, 'Is not a failure');
   ok( $eobj->is_forced == 1, 'Check if trace');

@@ -134,6 +134,10 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
+  - date: 2014 07 30
+    descriptions:
+      - Changed versions.
+      - Cleanup spaces
   - date: 2014 07 29
     descriptions:
       - Changed from one const() method to the new one.

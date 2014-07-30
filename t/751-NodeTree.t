@@ -117,7 +117,7 @@ sub
 {
   $elm = [qw( D R n0_0 T n0_0 n0_1 n0_2 T n0_2 T n0_2
               n2_0 T n2_0
-              T n2_1 T n2_1 n0_2 n0_1 
+              T n2_1 T n2_1 n0_2 n0_1
               n0_2 n1_0 T n1_0 n1_1 T n1_1 T n1_2 T
               n1_2 n0_2 R D)];
   $phase = 'Df 2';

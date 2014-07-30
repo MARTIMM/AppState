@@ -1,7 +1,7 @@
 package AppState::Ext::ConfigIO;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.1.4');
+use version; our $VERSION = version->parse('v0.1.5');
 use 5.010001;
 
 use namespace::autoclean;
@@ -18,14 +18,14 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. Make handle in ConfigFile.
 #
-const( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');      
-const( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');      
-const( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent'); 
-const( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s'); 
-const( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');     
-const( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');     
-const( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');     
-const( 'C_CIO_NOSERVER',      'M_ERROR', 'No server available');     
+const( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');
+const( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');
+const( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent');
+const( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s');
+const( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');
+const( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');
+const( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');
+const( 'C_CIO_NOSERVER',      'M_ERROR', 'No server available');
 
 #-------------------------------------------------------------------------------
 has file_ext =>

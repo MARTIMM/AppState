@@ -1,7 +1,7 @@
 package AppState::Process::MsgQueue;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.0.5");
+use version; our $VERSION = '' . version->parse("v0.0.6");
 use 5.010001;
 
 use namespace::autoclean;

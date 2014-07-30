@@ -1,7 +1,7 @@
 package AppState::NodeTree::NodeDOM;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.0.2');
+use version; our $VERSION = version->parse('v0.0.3');
 use 5.010001;
 
 use namespace::autoclean;
@@ -44,7 +44,7 @@ has shared_data =>
       }
     , handles           => [ qw( nbr_found_nodes get_found_node get_found_nodes
 
-                                 set_all_global_data 
+                                 set_all_global_data
                                  set_global_data get_global_data del_global_data
                                  get_global_data_keys global_data_exists
                                  global_data_defined clear_global_data
@@ -338,7 +338,7 @@ sub xpath
   $self->shared_data->_clear_found_nodes;
   my @fNodes = $self->shared_data->_xpath_methods->findnodes( $path, $self);
   $self->shared_data->_add_found_node(@fNodes);
-  
+
   # Give back what one needs; array, first value or nothing.
   #
   my $context = wantarray();
@@ -346,7 +346,7 @@ sub xpath
   {
     return @fNodes;
   }
-  
+
   elsif( defined $context )
   {
     return shift @fNodes;

@@ -1,7 +1,7 @@
 package AppState::Plugins::ConfigDriver::Memcached;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.7");
+use version; our $VERSION = '' . version->parse("v0.1.8");
 use 5.010001;
 
 use namespace::autoclean;

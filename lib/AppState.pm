@@ -1,7 +1,7 @@
 package AppState;
 
 use Modern::Perl;
-use version; our $VERSION = qv('v0.4.15');
+use version; our $VERSION = qv('v0.4.16');
 #use 5.010001 ;
 use 5.10.1;
 

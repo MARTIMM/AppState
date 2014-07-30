@@ -1,7 +1,7 @@
 package AppState::Ext::ConfigFile;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.0.2");
+use version; our $VERSION = '' . version->parse("v0.0.3");
 use 5.010001;
 
 use namespace::autoclean;

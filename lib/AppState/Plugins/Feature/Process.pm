@@ -8,7 +8,7 @@
 package AppState::Plugins::Feature::Process;
 
 use Modern::Perl;
-use version; our $VERSION = qv('v0.1.7');
+use version; our $VERSION = qv('v0.1.8');
 use 5.010001;
 
 use namespace::autoclean;
