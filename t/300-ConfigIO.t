@@ -35,7 +35,7 @@ $log->add_tag('300');
 #-------------------------------------------------------------------------------
 # Setup
 #
-has '+fileExt' => ( default => 'yml');
+has '+file_ext' => ( default => 'yml');
 
 my $self = main->new;
 $self->options( { Indent => 1, SortKeys => 1, UseBlock => 0
@@ -48,9 +48,9 @@ $self->control( { server => 'localhost', port => '99299'});
 #-------------------------------------------------------------------------------
 # Check setup config
 #
-is( $self->fileExt, 'yml', 'Check extension');
+is( $self->file_ext, 'yml', 'Check extension');
 is( $self->get_option('Indent'), 1, 'Check an option');
-is( $self->getControl('port'), 99299, 'Check a control item');
+is( $self->get_control('port'), 99299, 'Check a control item');
 
 #-------------------------------------------------------------------------------
 # File does not exist.

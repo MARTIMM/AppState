@@ -86,10 +86,10 @@ $l->write_log( ["Testing filename setting"], $m->M_INFO);
 $cf->store_type('Yaml');
 $cf->location($m->C_CFG_CONFIGDIR);
 my $filename = "/home/marcel/Temp/abc.xyz";
-$cf->requestFile($filename);
+$cf->request_file($filename);
 
-is( $cf->requestFile(), $filename, "Check request filename $filename");
-is( $cf->configFile(), Cwd::cwd() . "/$config_dir/abc.yml"
+is( $cf->request_file(), $filename, "Check request filename $filename");
+is( $cf->config_file(), Cwd::cwd() . "/$config_dir/abc.yml"
   , "Check result config filename"
   );
 

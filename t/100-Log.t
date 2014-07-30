@@ -17,7 +17,7 @@ sub BUILD
 
   # Create a constant. Cannot be done after first instanciation but is tested.
   #
-  $self->set_code_count(hex('7b'));
+#  $self->set_code_count(hex('7b'));
   $self->const( qw( C_ERR_1 M_ERROR), 'This has gone bad ....');
   $self->const( qw( C_ERR_2 M_ERROR), 'This has gone bad because %d != %d');
   $self->const( qw( C_LOOP M_TRACE), 'Message %02d %02d. Test the time reset in the log');
@@ -156,13 +156,13 @@ sub
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_error, 'is error');
-  ok( $status->get_eventcode == 0x7b, 'Check eventcode');
+  ok( $status->get_eventcode, "Check eventcode == " . $status->get_eventcode);
 
   $self->log( $self->C_ERR_2, [ 10, 11]);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_error, 'is error');
-  ok( $status->get_eventcode == 0x7c, 'Check eventcode');
+  ok( $status->get_eventcode, 'Check eventcode == ' . $status->get_eventcode);
 
   $log->delete_subscriber( $tagName, $subscriber);
 };
@@ -296,7 +296,7 @@ foreach my $count1 (1..2)
 
 #-------------------------------------------------------------------------------
 $a->cleanup;
-#File::Path::remove_tree($config_dir);
+File::Path::remove_tree($config_dir);
 
 done_testing();
 exit(0);

@@ -14,20 +14,14 @@ my $app = AppState->instance;
 $app->initialize( config_dir => $config_dir);
 $app->check_directories;
 
-#say "CM 0: ", $app->plugin_manager;
-
 my $log = $app->get_app_object('Log');
-#say "CM 1: ", $app->plugin_manager;
-
 $log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
+$log->do_append_log(0);
 $log->start_logging;
 
-$log->log_level($app->M_ERROR);
-
+# Some tests are dealing with success stories
+#
+$log->log_level($app->M_TRACE);
 $log->add_tag('390');
 
 #-------------------------------------------------------------------------------
@@ -37,22 +31,21 @@ my $cfm = $app->get_app_object('ConfigManager');
 isa_ok( $cfm, 'AppState::Plugins::Feature::ConfigManager'
       , 'Check config object type');
 
-$cfm->initialize;
-$cfm->requestFile('configManager');
+$cfm->request_file('configManager');
 
 is( $cfm->current_config_object_name, 'defaultConfigObject', "Check default name");
 is( $cfm->store_type, 'Yaml', "Check default store type");
 is( $cfm->location, $cfm->C_CFF_CONFIGDIR, "Check default location");
 
-is( $cfm->requestFile, 'configManager', "Check request file");
-unlink $cfm->configFile;
+is( $cfm->request_file, 'configManager', "Check request file");
+unlink $cfm->config_file;
 
 $cfm->load;
 $cfm->save;
 
-my $f = $cfm->configFile;
+my $f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
-ok( -e $cfm->configFile, "Test(1) $f now exists");
+ok( -e $cfm->config_file, "Test(1) $f now exists");
 
 #-------------------------------------------------------------------------------
 $log->write_log( "Modify default config object", 1|$log->M_INFO);
@@ -71,19 +64,19 @@ is( $log->get_last_error
 
 #-------------------------------------------------------------------------------
 $log->write_log( "Add config object", 1|$log->M_INFO);
-$cfm->add_config_object( 'ddump', { store_type     => 'DataDumper'
-                                , location      => $cfm->C_CFF_WORKDIR
-                                , requestFile   => 'myConfig'
-                                }
-                     );
+$cfm->add_config_object( 'ddump', { store_type  => 'DataDumper'
+                                  , location    => $cfm->C_CFF_WORKDIR
+                                  , request_file => 'myConfig'
+                                  }
+                       );
 $cfm->load;
 $cfm->save;
 
-$f = $cfm->configFile;
+$f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
-ok( -e $cfm->configFile, "Test(2) $f exists");
+ok( -e $cfm->config_file, "Test(2) $f exists");
 
-my $configObjList = join( ' ', sort $cfm->getConfigObjectNames);
+my $configObjList = join( ' ', sort $cfm->get_config_object_names);
 is( $configObjList, 'ddump defaultConfigObject', "Check list of object names");
 
 $cfm->select_config_object('defaultConfigObject');
@@ -105,7 +98,7 @@ $cfm->add_documents( {}
                   );
 
 $log->write_log( "Overwrite first document", 1|$log->M_INFO);
-$cfm->set_document({ pqr => 'xyz', def => 390});
+$cfm->set_document( undef, { pqr => 'xyz', def => 390});
 
 is( $cfm->nbr_documents, 2, "Two documents");
 $log->write_log( "Number of documents:" . $cfm->nbr_documents, $log->M_INFO);
@@ -171,27 +164,27 @@ $cfm->save;
 #-------------------------------------------------------------------------------
 $log->write_log( "Testing drop config object", 1|$log->M_INFO);
 $cfm->select_config_object('ddump');
-my $ddumpFilename = $cfm->configFile;
+my $ddumpFilename = $cfm->config_file;
 
 $cfm->drop_config_object('ddump');
 is( $log->get_last_error, $cfm->C_CFM_CFGDROPPED, "Drop op ok");
 
-ok( $cfm->hasConfigObject('ddump') == 0, "Config object ddump dropped");
+ok( $cfm->has_config_object('ddump') == 0, "Config object ddump dropped");
 ok( -e $ddumpFilename, "File for config ddump still exist");
 
 $cfm->add_config_object( 'ddump', { store_type     => 'DataDumper'
                                 , location      => $cfm->C_CFF_WORKDIR
-                                , requestFile   => 'myConfig'
+                                , request_file   => 'myConfig'
                                 }
                      );
 $cfm->store_type('Yaml');
-unlink $cfm->configFile;
+unlink $cfm->config_file;
 
-$f = $cfm->configFile;
+$f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
-ok( !-e $cfm->configFile, "Yaml config '$f' does not exist");
+ok( !-e $cfm->config_file, "Yaml config '$f' does not exist");
 $cfm->save;
-ok( -e $cfm->configFile, "Yaml config does now");
+ok( -e $cfm->config_file, "Yaml config does now");
 
 #-------------------------------------------------------------------------------
 # Copy is not limited to same storage type! Here done to get same size result
@@ -203,7 +196,7 @@ is( $log->get_last_error
   , $cfm->C_CFM_CFGSELECTED
   , "config object name 'defaultConfigObject' selected"
   );
-my $sizefn1 = -s $cfm->configFile;
+my $sizefn1 = -s $cfm->config_file;
 $cfm->load;
 my $documents = $cfm->get_documents;
 
@@ -214,7 +207,7 @@ is( $log->get_last_error
   );
 $cfm->set_documents($documents);
 $cfm->save;
-my $sizefn2 = -s $cfm->configFile;
+my $sizefn2 = -s $cfm->config_file;
 ok( $sizefn1 == $sizefn2, "Sizes should be the same");
 
 #-------------------------------------------------------------------------------
@@ -223,25 +216,25 @@ $cfm->modify_config_object( 'ddump', { store_type => 'Json'
                                    , location => $cfm->C_CFF_TEMPDIR
                                    }
                         );
-unlink $cfm->configFile;
+unlink $cfm->config_file;
 
-$f = $cfm->configFile;
+$f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
-ok( !-e $cfm->configFile, "Json config '$f' does not exist yet");
+ok( !-e $cfm->config_file, "Json config '$f' does not exist yet");
 $cfm->save;
-ok( -e $cfm->configFile, "Json config exists");
+ok( -e $cfm->config_file, "Json config exists");
 
 #-------------------------------------------------------------------------------
 $log->write_log( "Testing remove config object", 1|$log->M_INFO);
 
 $cfm->modify_config_object( 'ddump', { store_type => 'Storable'
-                                   , location => $cfm->C_CFF_WORKDIR
-                                   }
-                        );
-#unlink $cfm->configFile;
+                                     , location => $cfm->C_CFF_WORKDIR
+                                     }
+                          );
+#unlink $cfm->config_file;
 
 $cfm->save;
-my $filename = $f = $cfm->configFile;
+my $filename = $f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
 ok( -e $filename, "Storable config $f created");
 $cfm->remove_config_object('ddump');

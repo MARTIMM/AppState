@@ -15,29 +15,20 @@ my $as = AppState->instance;
 $as->initialize( config_dir => 't/FreezeThaw');
 $as->check_directories;
 
-
 my $log = $as->get_app_object('Log');
-#$log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
 $log->start_logging;
-
-$log->log_level($as->M_ERROR);
-
+$log->log_level($as->M_TRACE);
 $log->add_tag('310');
 
-#pass('Initialized');
 #-------------------------------------------------------------------------------
 # Setup config using Yaml type
 #
 my $cf = AppState::Plugins::ConfigDriver::FreezeThaw->new;
 
-is( $cf->fileExt, 'fth', 'Check extension');
+is( $cf->file_ext, 'fth', 'Check extension');
 
 #-------------------------------------------------------------------------------
-my $filename = "t/FreezeThaw/Work/testConfigFile." . $cf->fileExt;
+my $filename = "t/FreezeThaw/Work/testConfigFile." . $cf->file_ext;
 $cf->_configFile($filename);
 unlink $filename;
 my $docs = $cf->load;
