@@ -10,9 +10,9 @@ use AppState;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
-const( 'CONST_1', 'M_WARNING', 'Constant warning');
-const( 'N'      , 'M_INFO', 'Message for constant N');
-const( 'M'      , 'M_INFO', 'Message for constant M');
+def_sts( 'CONST_1', 'M_WARNING', 'Constant warning');
+def_sts( 'N'      , 'M_INFO', 'Message for constant N');
+def_sts( 'M'      , 'M_INFO', 'Message for constant M');
 
 #-------------------------------------------------------------------------------
 # Make object

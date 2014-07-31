@@ -18,9 +18,9 @@ sub BUILD
   # Create a constant. Cannot be done after first instanciation but is tested.
   #
 #  $self->set_code_count(hex('7b'));
-  $self->const( qw( C_ERR_1 M_ERROR), 'This has gone bad ....');
-  $self->const( qw( C_ERR_2 M_ERROR), 'This has gone bad because %d != %d');
-  $self->const( qw( C_LOOP M_TRACE), 'Message %02d %02d. Test the time reset in the log');
+  $self->def_sts( qw( C_ERR_1 M_ERROR), 'This has gone bad ....');
+  $self->def_sts( qw( C_ERR_2 M_ERROR), 'This has gone bad because %d != %d');
+  $self->def_sts( qw( C_LOOP M_TRACE), 'Message %02d %02d. Test the time reset in the log');
 
   $self->meta->make_immutable;
 }

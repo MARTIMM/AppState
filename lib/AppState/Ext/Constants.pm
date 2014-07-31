@@ -124,7 +124,7 @@ has C_LOG_DEBUG =>
 # operations. The calculated default can be anything but zero. When zero, the
 # constant is not created.
 #
-sub const       ## no critic (RequireArgUnpacking)
+sub def_sts       ## no critic (RequireArgUnpacking)
 {
   # Stack must be searched first
   #

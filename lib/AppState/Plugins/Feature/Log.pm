@@ -28,22 +28,22 @@ $columns = 80;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
-const( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
-const( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
-const( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
-const( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
-const( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
-const( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
-const( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
-const( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
-const( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
-const( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
-const( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
+def_sts( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
+def_sts( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
+def_sts( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
+def_sts( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
+def_sts( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
+def_sts( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
+def_sts( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
+def_sts( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
+def_sts( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
+def_sts( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
+def_sts( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
+def_sts( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
 
 # Constant codes
 #
-const( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
+def_sts( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
 
 #-------------------------------------------------------------------------------
 # Switch to append to an existing log or to start a fresh one

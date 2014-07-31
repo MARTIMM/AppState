@@ -18,14 +18,14 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. Make handle in ConfigFile.
 #
-const( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');
-const( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');
-const( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent');
-const( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s');
-const( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');
-const( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');
-const( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');
-const( 'C_CIO_NOSERVER',      'M_ERROR', 'No server available');
+def_sts( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');
+def_sts( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');
+def_sts( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent');
+def_sts( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s');
+def_sts( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');
+def_sts( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');
+def_sts( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');
+def_sts( 'C_CIO_NOSERVER',      'M_ERROR', 'No server available');
 
 #-------------------------------------------------------------------------------
 has file_ext =>

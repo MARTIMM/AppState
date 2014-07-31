@@ -21,25 +21,25 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
-const( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
-const( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
-const( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
-const( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
-const( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
-const( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
-const( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
-const( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
-const( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
-const( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');
-const( 'C_PLG_FUNCSTUBFAIL', 'M_FATAL', 'Error evaluating function stub %s::%s. err: %s');
-const( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
+def_sts( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
+def_sts( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
+def_sts( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
+def_sts( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
+def_sts( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
+def_sts( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
+def_sts( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
+def_sts( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
+def_sts( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
+def_sts( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
+def_sts( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');
+def_sts( 'C_PLG_FUNCSTUBFAIL', 'M_FATAL', 'Error evaluating function stub %s::%s. err: %s');
+def_sts( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
 
 # Object creation codes
 #
-const( 'C_PLG_NOCREATE',     'M_CODE', 'Do not create plugin if not exists');
-const( 'C_PLG_CREATEIF',     'M_CODE', 'Create plugin if not exists');
-const( 'C_PLG_CREATEALW',    'M_CODE', 'Create plugin always');
+def_sts( 'C_PLG_NOCREATE',     'M_CODE', 'Do not create plugin if not exists');
+def_sts( 'C_PLG_CREATEIF',     'M_CODE', 'Create plugin if not exists');
+def_sts( 'C_PLG_CREATEALW',    'M_CODE', 'Create plugin always');
 
 #-------------------------------------------------------------------------------
 # Structure with all objects

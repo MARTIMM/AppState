@@ -1,7 +1,7 @@
 package AppState;
 
 use Modern::Perl;
-use version; our $VERSION = qv('v0.4.16');
+use version; our $VERSION = qv('v0.4.17');
 #use 5.010001 ;
 use 5.10.1;
 
@@ -25,9 +25,9 @@ extends qw( Class::Singleton AppState::Ext::Constants);
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
-const( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
-const( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
+def_sts( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
+def_sts( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
+def_sts( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
 
 #-------------------------------------------------------------------------------
 #

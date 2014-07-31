@@ -16,14 +16,14 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_CFM_CFGSELECTED'   , 'M_INFO', 'Config %s selected');
-const( 'C_CFM_CFGNOTEXIST'   , 'M_F_WARNING', 'Config %s not existent');
-const( 'C_CFM_CFGADDED'      , 'M_INFO', 'Config %s added');
-const( 'C_CFM_CFGEXISTS'     , 'M_F_WARNING', 'Config %s already exists');
-const( 'C_CFM_CFGMODIFIED'   , 'M_INFO', 'Config %s modified and selected');
-const( 'C_CFM_CFGDROPPED'    , 'M_INFO', 'Config %s dropped');
-const( 'C_CFM_CFGSELDEFAULT' , 'M_INFO', 'Current config set to %s');
-const( 'C_CFM_CFGFLREMOVED'  , 'M_INFO', 'Config %s removed');
+def_sts( 'C_CFM_CFGSELECTED'   , 'M_INFO', 'Config %s selected');
+def_sts( 'C_CFM_CFGNOTEXIST'   , 'M_F_WARNING', 'Config %s not existent');
+def_sts( 'C_CFM_CFGADDED'      , 'M_INFO', 'Config %s added');
+def_sts( 'C_CFM_CFGEXISTS'     , 'M_F_WARNING', 'Config %s already exists');
+def_sts( 'C_CFM_CFGMODIFIED'   , 'M_INFO', 'Config %s modified and selected');
+def_sts( 'C_CFM_CFGDROPPED'    , 'M_INFO', 'Config %s dropped');
+def_sts( 'C_CFM_CFGSELDEFAULT' , 'M_INFO', 'Current config set to %s');
+def_sts( 'C_CFM_CFGFLREMOVED'  , 'M_INFO', 'Config %s removed');
 
 #-------------------------------------------------------------------------------
 # Config objects is a hash which is used to find an AppState::Ext::ConfigFile

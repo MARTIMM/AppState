@@ -20,28 +20,28 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::NodeTree::Node/NodeRoot');
-const( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');
-const( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');
-const( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');
-const( 'C_NT_ADDATTRTOPARENT' ,'M_INFO', 'Add attr %s=%s to parent=%s');
-const( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');
-const( 'C_NT_MODINIT'         ,'M_INFO', 'Object from module %s initialized properly');
-const( 'C_NT_MISSMETHODS'     ,'M_FATAL', 'Missing methods [%s] in module %s');
-const( 'C_NT_NOHANDLER'       ,'M_F_WARNING', 'No %s handler. No use to traverse tree1(%s)');
+def_sts( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::NodeTree::Node/NodeRoot');
+def_sts( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');
+def_sts( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');
+def_sts( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');
+def_sts( 'C_NT_ADDATTRTOPARENT' ,'M_INFO', 'Add attr %s=%s to parent=%s');
+def_sts( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');
+def_sts( 'C_NT_MODINIT'         ,'M_INFO', 'Object from module %s initialized properly');
+def_sts( 'C_NT_MISSMETHODS'     ,'M_FATAL', 'Missing methods [%s] in module %s');
+def_sts( 'C_NT_NOHANDLER'       ,'M_F_WARNING', 'No %s handler. No use to traverse tree1(%s)');
 
 # Tree traversing codes
 #
-const('C_NT_DEPTHFIRST1'      ,'M_CODE', 'Depth first method 1');
-const('C_NT_DEPTHFIRST2'      ,'M_CODE', 'Depth first method 2');
-const('C_NT_BREADTHFIRST1'    ,'M_CODE', 'Breadth first method 1');
-const('C_NT_BREADTHFIRST2'    ,'M_CODE', 'Breadth first method 2');
+def_sts('C_NT_DEPTHFIRST1'      ,'M_CODE', 'Depth first method 1');
+def_sts('C_NT_DEPTHFIRST2'      ,'M_CODE', 'Depth first method 2');
+def_sts('C_NT_BREADTHFIRST1'    ,'M_CODE', 'Breadth first method 1');
+def_sts('C_NT_BREADTHFIRST2'    ,'M_CODE', 'Breadth first method 2');
 
 # Tree building codes
 #
-const('C_NT_NODEMODULE'       ,'M_CODE', 'Perl module producing nodes');
-const('C_NT_VALUEDMODULE'     ,'M_CODE', 'Perl module producing a value');
-const('C_NT_ATTRIBUTEMODULE'  ,'M_CODE', 'Perl module producing an attribute value');
+def_sts('C_NT_NODEMODULE'       ,'M_CODE', 'Perl module producing nodes');
+def_sts('C_NT_VALUEDMODULE'     ,'M_CODE', 'Perl module producing a value');
+def_sts('C_NT_ATTRIBUTEMODULE'  ,'M_CODE', 'Perl module producing an attribute value');
 
 #-------------------------------------------------------------------------------
 #

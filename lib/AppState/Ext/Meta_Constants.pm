@@ -16,7 +16,7 @@ use AppState::Ext::Constants;
 # dual variable comprising the constant code or'ed with the severity level and
 # the error message.
 #
-sub const
+sub def_sts
 {
   my( $meta, $name, $modifier, $message) = @_;
 
@@ -55,7 +55,7 @@ sub const
 #-------------------------------------------------------------------------------
 # Export the function
 #
-Moose::Exporter->setup_import_methods( with_meta => [qw(const)]);
+Moose::Exporter->setup_import_methods( with_meta => [qw(def_sts)]);
 
 #-------------------------------------------------------------------------------
 __PACKAGE__->meta->make_immutable;

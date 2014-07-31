@@ -21,26 +21,26 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.
 #
-const( 'C_CFF_STORETYPESET', 'M_INFO', 'Store type set to %s');
-const( 'C_CFF_LOCCODESET',   'M_INFO', 'Location code set to %s');
-const( 'C_CFF_REQFILESET',   'M_INFO', 'Request for file %s');
-const( 'C_CFF_CFGFILESET',   'M_INFO', 'Config filename set to %s');
-const( 'C_CFF_CANNOTDELDOC', 'M_WARNING', 'Cannot delete() documents');
-const( 'C_CFF_DOCCLONED',    'M_INFO', 'Document cloned = %s');
-const( 'C_CFF_CANNOTCLODOC', 'M_WARNING', 'Cannot clone() documents in %s');
-const( 'C_CFF_STOREPLGINIT', 'M_INFO', 'Config %s initialized');
+def_sts( 'C_CFF_STORETYPESET', 'M_INFO', 'Store type set to %s');
+def_sts( 'C_CFF_LOCCODESET',   'M_INFO', 'Location code set to %s');
+def_sts( 'C_CFF_REQFILESET',   'M_INFO', 'Request for file %s');
+def_sts( 'C_CFF_CFGFILESET',   'M_INFO', 'Config filename set to %s');
+def_sts( 'C_CFF_CANNOTDELDOC', 'M_WARNING', 'Cannot delete() documents');
+def_sts( 'C_CFF_DOCCLONED',    'M_INFO', 'Document cloned = %s');
+def_sts( 'C_CFF_CANNOTCLODOC', 'M_WARNING', 'Cannot clone() documents in %s');
+def_sts( 'C_CFF_STOREPLGINIT', 'M_INFO', 'Config %s initialized');
 
 # Location values
 #
-const( 'C_CFF_CONFIGDIR',    'M_CODE', 'Config dir location');
-const( 'C_CFF_WORKDIR',      'M_CODE', 'Workdir location');
-const( 'C_CFF_FILEPATH',     'M_CODE', 'Users filepath location');
-const( 'C_CFF_TEMPDIR',      'M_CODE', 'Tempdir location');
+def_sts( 'C_CFF_CONFIGDIR',    'M_CODE', 'Config dir location');
+def_sts( 'C_CFF_WORKDIR',      'M_CODE', 'Workdir location');
+def_sts( 'C_CFF_FILEPATH',     'M_CODE', 'Users filepath location');
+def_sts( 'C_CFF_TEMPDIR',      'M_CODE', 'Tempdir location');
 
 # Reset values, only used locally
 #
-const( 'C_CFF_NORESETCFG',   'M_CODE', 'Do not reset the plugin configuration');
-const( 'C_CFF_RESETCFG',     'M_CODE', 'Reset the plugin configuration');
+def_sts( 'C_CFF_NORESETCFG',   'M_CODE', 'Do not reset the plugin configuration');
+def_sts( 'C_CFF_RESETCFG',     'M_CODE', 'Reset the plugin configuration');
 
 #-------------------------------------------------------------------------------
 # Possible types for storage. This is set by the plugin manager default

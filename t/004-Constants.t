@@ -16,20 +16,20 @@ sub BUILD
   # Create a constant. Cannot be done after first instanciation but is tested.
   #
 #  $self->set_code_count(hex('7b'));
-  $self->const( 'N',  'M_INFO', 'Message for constant N');
+  $self->def_sts( 'N',  'M_INFO', 'Message for constant N');
   is( ref $self->can('N'), 'CODE', 'Constant N available');
 
   # Create another constant.
   #
 #  $self->set_code_count(hex('8b'));
-  $self->const( 'M', 'M_INFO', 'Message for constant M');
+  $self->def_sts( 'M', 'M_INFO', 'Message for constant M');
   is( ref $self->can('M'), 'CODE', 'Constant M available');
 
   $self->meta->make_immutable;
 
   # Create another constant, should not be possible.
   #
-  $self->const( 'O', 'M_INFO');
+  $self->def_sts( 'O', 'M_INFO');
   is( ref $self->can('O'), '', 'Constant O not available');
 
   $self->log_init('005');

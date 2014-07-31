@@ -15,12 +15,12 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
-const( 'C_STS_UNKNKEY', 'M_WARN');
+def_sts( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
+def_sts( 'C_STS_UNKNKEY', 'M_WARN');
 
 # Codes
 #
-#    const( 'C_STS_', 0);
+#    def_sts( 'C_STS_', 0);
 
 #-------------------------------------------------------------------------------
 # Error codes for Constants module. The error code can be a dualvar which if so

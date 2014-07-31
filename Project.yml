@@ -134,9 +134,16 @@ Todo:
 # What is changed, use version of AppState. See Bugs for format.
 #
 Changes:
-  - date: 2014 07 30
+  - date: 2014 07 31
     descriptions:
       - Changed versions.
+      - Cleanup spaces
+  - date: 2014 07 30
+    descriptions:
+      - >
+         Changed function const() into def_sts() because it is not generally
+         creating a constant but only defining status values for logging and
+         error control.
       - Cleanup spaces
   - date: 2014 07 29
     descriptions:

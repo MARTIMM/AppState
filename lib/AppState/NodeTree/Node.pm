@@ -17,7 +17,7 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_NDE_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
+def_sts( 'C_NDE_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
 
 #-------------------------------------------------------------------------------
 has name =>

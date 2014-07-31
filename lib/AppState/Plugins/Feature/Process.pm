@@ -28,22 +28,22 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_PRC_PIDFILEREMOVED',  'M_INFO', 'Pid file %s removed');
-const( 'C_PRC_CLEANCOMM',       'M_INFO', 'Cleanup communication');
-const( 'C_PRC_PIDFILECREATED',  'M_INFO', 'Pid file %s created for server with pid %s');
-const( 'C_PRC_PARENTSTOPPED',   'M_INFO', 'Parent process stopped');
-const( 'C_PRC_SERVERSTARTED',   'M_INFO', 'Server process started with pid %s');
-const( 'C_PRC_SIGNALSENT',      'M_INFO', 'Sent signal to server');
-const( 'C_PRC_SERVERINTERRUPT', 'M_F_WARNING', 'Server interrupted');
-const( 'C_PRC_PIDOK',           'M_INFO', 'Pid %s checked and is ok');
-const( 'C_PRC_PIDNOTFOUND',     'M_F_WARNING', 'Pid %s checked but not found');
-const( 'C_PRC_RECEIVE',         'M_INFO', 'Receive using %s type config');
-const( 'C_PRC_NOPLUGIN',        'M_ERROR', 'Method %s plugin not loaded for receiving');
+def_sts( 'C_PRC_PIDFILEREMOVED',  'M_INFO', 'Pid file %s removed');
+def_sts( 'C_PRC_CLEANCOMM',       'M_INFO', 'Cleanup communication');
+def_sts( 'C_PRC_PIDFILECREATED',  'M_INFO', 'Pid file %s created for server with pid %s');
+def_sts( 'C_PRC_PARENTSTOPPED',   'M_INFO', 'Parent process stopped');
+def_sts( 'C_PRC_SERVERSTARTED',   'M_INFO', 'Server process started with pid %s');
+def_sts( 'C_PRC_SIGNALSENT',      'M_INFO', 'Sent signal to server');
+def_sts( 'C_PRC_SERVERINTERRUPT', 'M_F_WARNING', 'Server interrupted');
+def_sts( 'C_PRC_PIDOK',           'M_INFO', 'Pid %s checked and is ok');
+def_sts( 'C_PRC_PIDNOTFOUND',     'M_F_WARNING', 'Pid %s checked but not found');
+def_sts( 'C_PRC_RECEIVE',         'M_INFO', 'Receive using %s type config');
+def_sts( 'C_PRC_NOPLUGIN',        'M_ERROR', 'Method %s plugin not loaded for receiving');
 
 # Server status codes
 #
-const( 'C_PRC_SRVROK',          'M_CODE', 'Server started ok');
-const( 'C_PRC_SRVRASTRTD',      'M_CODE', 'Server already started');
+def_sts( 'C_PRC_SRVROK',          'M_CODE', 'Server started ok');
+def_sts( 'C_PRC_SRVRASTRTD',      'M_CODE', 'Server already started');
 
 
 #-------------------------------------------------------------------------------

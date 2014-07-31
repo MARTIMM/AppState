@@ -16,13 +16,13 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.
 #
-const( 'C_DOC_SELOUTRANGE'  , 'M_ERROR', 'Document number %s out of range, document not %s');
-const( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');
-const( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available');
-const( 'C_DOC_NOHASHREF'    , 'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
-const( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');
-const( 'C_DOC_NOVALUE'      , 'M_WARNING', 'No value found at %s');
-const( 'C_DOC_NOKEY'        , 'M_ERROR', 'Key not defined');
+def_sts( 'C_DOC_SELOUTRANGE'  , 'M_ERROR', 'Document number %s out of range, document not %s');
+def_sts( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');
+def_sts( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available');
+def_sts( 'C_DOC_NOHASHREF'    , 'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
+def_sts( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');
+def_sts( 'C_DOC_NOVALUE'      , 'M_WARNING', 'No value found at %s');
+def_sts( 'C_DOC_NOKEY'        , 'M_ERROR', 'Key not defined');
 
 #-------------------------------------------------------------------------------
 # Documents is an array reference, each entry in the array is a document. For

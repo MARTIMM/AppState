@@ -16,14 +16,14 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-const( 'C_NDM_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
-const( 'C_NDM_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
-const( 'C_NDM_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
+def_sts( 'C_NDM_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
+def_sts( 'C_NDM_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
+def_sts( 'C_NDM_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
                                       . 'AppState::NodeTree::Node. Node ref = %s');
 
-const( 'C_NDM_CMP_NAME', 'M_CODE', 'Search comparing name of node');
-const( 'C_NDM_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
-const( 'C_NDM_CMP_DATA', 'M_CODE', 'Search comparing data of node');
+def_sts( 'C_NDM_CMP_NAME', 'M_CODE', 'Search comparing name of node');
+def_sts( 'C_NDM_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
+def_sts( 'C_NDM_CMP_DATA', 'M_CODE', 'Search comparing data of node');
 
 #-------------------------------------------------------------------------------
 has child =>
