@@ -17,7 +17,6 @@ use AppState::Ext::Meta_Constants;
 
 use Moose;
 use MooseX::NonMoose;
-#use MooseX::NonMoose::Meta::Role::Constructor;
 
 extends qw( Class::Singleton AppState::Ext::Constants);
 
@@ -25,9 +24,9 @@ extends qw( Class::Singleton AppState::Ext::Constants);
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_APP_UNLINKTEMP', 'M_F_WARNING', 'Unlink %s/%s');
-def_sts( 'C_APP_APPDESTROY', 'M_F_WARNING', 'AppState set to be deleted after destroying plugins');
-def_sts( 'C_APP_ILLAPPINIT', 'M_F_ERROR', 'Called new() directly, use instance() instead! %s');
+def_sts( 'C_APP_UNLINKTEMP', 'M_F_INFO', 'Unlink %s/%s');
+def_sts( 'C_APP_APPDESTROY', 'M_F_INFO', 'AppState set to be deleted after destroying plugins');
+def_sts( 'C_APP_ILLAPPINIT', 'M_F_FATAL', 'Called new() directly, use instance() instead! %s');
 
 #-------------------------------------------------------------------------------
 #
