@@ -183,7 +183,8 @@ Git:
     - Bugs-Todo
     - Changes-*
     - Tests/*
-    - Distribution-Tests/
+#    - Distribution-Tests/
+    - 'Project/*.log'
   github:
     account: MARTIMM
 Manifest: ~
