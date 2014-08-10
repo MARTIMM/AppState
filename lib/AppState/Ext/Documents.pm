@@ -1,7 +1,7 @@
 package AppState::Ext::Documents;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.0.3');
+use version; our $VERSION = version->parse('v0.0.4');
 use 5.010001;
 
 use namespace::autoclean;
@@ -131,7 +131,7 @@ sub set_document
 {
   my( $self, $document, $newData) = @_;
   $document //= $self->get_current_document // 0;
-say "Set doc: $document, $newData";
+#say "Set doc: $document, $newData";
   if( $document >= 0 and $document < $self->nbr_documents )
   {
     $self->_set_document( $document, $newData);
@@ -218,7 +218,7 @@ sub get_keys
   my $hashref = $self->_path2hashref( $path, $startRef);
   $keys = [keys %{$$hashref}] if ref $$hashref eq 'HASH';
 
-  $self->write_log( $self->C_LOG_TRACE, "get_keys from '$path'");
+  $self->log( $self->C_LOG_TRACE, ["get_keys from '$path'"]);
   return $keys;
 }
 
@@ -232,10 +232,12 @@ sub get_value
   my $v;
   $v = $$hashref if ref $hashref;# =~ m/^(REF|SCALAR|ARRAY|HASH)$/;
   $self->log( $self->C_DOC_NOVALUE, [$path]) unless ref $hashref;
-  $self->write_log( $self->C_LOG_TRACE
-                  , "get_value from '$path' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "get_value from '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
   return $v;
 }
 
@@ -254,10 +256,12 @@ sub set_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
   $$hashref = $value;
-  $self->write_log( $self->C_LOG_TRACE
-                  , "set_value, $path, '$value' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "set_value, $path, '$value' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 }
 
 #-------------------------------------------------------------------------------
@@ -277,10 +281,11 @@ sub drop_value
     delete $$hashref->{$spath} if ref $$hashref eq 'HASH';
   }
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "drop_value, '$path' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , ["drop_value, '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 
   return $value;
 }
@@ -296,10 +301,11 @@ sub get_kvalue
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "get_kvalue from '$path' and '$key' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "get_kvalue from '$path' and '$key' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
   return $$hashref->{$key};
 }
 
@@ -318,10 +324,11 @@ sub set_kvalue
   my $hashref = $self->_path2hashref( $path, $startRef);
   $$hashref //= {};
   $$hashref->{$key} = $value;
-  $self->write_log( $self->C_LOG_TRACE
-                  , "set_kvalue, '$path', '$key', '$value' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "set_kvalue, '$path', '$key', '$value' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 }
 
 #-------------------------------------------------------------------------------
@@ -336,10 +343,11 @@ sub drop_kvalue
 #say "DV: $value, $hashref";
   delete $$hashref->{$key} if ref $$hashref eq 'HASH';
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "drop_kvalue from '$path' and '$key' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "drop_kvalue from '$path' and '$key' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
   return $value;
 }
 
@@ -351,10 +359,11 @@ sub pop_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "pop_value from '$path' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "pop_value from '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
   return pop @{$$hashref};
 }
 
@@ -368,10 +377,11 @@ sub push_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   push @{$$hashref}, @$values;
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "push_value, '$path', @$values "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "push_value, '$path', @$values "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 }
 
 #-------------------------------------------------------------------------------
@@ -382,10 +392,11 @@ sub shift_value
 
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "shift_value from '$path' "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "shift_value from '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
   return shift @{$$hashref};
 }
 
@@ -398,10 +409,11 @@ sub unshift_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   unshift @{$$hashref}, @$values;
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "unshift_value, '$path', @$values "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "unshift_value, '$path', @$values "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 }
 
 #-------------------------------------------------------------------------------
@@ -414,10 +426,11 @@ sub splice_value
   my $hashref = $self->_path2hashref( $path, $startRef);
   splice @{$$hashref}, @$spliceArgs;
 
-  $self->write_log( $self->C_LOG_TRACE
-                  , "push_value, '$path', @$spliceArgs "
-                  . ref $startRef eq 'HASH' ? 'with hook' : ''
-                  );
+  $self->log( $self->C_LOG_TRACE
+            , [ "push_value, '$path', @$spliceArgs "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
 }
 
 #-------------------------------------------------------------------------------
