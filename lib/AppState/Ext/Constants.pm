@@ -236,32 +236,15 @@ sub wlog
   my( $self, $messages, $error_code, $call_level) = @_;
 
   $call_level //= 0;
+  my $sts = 0;
 
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-  $log->write_log( $messages, $error_code, $call_level + 1)
+  $sts = $log->write_log( $messages, $error_code, $call_level + 1)
     if ref $log eq 'AppState::Plugins::Feature::Log';
 
-  return;
-}
-
-#-------------------------------------------------------------------------------
-# See wlog, change of argument sequence
-#
-sub write_log
-{
-  my( $self, $error_code, $messages, $call_level) = @_;
-
-  $call_level //= 0;
-
-  my $app = AppState->instance;
-  my $log = $app->check_plugin('Log');
-
-  $log->write_log( $messages, $error_code, $call_level + 1)
-    if ref $log eq 'AppState::Plugins::Feature::Log';
-
-  return;
+  return $sts;
 }
 
 #-------------------------------------------------------------------------------
@@ -273,14 +256,20 @@ sub log
   my( $self, $error_code, $msg_values, $call_level) = @_;
 
   $call_level //= 0;
+  my $sts = 0;
 
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-  $log->log( $error_code, $msg_values, $call_level + 1)
+#if( $error_code == $self->C_LOG_TRACE )
+#{
+#say "C call, ", join ', ', (caller $call_level)[0, 2];
+#say "C log $error_code, @$msg_values";
+#}
+  $sts = $log->log( $error_code, $msg_values, $call_level + 1)
     if ref $log eq 'AppState::Plugins::Feature::Log';
 
-  return;
+  return $sts;
 }
 
 #-------------------------------------------------------------------------------

@@ -788,7 +788,6 @@ sub write_log
     $error = $self->C_LOG_NOMSG;
   }
 
-
   # Get the line number from where the call to write_log() was made. Default
   # caller stack level is 0. Get the log_tag when the call level packagename
   # is found. Save the log_tag in the lastError.
