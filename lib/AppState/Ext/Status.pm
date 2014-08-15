@@ -34,15 +34,9 @@ has status =>
     , default           =>
       sub
       { my( $self) = @_;
-
-        # Must be done later if not set yet
-        #
-        my $error = 0;
-        $error = $self->C_STS_INITOK unless $self->meta->is_mutable;
-
         return
         { message       => ''
-        , error         => $error
+        , error         => 0 #$error
         , line          => 0
         , file          => ''
         , package       => ''
@@ -61,118 +55,83 @@ sub BUILD
 
 #-------------------------------------------------------------------------------
 #
-sub is_success
+sub s_is_success
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $is = !!( $error & $self->M_SUCCESS);
-  return $is;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_SUCCESS);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_fail
+sub s_is_fail
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_FAIL);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_FAIL);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_forced
+sub s_is_forced
 {
   my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_FORCED);
-  return $ie;
+  return !!($self->status->{error} & $self->M_FORCED);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_info
+sub s_is_info
 {
-  my( $self, $error) = @_;
-
-#say sprintf( "E=%08x & %08x & %08x"
-#           , $self->status->{error}
-#           , $self->M_NOTMSFF
-#           , $self->M_INFO
-#           );
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_NOTMSFF & $self->M_INFO);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_INFO);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_warning
+sub s_is_warning
 {
   my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $iw = !!($error & $self->M_NOTMSFF & $self->M_WARNING);
-  return $iw;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARNING);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_error
+sub s_is_error
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_NOTMSFF & $self->M_ERROR);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_ERROR);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_trace
+sub s_is_trace
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_NOTMSFF & $self->M_TRACE);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_TRACE);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_debug
+sub s_is_debug
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_NOTMSFF & $self->M_DEBUG);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_DEBUG);
 }
 
 #-------------------------------------------------------------------------------
 # Same as warning because M_WARN == M_WARNING
 #
-sub is_warn
+sub s_is_warn
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $iw = !!($error & $self->M_NOTMSFF & $self->M_WARN);
-  return $iw;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARN);
 }
 
 #-------------------------------------------------------------------------------
 #
-sub is_fatal
+sub s_is_fatal
 {
-  my( $self, $error) = @_;
-
-  $error //= $self->status->{error};
-  my $ie = !!($error & $self->M_NOTMSFF & $self->M_FATAL);
-  return $ie;
+  my($self) = @_;
+  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_FATAL);
 }
 
 #-------------------------------------------------------------------------------
@@ -314,18 +273,6 @@ sub set_status
   # Return 0 on success
   #
   return $sts;
-}
-
-#-------------------------------------------------------------------------------
-# Compare the level numbers in the error and return -1, 0 or 1 for less, equal
-# or greater than resp.
-#
-sub cmp_levels
-{
-  my( $self, $error1, $error2) = @_;
-#say sprintf( "cmp: %08x <=> %08x === %d", $error1, $error2
-#  , ($error1 & $self->M_LEVELMSK) <=> ($error2 & $self->M_LEVELMSK));
-  return ($error1 & $self->M_LEVELMSK) <=> ($error2 & $self->M_LEVELMSK);
 }
 
 #-------------------------------------------------------------------------------

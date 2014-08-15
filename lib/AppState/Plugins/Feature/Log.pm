@@ -28,18 +28,20 @@ $columns = 80;
 #-------------------------------------------------------------------------------
 # Error codes
 #
+def_sts( 'C_LOG_APPENDON',     'M_F_INFO', 'Append turned on');
+def_sts( 'C_LOG_APPENDOFF',    'M_F_INFO', 'Append turned off');
 def_sts( 'C_LOG_AUTOFLUSHON',  'M_F_INFO', 'Autoflush turned on');
 def_sts( 'C_LOG_AUTOFLUSHOFF', 'M_F_INFO', 'Autoflush turned off');
 def_sts( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
 def_sts( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
 def_sts( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
-def_sts( 'C_LOG_TAGLBLINUSE',  'M_F_WARNING', 'Tag label \'%s\' already in use');
-def_sts( 'C_LOG_TAGALRDYSET',  'M_F_WARNING', 'Package \'%s\' already has a tag \'%s\'');
-def_sts( 'C_LOG_BMCHANGED',    'M_F_INFO', "Log level changed from '%s' into '%s'");
-def_sts( 'C_LOG_TAGADDED',     'M_INFO', 'Tag \'%s\' added for module \'%s\'');
+def_sts( 'C_LOG_TAGLBLINUSE',  'M_FATAL', 'Tag label \'%s\' already in use');
+def_sts( 'C_LOG_TAGALRDYSET',  'M_FATAL', 'Package \'%s\' already has a tag \'%s\'');
+def_sts( 'C_LOG_LLVLCHANGED',  'M_F_INFO', "Log level changed from '%s' into '%s'");
+def_sts( 'C_LOG_TAGADDED',     'M_F_INFO', 'Tag \'%s\' added for module \'%s\'');
 def_sts( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
-def_sts( 'C_LOG_LOGALRINIT',   'M_WARNING', 'Not changed, logger already initialized');
+def_sts( 'C_LOG_LOGALRINIT',   'M_F_WARNING', 'Not changed, logger already initialized');
 
 # Constant codes
 #
@@ -53,9 +55,28 @@ has do_append_log =>
     , isa               => 'Bool'
     , default           => 1
     , traits            => ['Bool']
-    , handles           =>
-      { append          => 'set'
-      , fresh           => 'unset'
+    , trigger           =>
+      sub
+      {
+        my( $self, $n, $o) = @_;
+
+        $o //= 0;
+        return if $n == $o;
+
+        if( $self->logger_initialized )
+        {
+          $self->log($self->C_LOG_LOGALRINIT);
+        }
+
+        elsif( $n )
+        {
+          $self->log($self->C_LOG_APPENDON);
+        }
+
+        else
+        {
+          $self->log($self->C_LOG_APPENDOFF);
+        }
       }
     );
 
@@ -70,7 +91,6 @@ has do_flush_log =>
 
         $o //= 0;
         return if $n == $o;
-#        return unless $self->isLogFileOpen;
 
         if( $self->logger_initialized )
         {
@@ -79,13 +99,11 @@ has do_flush_log =>
 
         elsif( $n )
         {
-#          $self->_logFileHandle->autoflush(1);
           $self->log($self->C_LOG_AUTOFLUSHON);
         }
 
         else
         {
-#          $self->_logFileHandle->autoflush(0);
           $self->log($self->C_LOG_AUTOFLUSHOFF);
         }
       }
@@ -128,17 +146,12 @@ has _log_tag =>
       , get_log_tag       => 'get'
       , _set_log_tag      => 'set'
       , has_log_tag       => 'defined'
-      , get_log_tags      => 'keys'
-      , get_tag_labels    => 'values'
+      , get_tag_modules   => 'keys'
+      , get_tag_names     => 'values'
       }
     );
 
-# Log bitmask is a verbosity mask. The more bits are set the more noise is
-# shown. Write gets a message mask with the message and is tested with this
-# mask before logging.
-#
-
-# Subtype to be used to test store_type against.
+# Subtype to be used to test log_level against.
 #
 my $_test_levels = sub {return 0;};
 subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
@@ -146,11 +159,14 @@ subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
     => where { $_test_levels->($_); }
     => message { "The store type '$_' is not correct" };
 
+# Setting the log level can only be done when Log::Log4perl is initialized by
+# _make_logger_objects(). This method will set the default level to M_ERROR.
+#
 has log_level =>
     ( is                => 'rw'
     , isa               => 'AppState::Plugins::Feature::Log::Types::Log_level'
-    , lazy              => 1
-    , default           => sub { return $_[0]->M_ERROR; }
+#    , lazy              => 1
+#    , default           => sub { return $_[0]->M_ERROR; }
     , trigger           =>
       sub
       {
@@ -159,13 +175,15 @@ has log_level =>
         $o //= 0;
         return if $n == $o;
 
-        my $n_str = $self->_get_log_level_name($n);
-        my $o_str = $self->_get_log_level_name($o);
-        $self->log( $self->C_LOG_BMCHANGED, [ $o_str, $n_str]);
-
-        my $log_level_name = $self->_get_log_level_name($n);
         my $logger = $self->get_logger('AppState::Plugins::Feature::Log');
-        $logger->level($log_level_name) if defined $logger;
+        if( defined $logger )
+        {
+          my $log_level_name = $self->_get_log_level_name($n);
+          $logger->level($log_level_name);
+
+          my $o_str = $self->_get_log_level_name($o);
+          $self->log( $self->C_LOG_LLVLCHANGED, [ $o_str, $log_level_name]);
+        }
       }
     );
 
@@ -176,7 +194,7 @@ has _logging_is_forced =>
     , lazy              => 1
     , traits            => ['Bool']
     , handles           =>
-      { _forced_log => 'set'
+      { _forced_log     => 'set'
       , _normal_log     => 'unset'
       }
     , trigger           =>
@@ -357,9 +375,9 @@ has _lastError =>
     , init_arg          => undef
     , handles           =>
       { clear_last_error        => 'clear_error'
-      , is_last_success         => 'is_success'
-      , is_last_fail            => 'is_fail'
-      , is_last_forced          => 'is_forced'
+      , is_last_success         => 's_is_success'
+      , is_last_fail            => 's_is_fail'
+      , is_last_forced          => 's_is_forced'
       , get_last_message        => 'get_message'
       , get_last_error          => 'get_error'
       , get_last_severity       => 'get_severity'
@@ -668,32 +686,32 @@ sub _get_log_level_function_name
   my( $self) = @_;
   my $log_level_name;
   my $sts = $self->_lastError;
-  if( $sts->is_trace )
+  if( $sts->s_is_trace )
   {
     $log_level_name = 'trace';
   }
 
-  elsif( $sts->is_debug )
+  elsif( $sts->s_is_debug )
   {
     $log_level_name = 'debug';
   }
 
-  elsif( $sts->is_info )
+  elsif( $sts->s_is_info )
   {
     $log_level_name = 'info';
   }
 
-  elsif( $sts->is_warning )
+  elsif( $sts->s_is_warning )
   {
     $log_level_name = 'warn';
   }
 
-  elsif( $sts->is_error )
+  elsif( $sts->s_is_error )
   {
     $log_level_name = 'error';
   }
 
-  elsif( $sts->is_fatal )
+  elsif( $sts->s_is_fatal )
   {
     $log_level_name = 'fatal';
   }
@@ -765,12 +783,16 @@ sub write_log
 {
   my( $self, $messages, $error, $call_level) = @_;
 
-  my $status = AppState::Ext::Status->new;
-  return unless $status->cmp_levels( $error, $self->log_level) >= 0
-         or $status->is_forced($error);
+  # Don't do a thing when the log level is set higher than the error level.
+  # When logging is not yet started, there is no default. Use lowest level
+  # in that case.
+  #
+  my $log_level = $self->log_level // $self->M_TRACE;
+  return unless cmp_levels( $error, $log_level) >= 0 or is_forced($error);
 
-  my $message = '';
-  $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
+  # The message can be a series of messages in an ARRAY ref. Make one message.
+  #
+  my $message = ref $messages eq 'ARRAY' ? join( ' ', @$messages) : $messages;
 
   # Check if error has both an event code and a severity.
   #
@@ -798,71 +820,72 @@ sub write_log
   $log_tag //= '';
   $log_tag = substr( "$log_tag---", 0, 3);
 
-
-  # Make the status object to be returned later. When it fails, returns
-  # a status object itself and must be returned immediately.
-  # Any error logged in set_status comes here again -> deep recursion
+  # Make the status object to be returned later. Object creation, notification
+  # to subscribed users, makeup of the message, stackdump and so forth will
+  # only be done when error is worse than info.
   #
-  $status->set_status( error     => $error
-                     , message   => $message
-                     , line      => $l
-                     , file      => $f
-                     , package   => $package
-                     );
-  $self->_lastError($status);
-
-  # Notify subscribed users when error is worse than info
-  #
-  $self->notify_subscribers( $log_tag, $status)
-#    if $status->is_warning or $status->is_error or $status->is_fatal;
-    if $status->cmp_levels( $error, $self->M_WARNING) >= 0;
-
-  # Create the message for the log
-  #
-  my( $dateTxt, $timeTxt, $msgTxt) =
-     $self->_create_message( $log_tag, $call_level + 1);
-
-
-  $self->_log_data_line if $dateTxt;
-
-  if( $timeTxt )
+  my $status;
+  if( cmp_levels( $error, $self->M_INFO) > 0 )
   {
-    $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                         , $status->is_forced
-                         );
+    $status = AppState::Ext::Status->new;
+    $status->set_status( error     => $error
+                       , message   => $message
+                       , line      => $l
+                       , file      => $f
+                       , package   => $package
+                       );
+    $self->_lastError($status);
+    $self->notify_subscribers( $log_tag, $status);
   }
 
-  else
+  # When logging is started or when not but the error level is above M_INFO
+  if( $self->_is_logging or cmp_levels( $error, $self->M_INFO) > 0 )
   {
-    $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                       , $status->is_forced
-                       ) if $msgTxt;
+    # Create the message for the log
+    #
+    my( $dateTxt, $timeTxt, $msgTxt) =
+       $self->_create_message( $log_tag, $call_level + 1);
 
-    $self->_log_message( join( ''
-                             , map { ' ' x 13 . "$_\n"}
-                                   $self->_get_stack($call_level + 1)
-                             )
-                       , $status->is_forced
-                       )
-#       if $status->is_error or $status->is_fatal;
-       if $status->cmp_levels( $error, $self->M_ERROR) >= 0;
-  }
+    $self->_log_data_line if $dateTxt;
 
-  if( $status->is_error and $self->show_on_error
-      or $status->is_warning and $self->show_on_warning
-      or $status->is_fatal and $self->show_on_fatal
-    )
-  {
-    say STDERR Text::Wrap::wrap( '', ' ' x 12, $msgTxt);
-    print STDERR map {' ' x 4 . $_ . "\n"} $self->_get_stack($call_level + 1);
-  }
+    if( $timeTxt )
+    {
+      $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                           , $status->s_is_forced
+                           );
+    }
 
-  if( $status->is_error and $self->die_on_error
-      or $status->is_fatal and $self->die_on_fatal
-    )
-  {
-    $self->stop_logging;
-    $self->leave(1);
+    else
+    {
+      $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                         , $status->s_is_forced
+                         ) if $msgTxt;
+
+      $self->_log_message( join( ''
+                               , map { ' ' x 13 . "$_\n"}
+                                     $self->_get_stack($call_level + 1)
+                               )
+                         , $status->s_is_forced
+                         )
+         if cmp_levels( $error, $self->M_ERROR) >= 0;
+    }
+
+    if( $status->s_is_error and $self->show_on_error
+        or $status->s_is_warning and $self->show_on_warning
+        or $status->s_is_fatal and $self->show_on_fatal
+      )
+    {
+      say STDERR Text::Wrap::wrap( '', ' ' x 12, $msgTxt);
+      print STDERR map {' ' x 4 . $_ . "\n"} $self->_get_stack($call_level + 1);
+    }
+
+    if( $status->s_is_error and $self->die_on_error
+        or $status->s_is_fatal and $self->die_on_fatal
+      )
+    {
+      $self->stop_logging;
+      $self->leave(1);
+    }
   }
 
   # Return status object
@@ -890,23 +913,23 @@ sub _create_message
   #
   my $sts = $self->_lastError;
   my $severitySymbol = '-';
-  $severitySymbol = 'i' if $sts->is_info;
-  $severitySymbol = 'w' if $sts->is_warning;
-  $severitySymbol = 'e' if $sts->is_error;
-  $severitySymbol = 't' if $sts->is_trace;
-  $severitySymbol = 'd' if $sts->is_debug;
-  $severitySymbol = 'f' if $sts->is_fatal;
+  $severitySymbol = 'i' if $sts->s_is_info;
+  $severitySymbol = 'w' if $sts->s_is_warning;
+  $severitySymbol = 'e' if $sts->s_is_error;
+  $severitySymbol = 't' if $sts->s_is_trace;
+  $severitySymbol = 'd' if $sts->s_is_debug;
+  $severitySymbol = 'f' if $sts->s_is_fatal;
 
   my $stsSymbol = '-';
-  $stsSymbol = 's' if $sts->is_success;
-  $stsSymbol = 'f' if $sts->is_fail;
+  $stsSymbol = 's' if $sts->s_is_success;
+  $stsSymbol = 'f' if $sts->s_is_fail;
 
   $severitySymbol .= $stsSymbol;
 
   # If the messages should have been filtered, the forced bit should have
   # been set if we ended up here
   #
-  $severitySymbol = uc($severitySymbol) if $sts->is_forced;
+  $severitySymbol = uc($severitySymbol) if $sts->s_is_forced;
 
   my $error = $sts->get_error;
   my $message = $sts->get_message;
@@ -942,8 +965,6 @@ sub _create_message
   }
 
   $msgTxt =~ s/[\n]+/ /gm;
-
-
 
   my $date = DateTime->now;
   my $timeTxt = $date->hms;
@@ -1014,7 +1035,7 @@ sub add_tag
     ($package) = caller($call_level);
   }
 
-  my @tagLabels = $self->get_tag_labels;
+  my @tagLabels = $self->get_tag_names;
   if( $log_tag ~~ \@tagLabels )
   {
     $self->log( $self->C_LOG_TAGLBLINUSE, [$log_tag]);
@@ -1040,42 +1061,3 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
-
-#-------------------------------------------------------------------------------
-# Documentation
-#
-
-=head1 NAME
-
-AppState::Log - Module to do message logging and severity status handling
-
-=head1 SYNOPSIS
-
-
-=head1 DESCRIPTION
-
-
-
-=head2 EXPORT
-
-None by default.
-
-
-
-=head1 SEE ALSO
-
-
-=head1 AUTHOR
-
-Marcel Timmerman, E<lt>mt1957@gmail.comE<gt>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2013 by Marcel Timmerman
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.14.3 or,
-at your option, any later version of Perl 5 you may have available.
-
-
-=cut
