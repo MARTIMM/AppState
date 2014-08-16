@@ -144,6 +144,35 @@ order. M_WARN and M_WARNING return the same codes. Every log entry is compared
 to this log level and errors having lower status will not get logged. There
 are some more rules but see write_log() for more information.
 
+=head2 die_on_error($bool)
+
+Control if the write_log() must end the program after handling the message with
+an error status. Default is off. Returns the current value when no argument is
+given.
+
+=head2 die_on_fatal($bool)
+
+Control if the write_log() must end the program after handling the message with
+a fatal status. Default is on. Returns the current value when no argument is
+given.
+
+=head2 show_on_warning($bool)
+
+Control if the write_log() must show a stack dump after handling the message
+with a warning status. Default is off. Returns the current value when no
+argument is given.
+
+=head2 show_on_error($bool)
+
+Control if the write_log() must show a stack dump after handling the message
+with a error status. Default is on. Returns the current value when no
+argument is given.
+
+=head2 show_on_fatal($bool)
+
+Control if the write_log() must show a stack dump after handling the message
+with a fatal status. Default is on. Returns the current value when no
+argument is given.
 
 =head1 PRIVATE METHODS
 
@@ -158,6 +187,31 @@ Return the hash reference of the module tags table.
 =head2 _set_log_tag( $module_name => $tag_name)
 
 Method to set the modules tagname.
+
+=head2 _logging_is_forced
+
+Check to see if error has a forced bit enabled.
+
+=head2 _forced_log
+
+Force logging of message independend of log_level
+
+=head2 _normal_log
+
+Logging is normal in respect to log_level. That is, not forced.
+
+=head2 _is_logging
+
+Check to see if logging is started or not.
+
+=head2 _logging_on
+
+Turn logging on. Done in start_logging().
+
+=head2 _logging_off
+
+Turn logging off. Done in stop_logging.
+
 
 
 =head1 STATUS CODES

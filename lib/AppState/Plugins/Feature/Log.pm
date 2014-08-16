@@ -839,6 +839,7 @@ sub write_log
   }
 
   # When logging is started or when not but the error level is above M_INFO
+  #
   if( $self->_is_logging or cmp_levels( $error, $self->M_INFO) > 0 )
   {
     # Create the message for the log

@@ -61,6 +61,8 @@ sub
   ok( $log->has_log_tag(__PACKAGE__), "Package has a tag name");
   ok( $log->get_tag_modules == 4, 'Package has 4 registered modules');
   is( join( ' ', sort $log->get_tag_names), '100 =AP =LG =PM', 'Tag names check');
+
+$log->log( $log->C_LOG_NOERRCODE);
 };
 
 
