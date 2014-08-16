@@ -160,19 +160,30 @@ given.
 
 Control if the write_log() must show a stack dump after handling the message
 with a warning status. Default is off. Returns the current value when no
-argument is given.
+argument is given. See show_on_error() for an example stackdump.
 
 =head2 show_on_error($bool)
 
 Control if the write_log() must show a stack dump after handling the message
 with a error status. Default is on. Returns the current value when no
-argument is given.
+argument is given. An example stackdump of a message with an error status.
+This error (E) is forced to appear (F) and the caller was at line 65 in the
+I<main> package. the 3 letter tag '100' was set by this main package.
+
+  100 0065 EF Error does not have an error code and/or severity code
+      Stack dump;
+      0065 main
+      0234 Test::Builder
+      0239 Test::Builder
+      0239 Test::Builder
+      0747 Test::More
+      0066 main
 
 =head2 show_on_fatal($bool)
 
 Control if the write_log() must show a stack dump after handling the message
 with a fatal status. Default is on. Returns the current value when no
-argument is given.
+argument is given. See show_on_error() for an example stackdump.
 
 =head1 PRIVATE METHODS
 
@@ -221,10 +232,6 @@ lower than the log_level(), they will still be processed. It is done because
 one can always see what the logger processes when logging is turned on. Fatal
 error status will kill the program unless die_on_fatal(0) is called first.
 
-  C_LOG_APPENDON      M_F_INFO     Appending to log turned on
-  C_LOG_APPENDOFF     M_F_INFO     Appending to log turned off
-  C_LOG_AUTOFLUSHON   M_F_INFO     Flushing to log turned on
-  C_LOG_AUTOFLUSHOFF  M_F_INFO     Flushing to log turned off
   C_LOG_LOGINIT       M_F_INFO     Log initialized
   C_LOG_LOGSTARTED    M_F_INFO     Logging started
   C_LOG_LOGSTOPPED    M_F_INFO     Logging stopprd
@@ -234,8 +241,8 @@ error status will kill the program unless die_on_fatal(0) is called first.
   C_LOG_TAGADDED      M_F_INFO     Tag added for calling module
   C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
   C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
-  C_LOG_LOGALRINIT    M_F_WARNING  Log already initialized. Happens with append
-                                   or flush changes.
+  C_LOG_LOGALRINIT    M_F_WARNING  Log already initialized. Happens with append,
+                                   flush and hide message legend changes.
 
 =head1 PROGRAM CODES
 
