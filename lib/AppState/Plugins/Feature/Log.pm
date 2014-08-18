@@ -58,7 +58,7 @@ has do_append_log =>
 
         $o //= 0;
         return if $n == $o;
-        $self->log($self->C_LOG_LOGALRINIT) if $self->logger_initialized;
+        $self->log($self->C_LOG_LOGALRINIT) if $self->_logger_initialized;
       }
     );
 
@@ -73,7 +73,7 @@ has do_flush_log =>
 
         $o //= 0;
         return if $n == $o;
-        $self->log($self->C_LOG_LOGALRINIT) if $self->logger_initialized;
+        $self->log($self->C_LOG_LOGALRINIT) if $self->_logger_initialized;
       }
     );
 
@@ -155,14 +155,14 @@ has log_level =>
       }
     );
 
-has _logging_is_forced =>
+has _is_logging_forced =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
     , lazy              => 1
     , traits            => ['Bool']
     , handles           =>
-      { _forced_log     => 'set'
+      { _force_log      => 'set'
       , _normal_log     => 'unset'
       }
     , trigger           =>
@@ -265,11 +265,6 @@ has write_start_message =>
     ( is                => 'rw'
     , isa               => 'Bool'
     , default           => 1
-    , traits            => ['Bool']
-    , handles           =>
-      { log_start_message       => 'set'
-      , dont_log_start_message  => 'unset'
-      }
     , trigger           =>
       sub
       {
@@ -277,11 +272,11 @@ has write_start_message =>
 
         $o //= 0;
         return if $n == $o;
-        $self->log($self->C_LOG_LOGALRINIT) if $self->logger_initialized;
+        $self->log($self->C_LOG_LOGALRINIT) if $self->_logger_initialized;
       }
     );
 
-has logger_initialized =>
+has _logger_initialized =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
@@ -351,7 +346,7 @@ has _previousMsgEq =>
 
 has _lastError =>
     ( is                => 'rw'
-    , isa               => 'AppState::Ext::Status'
+    , isa               => 'Maybe[AppState::Ext::Status]'
     , default           => sub { AppState::Ext::Status->new; }
     , init_arg          => undef
     , handles           =>
@@ -421,7 +416,7 @@ sub start_logging
   $self->_previousDate('');
   $self->_previousTime('');
 
-  $self->_make_logger_objects unless $self->logger_initialized;
+  $self->_make_logger_objects unless $self->_logger_initialized;
   $self->_logging_on;
 
   # Write first entry to log file
@@ -519,7 +514,7 @@ sub _log_data_line
 
   return unless $self->_is_logging;
 
-  $self->_forced_log;
+  $self->_force_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
@@ -545,7 +540,7 @@ sub _log_time_line
 
   return unless $self->_is_logging;
 
-  $self->_forced_log;
+  $self->_force_log;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
@@ -571,7 +566,7 @@ sub _log_message
   # Get the logger and the function name from the error message. Then
   # log the message with that function.
   #
-  $self->_forced_log if $forced;
+  $self->_force_log if $forced;
   my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
 #  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 #  $appender->layout($self->get_layout('log.millisec'));
@@ -774,25 +769,26 @@ sub write_log
   $log_tag //= '';
   $log_tag = substr( "$log_tag---", 0, 3);
 
-  # Make the status object to be returned later. Object creation, notification
-  # to subscribed users, makeup of the message, stackdump and so forth will
-  # only be done when error is worse than info.
+  # Make the status object to be returned later.
   #
-  my $status;
-  if( cmp_levels( $error, $self->M_INFO) > 0 )
-  {
-    $status = AppState::Ext::Status->new;
-    $status->set_status( error     => $error
-                       , message   => $message
-                       , line      => $l
-                       , file      => $f
-                       , package   => $package
-                       );
-    $self->_lastError($status);
-    $self->notify_subscribers( $log_tag, $status);
-  }
+  my $status = AppState::Ext::Status->new;
+  $status->set_status( error     => $error
+                     , message   => $message
+                     , line      => $l
+                     , file      => $f
+                     , package   => $package
+                     );
+  # Notification to subscribed users only when status is worse than M_INFO
+  #
+  $self->notify_subscribers( $log_tag, $status)
+    if cmp_levels( $error, $self->M_INFO) > 0;
 
-  # When logging is started or when not but the error level is above M_INFO
+  # Set new status
+  #
+  $self->_lastError($status);
+
+  # The message, stackdump and so forth will only be done when
+  # error is worse than info or when logging is started.
   #
   if( $self->_is_logging or cmp_levels( $error, $self->M_INFO) > 0 )
   {
@@ -843,9 +839,9 @@ sub write_log
     }
   }
 
-  # Return status object
+  # Return status object if worse than M_INFO
   #
-  return $status;
+  return cmp_levels( $error, $self->M_INFO) > 0 ? $status : undef;
 }
 
 #-------------------------------------------------------------------------------

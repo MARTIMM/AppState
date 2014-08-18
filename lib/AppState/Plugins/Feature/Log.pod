@@ -24,7 +24,7 @@ AppState::Log - Module to do message logging and severity status handling
   my $log = $app->get_app_object('Log');
   $log->show_on_error(0);
   $log->add_tag('SYN');
-  $log->dont_log_start_message;
+  $log->write_start_message(0);
   $log->start_logging;
   $log->log_level($self->M_TRACE);
 
@@ -185,6 +185,12 @@ Control if the write_log() must show a stack dump after handling the message
 with a fatal status. Default is on. Returns the current value when no
 argument is given. See show_on_error() for an example stackdump.
 
+=head2 write_start_message($bool)
+
+Control if a legend must be written at the start of the logfile. Default is 1.
+
+
+
 =head1 PRIVATE METHODS
 
 This is documentation for me only! Everything can change at any point in the
@@ -203,7 +209,7 @@ Method to set the modules tagname.
 
 Check to see if error has a forced bit enabled.
 
-=head2 _forced_log
+=head2 _force_log
 
 Force logging of message independend of log_level
 
@@ -223,6 +229,13 @@ Turn logging on. Done in start_logging().
 
 Turn logging off. Done in stop_logging.
 
+=head2 _logger_initialized
+
+Check if logger is initialized.
+
+=head2 _set_logger_initialized
+
+Method start_logging() will somewhere turn C<logger_initialized> on.
 
 
 =head1 STATUS CODES

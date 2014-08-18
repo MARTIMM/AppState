@@ -2,7 +2,6 @@
 #
 use Modern::Perl;
 use Test::Most;
-use Test::File::Content;
 use File::Path();
 
 use AppState;
@@ -63,7 +62,7 @@ sub
 
   ok( $log->write_start_message, 'Show start message on');
   
-  ok( !$log->logger_initialized, 'Logger not initialized');
+  ok( !$log->_logger_initialized, 'Logger not initialized');
   ok( $log->nbr_loggers == 0, 'No Log::Log4perl logger defined');
   ok( $log->nbr_layouts == 0, 'No Log::Log4perl layouts defined');
 };
@@ -125,7 +124,7 @@ sub
   
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
   
-  ok( $log->logger_initialized, 'Logger is initialized');
+  ok( $log->_logger_initialized, 'Logger is initialized');
   ok( $log->nbr_loggers == 1, '1 Log::Log4perl logger defined');
   isa_ok( $log->get_logger($log->C_LOG_LOGGERNAME), 'Log::Log4perl::Logger');
   ok( $log->nbr_layouts == 4, '4 Log::Log4perl layouts defined');

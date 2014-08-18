@@ -2,7 +2,6 @@
 #
 use Modern::Perl;
 use Test::More;
-use Test::File::Content;
 require File::Path;
 
 use AppState;
