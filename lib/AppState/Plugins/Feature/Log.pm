@@ -143,7 +143,7 @@ has log_level =>
         $o //= 0;
         return if $n == $o;
 
-        my $logger = $self->get_logger('AppState::Plugins::Feature::Log');
+        my $logger = $self->_get_logger('AppState::Plugins::Feature::Log');
         if( defined $logger )
         {
           my $log_level_name = $self->_get_log_level_name($n);
@@ -177,7 +177,7 @@ has _is_logging_forced =>
         #
         if( $o == 0 and $n )
         {
-          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
           $curr_level = $logger->level;
           $logger->level('ALL');
         }
@@ -187,7 +187,7 @@ has _is_logging_forced =>
         #
         elsif( $n == 0 and $o )
         {
-          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
           $logger->level($curr_level);
         }
       }
@@ -215,7 +215,7 @@ has _is_logging =>
         #
         if( $n == 0 and $o )
         {
-          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
           $curr_level = $logger->level;
           $logger->level('OFF');
         }
@@ -225,7 +225,7 @@ has _is_logging =>
         #
         elsif( $o == 0 and $n )
         {
-          my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
           $logger->level($curr_level);
         }
       }
@@ -288,10 +288,10 @@ has _loggers =>
     , isa               => 'HashRef'
     , traits            => ['Hash']
     , handles           =>
-      { set_logger      => 'set'
-      , get_logger      => 'get'
-      , nbr_loggers     => 'count'
-      , get_loggers     => 'keys'
+      { _set_logger      => 'set'
+      , _get_logger      => 'get'
+      , _nbr_loggers     => 'count'
+      , _get_loggers     => 'keys'
       }
     , init_arg          => undef
     , default           => sub{ return {}; }
@@ -302,10 +302,10 @@ has _logger_layouts =>
     , isa               => 'HashRef'
     , traits            => ['Hash']
     , handles           =>
-      { set_layout      => 'set'
-      , get_layout      => 'get'
-      , nbr_layouts     => 'count'
-      , get_layouts     => 'keys'
+      { _set_layout      => 'set'
+      , _get_layout      => 'get'
+      , _nbr_layouts     => 'count'
+      , _get_layouts     => 'keys'
       }
     , init_arg          => undef
     , default           => sub{ return {}; }
@@ -457,28 +457,28 @@ sub _make_logger_objects
   # First to be used as a starting message of the log
   #
   my $layout = Log::Log4perl::Layout::PatternLayout->new('%m%n');
-  $self->set_layout('log.startmsg' => $layout);
+  $self->_set_layout('log.startmsg' => $layout);
 
   # Then a layout for the date
   #
   $layout = Log::Log4perl::Layout::PatternLayout->new('%n----------%n%d{yyyy-MM-dd}%n----------%n');
-  $self->set_layout('log.date' => $layout);
+  $self->_set_layout('log.date' => $layout);
 
   # A layout for the time
   #
   $layout = Log::Log4perl::Layout::PatternLayout->new('%d{HH:mm:ss} %m%n');
-  $self->set_layout('log.time' => $layout);
+  $self->_set_layout('log.time' => $layout);
 
   # And a layout for the milliseconds and message
   #
   $layout = Log::Log4perl::Layout::PatternLayout->new('     %d{SSS} %m{chomp}%n');
-  $self->set_layout('log.millisec' => $layout);
+  $self->_set_layout('log.millisec' => $layout);
 
 
   # Create logger
   #
   my $logger = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERNAME);
-  $self->set_logger('' . $self->C_LOG_LOGGERNAME => $logger);
+  $self->_set_logger('' . $self->C_LOG_LOGGERNAME => $logger);
 
   my %init_appender =
      ( name             => '' . $self->C_LOG_LOGGERNAME
@@ -495,7 +495,7 @@ sub _make_logger_objects
 
   $logger->add_appender($appender);
   $logger->level('ALL');
-  $appender->layout($self->get_layout('log.millisec'));
+  $appender->layout($self->_get_layout('log.millisec'));
 
   # Finish setup,
   #
@@ -515,19 +515,19 @@ sub _log_data_line
   return unless $self->_is_logging;
 
   $self->_force_log;
-  my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
   if( $self->write_start_message )
   {
-    $appender->layout($self->get_layout('log.startmsg'));
+    $appender->layout($self->_get_layout('log.startmsg'));
     $logger->trace($self->_get_start_msg);
   }
 
-  $appender->layout($self->get_layout('log.date'));
+  $appender->layout($self->_get_layout('log.date'));
   $logger->trace('undispl. msg');
 
-  $appender->layout($self->get_layout('log.millisec'));
+  $appender->layout($self->_get_layout('log.millisec'));
   $self->_normal_log;
 }
 
@@ -541,14 +541,14 @@ sub _log_time_line
   return unless $self->_is_logging;
 
   $self->_force_log;
-  my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
   my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
 
-  $appender->layout($self->get_layout('log.time'));
+  $appender->layout($self->_get_layout('log.time'));
 #  $logger->trace($msg);
   $self->_log_message( $msg, $forced);
 
-  $appender->layout($self->get_layout('log.millisec'));
+  $appender->layout($self->_get_layout('log.millisec'));
   $self->_normal_log;
 }
 
@@ -567,9 +567,9 @@ sub _log_message
   # log the message with that function.
   #
   $self->_force_log if $forced;
-  my $logger = $self->get_logger('' . $self->C_LOG_LOGGERNAME);
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
 #  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
-#  $appender->layout($self->get_layout('log.millisec'));
+#  $appender->layout($self->_get_layout('log.millisec'));
   my $l4p_fnc_name = $self->_get_log_level_function_name;
   $logger->$l4p_fnc_name($msg);
 

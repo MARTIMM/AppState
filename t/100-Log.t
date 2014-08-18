@@ -50,7 +50,7 @@ sub
   is( join( ' ', sort $log->get_tag_names), '100 =AP =LG =PM', 'Tag names check');
 
   ok( !defined $log->log_level, 'Log level not yet defined');
-  ok( !$log->_logging_is_forced, 'No errors of which were forced logging');
+  ok( !$log->_is_logging_forced, 'No errors of which were forced logging');
   ok( !$log->_is_logging, 'Logging not started yet');
 
   ok( !$log->die_on_error, 'Die on error off');
@@ -63,8 +63,8 @@ sub
   ok( $log->write_start_message, 'Show start message on');
   
   ok( !$log->_logger_initialized, 'Logger not initialized');
-  ok( $log->nbr_loggers == 0, 'No Log::Log4perl logger defined');
-  ok( $log->nbr_layouts == 0, 'No Log::Log4perl layouts defined');
+  ok( $log->_nbr_loggers == 0, 'No Log::Log4perl logger defined');
+  ok( $log->_nbr_layouts == 0, 'No Log::Log4perl layouts defined');
 };
 
 #-------------------------------------------------------------------------------
@@ -125,14 +125,14 @@ sub
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
   
   ok( $log->_logger_initialized, 'Logger is initialized');
-  ok( $log->nbr_loggers == 1, '1 Log::Log4perl logger defined');
-  isa_ok( $log->get_logger($log->C_LOG_LOGGERNAME), 'Log::Log4perl::Logger');
-  ok( $log->nbr_layouts == 4, '4 Log::Log4perl layouts defined');
-  is( join( ' ', sort $log->get_layouts)
+  ok( $log->_nbr_loggers == 1, '1 Log::Log4perl logger defined');
+  isa_ok( $log->_get_logger($log->C_LOG_LOGGERNAME), 'Log::Log4perl::Logger');
+  ok( $log->_nbr_layouts == 4, '4 Log::Log4perl layouts defined');
+  is( join( ' ', sort $log->_get_layouts)
     , 'log.date log.millisec log.startmsg log.time'
     , 'Layout keys check'
     );
-  isa_ok( $log->get_layout('log.date'), 'Log::Log4perl::Layout');
+  isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
 };
 
 #-------------------------------------------------------------------------------
