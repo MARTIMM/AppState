@@ -295,16 +295,12 @@ sub cleanup
 
   # Destroy plugin objects in this sequences
   #
-  $self->_plugin_manager->cleanup( [qw( CommandLine YmlNodeTree
-                                      PluginManager Process Config Log
-                                    )
-                                 ]
-                               );
+  $self->_plugin_manager->plugin_cleanup;
 
   # Kill myself. Next instance will create new object
   #
+  $AppState::_instance->DESTROY;
   $AppState::_instance = undef;
-
   return;
 }
 
