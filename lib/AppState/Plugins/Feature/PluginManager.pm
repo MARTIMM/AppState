@@ -53,11 +53,11 @@ has plugged_objects =>
     , handles           =>
       { add_plugin              => 'set'
       , get_plugin              => 'get'
-      , delete_plugin            => 'delete'
+      , delete_plugin           => 'delete'
       , get_plugin_names        => 'keys'
       , plugin_exists           => 'exists'
-      , plugin_defined           => 'defined'
-      , clear_plugins            => 'clear'
+      , plugin_defined          => 'defined'
+      , clear_plugins           => 'clear'
       , nbr_plugins             => 'count'
       }
     );
@@ -65,17 +65,8 @@ has plugged_objects =>
 #-------------------------------------------------------------------------------
 sub DEMOLISH
 {
-  my ( $self) = @_;
-  $self->delete_all_subscribers;
-}
-
-#-------------------------------------------------------------------------------
-# Initialize plugin manager when used as a plugin
-#
-sub plugin_initialize
-{
-  my ( $self) = @_;
-  $self->log_init('=PM');
+  my ($self) = @_;
+  $self->plugin_cleanup;
 }
 
 #-------------------------------------------------------------------------------
@@ -85,15 +76,7 @@ sub plugin_cleanup
 {
   my ( $self) = @_;
   $self->cleanup;
-}
-
-#-------------------------------------------------------------------------------
-# Initialize plugin manager when used as a plugin
-#
-sub initialize
-{
-  my ( $self) = @_;
-  $self->log_init('=PM');
+  $self->delete_all_subscribers;
 }
 
 #-------------------------------------------------------------------------------
@@ -106,6 +89,7 @@ sub cleanup
 
   foreach my $pluginName (ref $list eq 'ARRAY' ? @$list : $self->get_plugin_names)
   {
+#say "PM: $pluginName";
     # Get object. If there is one, call cleanup() if there followed by
     # the destruction of the object.
     #
@@ -114,9 +98,30 @@ sub cleanup
     {
       $self->log( $self->C_PLG_PLGDELETED, [$pluginName]);
       $c->plugin_cleanup(@arguments) if $c->can('plugin_cleanup');
+
+      $self->get_plugin($pluginName)->{object}->DESTROY;
       $self->get_plugin($pluginName)->{object} = undef;
+      $self->delete_plugin($pluginName);
     }
   }
+}
+
+#-------------------------------------------------------------------------------
+# Initialize plugin manager when used as a plugin
+#
+sub plugin_initialize
+{
+  my ( $self) = @_;
+  $self->log_init('=PM');
+}
+
+#-------------------------------------------------------------------------------
+# Initialize plugin manager when used as a plugin
+#
+sub initialize
+{
+  my ( $self) = @_;
+  $self->log_init('=PM');
 }
 
 #-------------------------------------------------------------------------------
