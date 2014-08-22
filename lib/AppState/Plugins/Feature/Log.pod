@@ -237,6 +237,11 @@ Check if logger is initialized.
 
 Method start_logging() will somewhere turn C<logger_initialized> on.
 
+=head2 _loggers
+
+Get the loggers structure as a hash reference
+
+
 
 =head1 STATUS CODES
 

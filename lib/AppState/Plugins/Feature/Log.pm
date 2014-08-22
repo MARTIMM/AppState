@@ -351,9 +351,9 @@ has _lastError =>
     , init_arg          => undef
     , handles           =>
       { clear_last_error        => 'clear_error'
-      , is_last_success         => 's_is_success'
-      , is_last_fail            => 's_is_fail'
-      , is_last_forced          => 's_is_forced'
+      , is_last_success         => 'is_success'
+      , is_last_fail            => 'is_fail'
+      , is_last_forced          => 'is_forced'
       , get_last_message        => 'get_message'
       , get_last_error          => 'get_error'
       , get_last_severity       => 'get_severity'
@@ -401,6 +401,7 @@ sub plugin_cleanup
 {
   my($self) = @_;
   $self->stop_logging;
+  $self->delete_all_subscribers;
 }
 
 #-------------------------------------------------------------------------------
@@ -635,32 +636,32 @@ sub _get_log_level_function_name
   my( $self) = @_;
   my $log_level_name;
   my $sts = $self->_lastError;
-  if( $sts->s_is_trace )
+  if( $sts->is_trace )
   {
     $log_level_name = 'trace';
   }
 
-  elsif( $sts->s_is_debug )
+  elsif( $sts->is_debug )
   {
     $log_level_name = 'debug';
   }
 
-  elsif( $sts->s_is_info )
+  elsif( $sts->is_info )
   {
     $log_level_name = 'info';
   }
 
-  elsif( $sts->s_is_warning )
+  elsif( $sts->is_warning )
   {
     $log_level_name = 'warn';
   }
 
-  elsif( $sts->s_is_error )
+  elsif( $sts->is_error )
   {
     $log_level_name = 'error';
   }
 
-  elsif( $sts->s_is_fatal )
+  elsif( $sts->is_fatal )
   {
     $log_level_name = 'fatal';
   }
@@ -864,23 +865,23 @@ sub _create_message
   #
   my $sts = $self->_lastError;
   my $severitySymbol = '-';
-  $severitySymbol = 'i' if $sts->s_is_info;
-  $severitySymbol = 'w' if $sts->s_is_warning;
-  $severitySymbol = 'e' if $sts->s_is_error;
-  $severitySymbol = 't' if $sts->s_is_trace;
-  $severitySymbol = 'd' if $sts->s_is_debug;
-  $severitySymbol = 'f' if $sts->s_is_fatal;
+  $severitySymbol = 'i' if $sts->is_info;
+  $severitySymbol = 'w' if $sts->is_warning;
+  $severitySymbol = 'e' if $sts->is_error;
+  $severitySymbol = 't' if $sts->is_trace;
+  $severitySymbol = 'd' if $sts->is_debug;
+  $severitySymbol = 'f' if $sts->is_fatal;
 
   my $stsSymbol = '-';
-  $stsSymbol = 's' if $sts->s_is_success;
-  $stsSymbol = 'f' if $sts->s_is_fail;
+  $stsSymbol = 's' if $sts->is_success;
+  $stsSymbol = 'f' if $sts->is_fail;
 
   $severitySymbol .= $stsSymbol;
 
   # If the messages should have been filtered, the forced bit should have
   # been set if we ended up here
   #
-  $severitySymbol = uc($severitySymbol) if $sts->s_is_forced;
+  $severitySymbol = uc($severitySymbol) if $sts->is_forced;
 
   my $error = $sts->get_error;
   my $message = $sts->get_message;
@@ -987,6 +988,10 @@ sub add_tag
   }
 
   my @tagLabels = $self->get_tag_names;
+#say "AT: $log_tag, $call_level, $package, ", join( ', ', @tagLabels);
+#say "-- ", join( '', map { ' ' x 13 . "$_\n"}
+#                     $self->_get_stack($call_level + 1)
+#               );
   if( $log_tag ~~ \@tagLabels )
   {
     $self->log( $self->C_LOG_TAGLBLINUSE, [$log_tag]);
