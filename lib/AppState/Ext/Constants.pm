@@ -202,26 +202,27 @@ sub log_init
   #
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
-#say "Set $package($prefix) how ? ", (ref $log ? 'direct' : 'by subscription');
 
   if( ref $log eq 'AppState::Plugins::Feature::Log' )
   {
-#say "Set direct: $package = ", ($log->has_log_tag($package) ? 'Y' : 'N');
-    $log->add_tag( $prefix, $call_level + 1)
-      unless $log->has_log_tag($package);
+    # Only add a tag when packagae doesn't have any
+    #
+    $log->add_tag( $prefix, $call_level + 1) unless $log->has_log_tag($package);
   }
 
   else
   {
     $app->add_subscriber
-          ( 'AppState::Plugins::Feature::Log'
-          , sub
-            { my( $observed, $event, %parameters) = @_;
-              my $log = $parameters{object};
-              $log->add_tag( $prefix, 0, $package);
-#say "Set by subscription: $prefix, $package";
-            }
-          );
+    ( 'AppState::Plugins::Feature::Log'
+    , sub
+      { my( $observed, $event, %parameters) = @_;
+        my $log = $parameters{object};
+
+        # Only add a tag when packagae doesn't have any
+        #
+        $log->add_tag( $prefix, 0, $package) unless $log->get_log_tag($package);
+      }
+    );
   }
 
   return;
