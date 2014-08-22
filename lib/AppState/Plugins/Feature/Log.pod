@@ -239,7 +239,48 @@ Method start_logging() will somewhere turn C<logger_initialized> on.
 
 =head2 _loggers
 
-Get the loggers structure as a hash reference
+Get the loggers structure as a hash reference. There is only one logger defined
+called 'AppState::Plugins::Feature::Log' and is defined by code constant
+C_LOG_LOGGERNAME.
+
+=head2 _set_layout($logger_name => $Log_Log4perl_logger)
+
+Set the Log::Log4perl::Logger logger to the $logger_name.
+
+=head2 _get_logger($logger_name)
+
+Get the Log::Log4perl::Logger logger using the $logger_name.
+
+=head2 _nbr_loggers
+
+Get the number of defined loggers.
+
+=head2 _get_loggers
+
+Get all logger names.
+
+=head2 _logger_layouts
+
+Get the logger layouts structure as a hash reference. There are 4 logger layouts
+defined and the purpose and keys are shown in a table.
+
+  Key           Purpose
+  
+  log.startmsg  Show start message      '%m%n'
+  log.date      Show date               '%n----------%n%d{yyyy-MM-dd}%n----------%n'
+  log.time      Show time and status    '%d{HH:mm:ss} %m%n'
+  log.millisec  Show msec and status    '     %d{SSS} %m{chomp}%n'
+
+=head2 _set_layout($logger_layout_name => $Log_Log4perl_layout)
+
+
+Set the layout
+
+=head2 _get_layout 
+
+=head2 _nbr_layouts
+
+=head2 _get_layouts
 
 
 
