@@ -10,13 +10,18 @@ use namespace::autoclean;
 use Moose;
 extends qw(AppState::Ext::Constants);
 
-use AppState::Ext::Meta_Constants;
+#use AppState::Ext::Meta_Constants ();
 
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
-def_sts( 'C_STS_UNKNKEY', 'M_WARN');
+my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
+
+#def_sts( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
+#has C_STS_INITOK        => ( default => $self->M_TRACE, %_c_Attr);
+
+#def_sts( 'C_STS_UNKNKEY', 'M_WARN');
+#has C_STS_UNKNKEY       => ( default => $self->M_WARN, %_c_Attr);
 
 # Codes
 #
@@ -36,7 +41,7 @@ has status =>
       { my( $self) = @_;
         return
         { message       => ''
-        , error         => 0 #$error
+        , error         => 0
         , line          => 0
         , file          => ''
         , package       => ''
@@ -50,12 +55,18 @@ sub BUILD
 {
   my( $self) = @_;
 
-  $self->status->{error} = $self->C_STS_INITOK;
+  # Set some trace status
+  #
+  $self->status->{error} = $self->M_TRACE | 1;
+  $self->status->{message} = 'State object initialized ok';
+  $self->status->{line} = __LINE__;
+  $self->status->{file} = __FILE__;
+  $self->status->{package} = __PACKAGE__;
 }
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_success
+sub is_success
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_SUCCESS);
@@ -63,7 +74,7 @@ sub s_is_success
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_fail
+sub is_fail
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_FAIL);
@@ -71,7 +82,7 @@ sub s_is_fail
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_forced
+sub is_forced
 {
   my( $self, $error) = @_;
   return !!($self->status->{error} & $self->M_FORCED);
@@ -79,7 +90,7 @@ sub s_is_forced
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_info
+sub is_info
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_INFO);
@@ -87,7 +98,7 @@ sub s_is_info
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_warning
+sub is_warning
 {
   my( $self, $error) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARNING);
@@ -95,7 +106,7 @@ sub s_is_warning
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_error
+sub is_error
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_ERROR);
@@ -103,7 +114,7 @@ sub s_is_error
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_trace
+sub is_trace
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_TRACE);
@@ -111,7 +122,7 @@ sub s_is_trace
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_debug
+sub is_debug
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_DEBUG);
@@ -120,7 +131,7 @@ sub s_is_debug
 #-------------------------------------------------------------------------------
 # Same as warning because M_WARN == M_WARNING
 #
-sub s_is_warn
+sub is_warn
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARN);
@@ -128,7 +139,7 @@ sub s_is_warn
 
 #-------------------------------------------------------------------------------
 #
-sub s_is_fatal
+sub is_fatal
 {
   my($self) = @_;
   return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_FATAL);
@@ -251,7 +262,7 @@ sub set_status
     {
       # If anything goes wrong set the object with our own message and error
       #
-      $self->set_error($self->C_STS_UNKNKEY);
+      $self->set_error($self->M_ERROR | 2);
       $self->set_message("Unknown key '$sts_key' to set status fields");
       $self->set_caller_info(0);
       $sts = 1;
@@ -283,14 +294,11 @@ sub clear_error
 
   # Must be done later if not set yet
   #
-  my $error = 0;
-  $error = $self->C_STS_INITOK unless $self->meta->is_mutable;
-
-  $self->_status( { error         => $error
-                  , message       => ''
-                  , line          => 0
-                  , file          => ''
-                  , package       => ''
+  $self->_status( { error         => $self->M_TRACE | 1
+                  , message       => 'State object initialized ok'
+                  , line          => __LINE__
+                  , file          => __FILE__
+                  , package       => __PACKAGE__
                   }
                 );
 }

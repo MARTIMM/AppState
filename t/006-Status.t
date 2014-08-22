@@ -5,6 +5,11 @@ use Modern::Perl;
 use Test::Most;
 use AppState::Ext::Status;
 
+use Moose;
+extends 'AppState::Ext::Constants';
+
+#use AppState;
+use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 #
@@ -146,30 +151,13 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-subtest 'Test status with arguments' =>
-sub
-{
-  $sts->clear_error;
-  ok( !$sts->is_success($sts->C_STS_UNKNKEY), 'is not successfull');
-  ok( !$sts->is_fail($sts->C_STS_UNKNKEY), 'is not a failure');
-  ok( !$sts->is_info($sts->C_STS_UNKNKEY), 'is not info');
-  ok( $sts->is_warning($sts->C_STS_UNKNKEY), 'is a warning');
-  ok( !$sts->is_error($sts->C_STS_UNKNKEY), 'is not an error');
-  ok( $sts->is_trace($sts->C_STS_INITOK), 'is trace');
-  ok( !$sts->is_debug($sts->C_STS_INITOK), 'is not debug');
-  ok( !$sts->is_warn($sts->C_STS_INITOK), 'is not a warn');
-  ok( !$sts->is_fatal($sts->C_STS_INITOK), 'is not fatal');
-  ok( !$sts->is_forced($sts->C_STS_INITOK), 'is not forced');
-};
-
-#-------------------------------------------------------------------------------
 #
 subtest 'compare levels' =>
 sub
 {
-  ok( $sts->cmp_levels( $sts->M_FATAL, $sts->M_TRACE) == 1, 'Fatal higher than trace');
-  ok( $sts->cmp_levels( $sts->M_TRACE, $sts->M_DEBUG) == -1, 'Trace lower than debug');
-  ok( $sts->cmp_levels( $sts->M_WARN, $sts->M_WARNING) == 0, 'Warn equal to warning');
+  ok( cmp_levels( $sts->M_FATAL, $sts->M_TRACE) == 1, 'Fatal higher than trace');
+  ok( cmp_levels( $sts->M_TRACE, $sts->M_DEBUG) == -1, 'Trace lower than debug');
+  ok( cmp_levels( $sts->M_WARN, $sts->M_WARNING) == 0, 'Warn equal to warning');
 };
 
 #-------------------------------------------------------------------------------

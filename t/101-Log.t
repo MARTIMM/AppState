@@ -78,6 +78,7 @@ sub
 };
 
 $app->cleanup;
+File::Path::remove_tree($config_dir);
 done_testing();
 exit(0);
 
@@ -90,10 +91,10 @@ sub
   isa_ok( $eobj, 'AppState::Ext::Status');
 if(0)
 {
-  ok( $eobj->s_is_success == 1, 'Is success');
-  ok( $eobj->s_is_fail == 0, 'Is not a failure');
-  ok( $eobj->s_is_forced == 1, 'Check if trace');
-  ok( $eobj->s_is_trace == 1, 'Check if forced');
+  ok( $eobj->is_success == 1, 'Is success');
+  ok( $eobj->is_fail == 0, 'Is not a failure');
+  ok( $eobj->is_forced == 1, 'Check if trace');
+  ok( $eobj->is_trace == 1, 'Check if forced');
   is( $eobj->get_message, 'Tracing this time', 'message ok');
   ok( $eobj->get_error == (0x2A9 | $app->M_F_TRACE), 'error code ok');
   ok( $eobj->get_severity == ($app->M_F_TRACE), 'severity ok');
@@ -124,13 +125,13 @@ sub
   $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->s_is_warning, 'is warning');
+  ok( $status->is_warning, 'is warning');
   ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
 
   $self->wlog( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->s_is_warning, 'is warning');
+  ok( $status->is_warning, 'is warning');
   ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
 
   $log->delete_subscriber( $tagName, $subscriber);
@@ -156,13 +157,13 @@ sub
   $log->log($self->C_ERR_1);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->s_is_error, 'is error');
+  ok( $status->is_error, 'is error');
   ok( $status->get_eventcode, "Check eventcode == " . $status->get_eventcode);
 
   $self->log( $self->C_ERR_2, [ 10, 11]);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->s_is_error, 'is error');
+  ok( $status->is_error, 'is error');
   ok( $status->get_eventcode, 'Check eventcode == ' . $status->get_eventcode);
 
   $log->delete_subscriber( $tagName, $subscriber);
@@ -298,7 +299,7 @@ foreach my $count1 (1..2)
 
 #-------------------------------------------------------------------------------
 $app->cleanup;
-#File::Path::remove_tree($config_dir);
+File::Path::remove_tree($config_dir);
 
 done_testing();
 exit(0);
