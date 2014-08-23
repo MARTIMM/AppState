@@ -168,7 +168,7 @@ Control if the write_log() must show a stack dump after handling the message
 with a error status. Default is on. Returns the current value when no
 argument is given. An example stackdump of a message with an error status.
 This error (E) is forced to appear (F) and the caller was at line 65 in the
-I<main> package. the 3 letter tag '100' was set by this main package.
+main package. the 3 letter tag '100' was set by this main package.
 
   100 0065 EF Error does not have an error code and/or severity code
       Stack dump;
@@ -264,23 +264,53 @@ Get all logger names.
 Get the logger layouts structure as a hash reference. There are 4 logger layouts
 defined and the purpose and keys are shown in a table.
 
-  Key           Purpose
+  Key           Purpose              Layout Pattern
   
-  log.startmsg  Show start message      '%m%n'
-  log.date      Show date               '%n----------%n%d{yyyy-MM-dd}%n----------%n'
-  log.time      Show time and status    '%d{HH:mm:ss} %m%n'
-  log.millisec  Show msec and status    '     %d{SSS} %m{chomp}%n'
+  log.startmsg  Show start message   '%m%n'
+  log.date      Show date            '%n----------%n%d{yyyy-MM-dd}%n----------%n'
+  log.time      Show time and status '%d{HH:mm:ss} %m%n'
+  log.millisec  Show msec and status '     %d{SSS} %m{chomp}%n'
+
+The message %m will always be <tag> <line number> <status codes> <log message>
+except for the start message which is kind of an explanation or legend. See
+the example log output above.
 
 =head2 _set_layout($logger_layout_name => $Log_Log4perl_layout)
 
+Set the layout using one of the keys shown above. The layout is created by
 
-Set the layout
+  Log::Log4perl::Layout::PatternLayout->new($pattern);
 
-=head2 _get_layout 
+using a pattern also shown above in the table.
+
+=head2 _get_layout($logger_layout_name)
+
+Get the layout from the layout hash.
 
 =head2 _nbr_layouts
 
+Get the number of layouts
+
 =head2 _get_layouts
+
+Get all layout keys
+
+=head2 _previousMsg($msg)
+
+Save previous message. This is used to prevent repetion of the same message.
+When it repeats it shows '--[Message repeated]--'.
+
+=head2 _previousTime($time)
+
+Save previous time. When the previous time is the same as the current time, the
+log message will be prefixed with milliseconds. Otherwise it will show
+hours:minutes:seconds.
+
+=head2 _previousDate($date)
+
+Save previous date. When previous date is not the same as the current date it
+shows the start message followed by the date. Then it shows the time and message.
+
 
 
 
@@ -294,7 +324,7 @@ error status will kill the program unless die_on_fatal(0) is called first.
   C_LOG_LOGINIT       M_F_INFO     Log initialized
   C_LOG_LOGSTARTED    M_F_INFO     Logging started
   C_LOG_LOGSTOPPED    M_F_INFO     Logging stopprd
-  C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use.by other module
+  C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
   C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
   C_LOG_LLVLCHANGED   M_F_INFO     Log level changed
   C_LOG_TAGADDED      M_F_INFO     Tag added for calling module

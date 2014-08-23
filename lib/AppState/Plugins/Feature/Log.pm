@@ -311,11 +311,6 @@ has _logger_layouts =>
     , default           => sub{ return {}; }
     );
 
-#has _OriginalFileOutputSetting =>
-#    ( is                => 'rw'
-#    , isa               => 'Any'
-#    );
-
 has _previousMsg =>
     ( is                => 'rw'
     , isa               => 'Str'
