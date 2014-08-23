@@ -189,6 +189,50 @@ argument is given. See show_on_error() for an example stackdump.
 
 Control if a legend must be written at the start of the logfile. Default is 1.
 
+=head2 clear_last_error
+
+Initialize to a successful state
+
+=head2 is_last_success
+
+Test if status is successful
+
+=head2 is_last_fail
+
+Test if status is a failure
+
+=head2 is_last_forced
+
+Test if status is forced
+
+=head2 get_last_message
+
+Get the message from the last saved state object
+
+=head2 get_last_error
+
+Get the error from the last saved state object
+
+=head2 get_last_severity
+
+Get the severity from the last saved state object
+
+=head2 get_last_eventcode
+
+Get the eventcode from the last saved state object
+
+=head2 get_sender_line_no
+
+Get the line number from the last saved state object
+
+=head2 get_sender_file
+
+Get the filename from the last saved state object
+
+=head2 get_sender_package
+
+Get the package name from the last saved state object
+
 
 
 =head1 PRIVATE METHODS
@@ -311,7 +355,17 @@ hours:minutes:seconds.
 Save previous date. When previous date is not the same as the current date it
 shows the start message followed by the date. Then it shows the time and message.
 
+=head2 _previousMsgEq($bool)
 
+When previous message has repeated itself twice, this is set to true. When set
+no log will be done.
+
+=head2 _lastError($status_object)
+
+Status object is saved here so the log object can be queried for its values.
+See also clear_last_error, is_last_success, is_last_fail, is_last_forced,
+get_last_message, get_last_error, get_last_severity, get_last_eventcode,
+get_sender_line_no, get_sender_file, get_sender_package
 
 
 =head1 STATUS CODES
