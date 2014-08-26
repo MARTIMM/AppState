@@ -521,7 +521,7 @@ sub _log_data_line
   }
 
   $appender->layout($self->_get_layout('log.date'));
-  $logger->trace('undispl. msg');
+  $logger->trace('undisplayed message');
 
   $appender->layout($self->_get_layout('log.millisec'));
   $self->_normal_log;
@@ -580,6 +580,45 @@ sub _get_log_level_name
 {
   my( $self, $mask) = @_;
   my $log_level_name;
+
+  if( is_trace($mask) )
+  {
+    $log_level_name = 'TRACE';
+  }
+
+  elsif( is_debug($mask) )
+  {
+    $log_level_name = 'DEBUG';
+  }
+
+  elsif( is_info($mask) )
+  {
+    $log_level_name = 'INFO';
+  }
+
+  elsif( is_warning($mask) )
+  {
+    $log_level_name = 'WARN';
+  }
+
+  elsif( is_error($mask) )
+  {
+    $log_level_name = 'ERROR';
+  }
+
+  elsif( is_fatal($mask) )
+  {
+    $log_level_name = 'FATAL';
+  }
+
+  else
+  {
+    $log_level_name = 'TRACE';
+  }
+
+#say "Log level: $log_level_name";
+  return $log_level_name;
+#------------
 
 # maybe because of multibit values:
 # if( ($mask & $self->M_NOTMSFF) == $self->M_TRACE ) {}
