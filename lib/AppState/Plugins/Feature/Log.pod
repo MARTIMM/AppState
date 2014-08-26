@@ -405,6 +405,10 @@ to be written.
 
 Write message depending on log level and if message is forced to be written.
 
+=head2 _get_log_level_name($mask)
+
+
+
 
 
 =head1 STATUS CODES
