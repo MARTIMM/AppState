@@ -572,7 +572,6 @@ sub _log_message
   $self->_normal_log if $forced;
 }
 
-
 #-------------------------------------------------------------------------------
 # Find log level from severity mask
 #
@@ -615,51 +614,6 @@ sub _get_log_level_name
   {
     $log_level_name = 'TRACE';
   }
-
-#say "Log level: $log_level_name";
-  return $log_level_name;
-#------------
-
-# maybe because of multibit values:
-# if( ($mask & $self->M_NOTMSFF) == $self->M_TRACE ) {}
-
-  if( !!($mask & $self->M_NOTMSFF & $self->M_TRACE) )
-  {
-    $log_level_name = 'TRACE';
-  }
-
-  elsif( !!($mask & $self->M_NOTMSFF & $self->M_DEBUG) )
-  {
-    $log_level_name = 'DEBUG';
-  }
-
-  elsif( !!($mask & $self->M_NOTMSFF & $self->M_INFO) )
-  {
-    $log_level_name = 'INFO';
-  }
-
-  elsif( !!($mask & $self->M_NOTMSFF & $self->M_WARNING) )
-  {
-    $log_level_name = 'WARN';
-  }
-
-  elsif( !!($mask & $self->M_NOTMSFF & $self->M_ERROR) )
-  {
-    $log_level_name = 'ERROR';
-  }
-
-  elsif( !!($mask & $self->M_NOTMSFF & $self->M_FATAL) )
-  {
-    $log_level_name = 'FATAL';
-  }
-
-  else
-  {
-    $log_level_name = 'TRACE';
-  }
-
-#say "Log level: $log_level_name";
-  return $log_level_name;
 }
 
 #-------------------------------------------------------------------------------
