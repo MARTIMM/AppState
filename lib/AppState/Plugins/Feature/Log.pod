@@ -233,6 +233,11 @@ Get the filename from the last saved state object
 
 Get the package name from the last saved state object
 
+=head2 start_logging
+
+Start the log. From this moment the write_log will write to the log depending
+only on the log level.
+
 
 
 =head1 PRIVATE METHODS
@@ -366,6 +371,19 @@ Status object is saved here so the log object can be queried for its values.
 See also clear_last_error, is_last_success, is_last_fail, is_last_forced,
 get_last_message, get_last_error, get_last_severity, get_last_eventcode,
 get_sender_line_no, get_sender_file, get_sender_package
+
+=head2 BUILD
+
+Moose build function to initialize after creating attributes.
+
+=head2 DEMOLISH
+
+Cleanup before deleting the object
+
+=head2 plugin_cleanup
+
+Cleaning up the module by stopping log output and deleting subscribers.
+
 
 
 =head1 STATUS CODES
