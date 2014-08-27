@@ -242,6 +242,46 @@ on the log level and if message is forced to be written.
 
 Stop writing to the log.
 
+=head2 log( $error, $message_values, $call_level)
+
+Log will process the error as a dualvar created by Scalar::Util::dualvar. It
+must hold a status code and a message. The message is a sprintf() string in
+which variables, whenever there are any, are substituted from $message_values.
+$message_values is an array reference. $call_level is used to denote the proper
+caller for the message. The default for $call_level is 0.
+
+The module AppState::Ext::Meta_Constants has a function def_sts() to help
+creating the dualvar status values. The module AppState::Ext::Constants has a
+set of predefined codes defined.
+
+The function returns undef or when error is processed due to log level and what
+have you, it returns a status object of type AppState::Ext::Status. In many cases
+it might be stored in the Log module and can be queried later.
+
+An example use is shown below. There are two status messages, one trace status
+and a fatal status. By default, fatal status messages will end the program after
+logging the message and showing the stack.
+
+
+  package MyMod;
+
+  use Moose;
+  extends qw(AppState::Ext::Constants);
+  use AppState;
+  use AppState::Ext::Meta_Constants;
+
+  def_sts( 'C_FILEOPENED', 'M_TRACE', 'File %s opened');
+  def_sts( 'C_PROGRAMFAILURE', 'M_FATAL', 'Failure, cannot continue');
+
+  sub open_file
+  {
+    my( $self, $filename) = @_;
+
+    my $log = AppState->instance->get_app_object('Log');
+    open my $fh, '<', $filename or $log->log($self->C_PROGRAMFAILURE);
+    $log->log( $self->C_FILEOPENED, [$filename]);
+    ...
+  }
 
 
 =head1 PRIVATE METHODS
@@ -406,6 +446,16 @@ to be written.
 Write message depending on log level and if message is forced to be written.
 
 =head2 _get_log_level_name($mask)
+
+Convert the status from the mask into the name used by Log::Log4perl
+
+=head2 _get_log_level_function_name
+
+Find Log::Log4perl log level function name from severity code in status object
+
+=head2 _get_start_msg
+
+Get the start message/legend
 
 
 

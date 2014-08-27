@@ -667,7 +667,6 @@ sub _get_log_level_function_name
 #
 sub _get_start_msg
 {
-#  my( $self, $dateTxt) = @_;
   my( $self) = @_;
 
   my $line = '-' x 80;
@@ -726,7 +725,7 @@ sub write_log
   # in that case.
   #
   my $log_level = $self->log_level // $self->M_TRACE;
-  return unless cmp_levels( $error, $log_level) >= 0 or is_forced($error);
+  return undef unless cmp_levels( $error, $log_level) >= 0 or is_forced($error);
 
   # The message can be a series of messages in an ARRAY ref. Make one message.
   #
