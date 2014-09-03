@@ -84,13 +84,13 @@ has cleanup_temp_dir =>
 has use_work_dir =>
     ( is                => 'rw'
     , isa               => 'Bool'
-    , default           => 1
+    , default           => 0
     );
 
 has use_temp_dir =>
     ( is                => 'rw'
     , isa               => 'Bool'
-    , default           => 1
+    , default           => 0
     );
 
 has _plugin_manager =>
@@ -224,6 +224,8 @@ sub initialize
   $self->use_temp_dir($o{use_temp_dir}) if exists $o{use_temp_dir};
 
   $self->cleanup_temp_dir($o{cleanup_temp_dir}) if defined $o{cleanup_temp_dir};
+
+  $self->check_directories if $o{check_directories};
 
   return;
 }
