@@ -262,11 +262,6 @@ sub log
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-if( $error_code == $self->C_LOG_TRACE )
-{
-say "C0: ", join ', ', (caller $call_level)[0, 2];
-say "C1: $error_code, @$msg_values";
-}
   $sts = $log->log( $error_code, $msg_values, $call_level + 1)
     if ref $log eq 'AppState::Plugins::Feature::Log';
 
