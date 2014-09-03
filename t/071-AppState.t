@@ -16,12 +16,11 @@ use AppState;
 # Init
 #
 my( $cdir, $wdir, $tdir) = qw( t/AppState t/AppState-WD t/AppState-TD);
-$a = AppState->instance;
 
 # First time arguments can be given.
 #
 $a = AppState->instance;
-$a->initialize(config_dir => $cdir);
+$a->initialize( config_dir => $cdir, use_work_dir => 1, use_temp_dir => 1);
 $a->check_directories;
 
 ok( -d $cdir, "Test config directory $cdir");
@@ -38,8 +37,13 @@ File::Path::remove_tree($cdir);
 #
 $cdir = 't/AppState';
 $a = AppState->instance;
-$a->initialize( config_dir => $cdir, work_dir => $wdir, temp_dir => $tdir);
-$a->check_directories;
+$a->initialize( config_dir => $cdir
+              , work_dir => $wdir
+              , temp_dir => $tdir
+              , use_work_dir => 1
+              , use_temp_dir => 1
+              , check_directories => 1
+             );
 
 ok( -d $cdir, "Test config directory $cdir");
 ok( -d $wdir, "Test work directory $wdir");

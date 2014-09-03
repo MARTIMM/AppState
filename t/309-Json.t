@@ -11,7 +11,7 @@ use AppState::Plugins::ConfigDriver::Json;
 # Init
 #
 my $as = AppState->instance;
-$as->initialize( config_dir => 't/Json');
+$as->initialize( config_dir => 't/Json', use_work_dir => 1);
 $as->check_directories;
 
 

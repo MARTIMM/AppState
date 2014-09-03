@@ -10,7 +10,7 @@ AppState - Module to give an application a base of utilities using plugins
   use AppState;
 
   my $app = AppState->instance;
-  $app->initialize( config_dir => 'LocalConfigDir', use_temp_dir => 0);
+  $app->initialize( config_dir => 'LocalConfigDir', use_temp_dir => 1);
   $app->check_directories;
 
   # Get an AppState::Plugins::Feature::Log object
@@ -108,10 +108,9 @@ The following options can be used;
 
 =item I<use_temp_dir =E<gt> 0|1, create temp directory or not>
 
-  my $app = AppState->instance( config_dir => './Config',
-                                use_work_dir => 0,
-                                use_temp_dir => 1,
-                                cleanup_temp_dir => 1,
+  my $app = AppState->instance( config_dir => './Config'
+                              , use_temp_dir => 1
+                              , cleanup_temp_dir => 1
                               );
 
 =back
@@ -138,8 +137,8 @@ The defaults are;
   work_dir              <home_dir/.program_name/Work>
   temp_dir              <home_dir/.program_name/Temp>
   cleanup_temp_dir      0 (false)
-  use_work_dir          1 (true)
-  use_temp_dir          1 (true)
+  use_work_dir          0 (false)
+  use_temp_dir          0 (false)
 
 The config directory is a directory where files are stored such as a pidfile
 (see L<AppState::Plugins::Feature::Process>), configuration files

@@ -13,7 +13,7 @@ use AppState::Ext::ConfigFile;
 #
 my $config_dir = 't/ConfigFile';
 my $as = AppState->instance;
-$as->initialize( config_dir => $config_dir);
+$as->initialize( config_dir => $config_dir, use_temp_dir => 1);
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');

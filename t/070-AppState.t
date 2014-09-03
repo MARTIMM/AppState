@@ -8,6 +8,7 @@ require File::HomeDir;
 require File::Path;
 require Class::Load;
 require Devel::Size;
+require Cwd;
 
 #-------------------------------------------------------------------------------
 # Loading AppState module
@@ -18,10 +19,13 @@ BEGIN { use_ok('AppState') };
 # Create AppState object. All default values.
 #
 my $app = AppState->instance;
-$app->check_directories;
+$app->initialize( use_temp_dir => 1, use_work_dir => 1, check_directories => 1);
 
 isa_ok( $app, 'AppState');
 ok( $app->has_instance, 'Test has_instance of AppState object');
+
+ok( $app->use_work_dir, "Use work directory");
+ok( $app->use_temp_dir, "Use temp directory");
 
 #-------------------------------------------------------------------------------
 # This is what Appstate does for its config directory by default
@@ -65,12 +69,18 @@ File::Path::remove_tree($cdir);
 #
 $cdir = 't/AppState';
 $app = AppState->instance;
-$app->initialize( config_dir => 'ABC');
-is( $app->config_dir, 'ABC', "Check configdir name = ABC");
+$app->initialize( config_dir => 'ABC'
+                , use_temp_dir => 1
+                , use_work_dir => 1
+#                , check_directories => 1
+                );
+
+#$real_path = Cwd::realpath('.') . "/ABC";
+my $real_path = "ABC";
+is( $app->config_dir, $real_path, "Check configdir name = ABC");
 ok( !-d 'ABC', "Directory 'ABC' does not exist");
 
-$app = AppState->instance;
-$app->initialize(config_dir => $cdir, cleanup_temp_dir => 1);
+$app->initialize( config_dir => $cdir, cleanup_temp_dir => 1);
 is( $app->config_dir, $cdir, "Check configdir name = $cdir");
 $app->check_directories;
 

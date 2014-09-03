@@ -11,8 +11,11 @@ use AppState;
 #
 my $config_dir = 't/ConfigManager';
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir);
-$app->check_directories;
+$app->initialize( config_dir => $config_dir
+                , use_work_dir => 1
+                , use_temp_dir => 1
+                , check_directories => 1
+                );
 
 my $log = $app->get_app_object('Log');
 $log->show_on_error(0);
@@ -213,9 +216,9 @@ ok( $sizefn1 == $sizefn2, "Sizes should be the same");
 #-------------------------------------------------------------------------------
 $log->write_log( "Testing modify object", 1|$log->M_INFO);
 $cfm->modify_config_object( 'ddump', { store_type => 'Json'
-                                   , location => $cfm->C_CFF_TEMPDIR
-                                   }
-                        );
+                                     , location => $cfm->C_CFF_TEMPDIR
+                                     }
+                          );
 unlink $cfm->config_file;
 
 $f = $cfm->config_file;

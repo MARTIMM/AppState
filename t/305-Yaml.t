@@ -11,9 +11,10 @@ use AppState::Plugins::ConfigDriver::Yaml;
 # Init
 #
 my $as = AppState->instance;
-$as->initialize( config_dir => 't/Yaml');
-$as->check_directories;
-
+$as->initialize( config_dir => 't/Yaml'
+               , use_work_dir => 1
+               , check_directories => 1
+               );
 
 my $log = $as->get_app_object('Log');
 #$log->show_on_error(0);

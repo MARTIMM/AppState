@@ -11,7 +11,7 @@ use AppState::Plugins::ConfigDriver::FreezeThaw;
 # Init
 #
 my $as = AppState->instance;
-$as->initialize( config_dir => 't/FreezeThaw');
+$as->initialize( config_dir => 't/FreezeThaw', use_work_dir => 1);
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');

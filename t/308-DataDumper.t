@@ -11,7 +11,7 @@ use AppState::Plugins::ConfigDriver::DataDumper;
 # Init
 #
 my $as = AppState->instance;
-$as->initialize( config_dir => 't/DataDumper', use_temp_dir => 0);
+$as->initialize( config_dir => 't/DataDumper', use_work_dir => 1);
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
