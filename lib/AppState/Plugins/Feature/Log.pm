@@ -261,6 +261,16 @@ has show_on_fatal =>
     , default           => 1
     );
 
+# Do we wrap messages over multiple lines or not
+#
+has message_wrapping =>
+    ( is                => 'rw'
+    , isa               => 'Bool'
+    , default           => 1
+    );
+
+# Do we show a start message before logging and on change of date.
+#
 has write_start_message =>
     ( is                => 'rw'
     , isa               => 'Bool'
@@ -789,16 +799,32 @@ sub write_log
 
     if( $timeTxt )
     {
-      $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                           , is_forced($error)
-                           );
+      if( $self->message_wrapping )
+      {
+        $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                             , is_forced($error)
+                             );
+      }
+
+      else
+      {
+        $self->_log_time_line( $msgTxt, is_forced($error));
+      }
     }
 
     else
     {
-      $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                         , is_forced($error)
-                         ) if $msgTxt;
+      if( $self->message_wrapping )
+      {
+        $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
+                           , is_forced($error)
+                           ) if $msgTxt;
+      }
+
+      else
+      {
+        $self->_log_time_line( $msgTxt, is_forced($error)) if $msgTxt;
+      }
 
       $self->_log_message( join( ''
                                , map { ' ' x 13 . "$_\n"}
