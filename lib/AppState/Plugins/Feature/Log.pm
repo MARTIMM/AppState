@@ -823,7 +823,7 @@ sub write_log
 
       else
       {
-        $self->_log_time_line( $msgTxt, is_forced($error)) if $msgTxt;
+        $self->_log_message( $msgTxt, is_forced($error)) if $msgTxt;
       }
 
       $self->_log_message( join( ''
