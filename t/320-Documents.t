@@ -9,19 +9,13 @@ use AppState::Ext::Documents;
 #-------------------------------------------------------------------------------
 # Init
 #
-my $as = AppState->instance;
-$as->initialize( config_dir => 't/Documents');
-$as->check_directories;
+my $app = AppState->instance;
+$app->initialize( config_dir => 't/Documents');
+$app->check_directories;
 
-my $log = $as->get_app_object('Log');
-$log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
+my $log = $app->get_app_object('Log');
 $log->start_logging;
-
-$log->log_level($as->M_ERROR);
+$log->log_level($app->M_ERROR);
 
 $log->add_tag('320');
 
@@ -57,7 +51,7 @@ is( ref $d->get_document(1), 'ARRAY', 'Document 1 = ARRAY');
 
 #-------------------------------------------------------------------------------
 done_testing();
-$as->cleanup;
+$app->cleanup;
 
 File::Path::remove_tree('t/Documents');
 

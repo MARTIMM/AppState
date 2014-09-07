@@ -94,10 +94,6 @@ my $log = $app->get_app_object('Log');
 $log->do_append_log(0);
 $log->start_logging;
 $log->log_level($log->M_TRACE);
-$log->show_on_warning(0);
-$log->show_on_error(0);
-$log->show_on_fatal(0);
-
 my $tagName = '010';
 $log->add_tag($tagName);
 

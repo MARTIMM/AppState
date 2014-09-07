@@ -15,18 +15,11 @@ use AppState::NodeTree::NodeDOM;
 # Init
 #
 my $app = AppState->instance;
-$app->initialize( config_dir => 't/Node');
-$app->check_directories;
+$app->initialize( config_dir => 't/Node', check_directories => 1);
 
 my $log = $app->get_app_object('Log');
-$log->show_on_error(0);
-$log->show_on_fatal(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
+$log->do_flush_log(1);
 $log->start_logging;
-
 $log->log_level($log->M_ERROR);
 $app->log_init('710');
 
@@ -42,11 +35,11 @@ my $n = AppState::NodeTree::Node->new(name => 'root');
 
 # Failure!
 $dom->link_with_node($n);
-content_like( qr/710.*\.log$/, qr/=ND \d+ ef Node not of proper type/, 't/Node');
+content_like( qr/710.*\.log$/, qr/Ef =ND \d+ Node not of proper type/, 't/Node');
 
 # Failure!
 $dom->push_child($n);
-content_like( qr/710.*\.log$/, qr/=ND \d+ ef Node not of proper type./, 't/Node');
+content_like( qr/710.*\.log$/, qr/Ef =ND \d+ Node not of proper type./, 't/Node');
 
 is( $dom->nbr_children, 0, 'Dom has no children');
 

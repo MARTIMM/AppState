@@ -28,20 +28,22 @@ $columns = 80;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_LOG_LOGINIT',      'M_F_INFO', 'Logger initialized');
-def_sts( 'C_LOG_LOGSTARTED',   'M_F_INFO', 'Logging started. Log level set to \'%s\'. %s');
-def_sts( 'C_LOG_LOGSTOPPED',   'M_F_INFO', 'Logging stopped');
-def_sts( 'C_LOG_TAGLBLINUSE',  'M_FATAL', q@Tag label '%s' already in use@);
-def_sts( 'C_LOG_TAGALRDYSET',  'M_FATAL', q@Package '%s' already has a tag '%s'@);
-def_sts( 'C_LOG_LLVLCHANGED',  'M_F_INFO', "Log level changed from '%s' into '%s'");
-def_sts( 'C_LOG_TAGADDED',     'M_F_INFO', 'Tag \'%s\' added for module \'%s\'');
-def_sts( 'C_LOG_NOERRCODE',    'M_F_ERROR', 'Error does not have an error code and/or severity code');
-def_sts( 'C_LOG_NOMSG',        'M_F_ERROR', 'No message given to write_log');
-def_sts( 'C_LOG_LOGALRINIT',   'M_F_WARNING', 'Not changed, logger already initialized');
+def_sts( 'C_LOG_LOGINIT',     'M_TRACE', 'Logger initialized');
+def_sts( 'C_LOG_LOGSTARTED',  'M_TRACE', 'Logging started. Log level set to \'%s\'. %s');
+def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
+def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', q@Tag label '%s' already in use@);
+def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', q@Package '%s' already has a tag '%s'@);
+def_sts( 'C_LOG_LLVLCHANGED', 'M_TRACE', "Log level changed from '%s' into '%s'");
+def_sts( 'C_LOG_SCREENLOG',   'M_TRACE', "Log to screen changed from '%s' into '%s'");
+def_sts( 'C_LOG_TAGADDED',    'M_F_INFO', 'Tag \'%s\' added for module \'%s\'');
+def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code and/or severity code');
+def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
+def_sts( 'C_LOG_LOGALRINIT',  'M_F_WARNING', 'Not changed, logger already initialized');
 
 # Constant codes
 #
-def_sts( 'C_LOG_LOGGERNAME',   'M_CODE', 'AppState::Plugins::Feature::Log');
+def_sts( 'C_LOG_LOGGERFILE',  'M_CODE', 'AppState::Plugins::Feature::Log::File');
+def_sts( 'C_LOG_LOGGERSCREEN','M_CODE', 'AppState::Plugins::Feature::Log::Screen');
 
 #-------------------------------------------------------------------------------
 # Switch to append to an existing log or to start a fresh one
@@ -128,13 +130,11 @@ subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
     => message { "The store type '$_' is not correct" };
 
 # Setting the log level can only be done when Log::Log4perl is initialized by
-# _make_logger_objects(). This method will set the default level to M_ERROR.
+# _make_logger_objects().
 #
 has log_level =>
     ( is                => 'rw'
     , isa               => 'AppState::Plugins::Feature::Log::Types::Log_level'
-#    , lazy              => 1
-#    , default           => sub { return $_[0]->M_ERROR; }
     , trigger           =>
       sub
       {
@@ -143,7 +143,7 @@ has log_level =>
         $o //= 0;
         return if $n == $o;
 
-        my $logger = $self->_get_logger('AppState::Plugins::Feature::Log');
+        my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
         if( defined $logger )
         {
           my $log_level_name = $self->_get_log_level_name($n);
@@ -151,6 +151,30 @@ has log_level =>
 
           my $o_str = $self->_get_log_level_name($o);
           $self->log( $self->C_LOG_LLVLCHANGED, [ $o_str, $log_level_name]);
+        }
+      }
+    );
+
+has stderr_log_level =>
+    ( is                => 'rw'
+    , isa               => 'AppState::Plugins::Feature::Log::Types::Log_level'
+#    , default           => sub { return $_[0]->M_FATAL; }
+    , trigger           =>
+      sub
+      {
+        my( $self, $n, $o) = @_;
+
+        $o //= 0;
+        return if $n == $o;
+
+        my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERSCREEN);
+        if( defined $logger )
+        {
+          my $log_level_name = $self->_get_log_level_name($n);
+          $logger->level($log_level_name);
+
+          my $o_str = $self->_get_log_level_name($o);
+          $self->log( $self->C_LOG_SCREENLOG, [ $o_str, $log_level_name]);
         }
       }
     );
@@ -177,7 +201,7 @@ has _is_logging_forced =>
         #
         if( $o == 0 and $n )
         {
-          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
           $curr_level = $logger->level;
           $logger->level('ALL');
         }
@@ -187,7 +211,7 @@ has _is_logging_forced =>
         #
         elsif( $n == 0 and $o )
         {
-          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
           $logger->level($curr_level);
         }
       }
@@ -215,7 +239,7 @@ has _is_logging =>
         #
         if( $n == 0 and $o )
         {
-          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
           $curr_level = $logger->level;
           $logger->level('OFF');
         }
@@ -225,7 +249,7 @@ has _is_logging =>
         #
         elsif( $o == 0 and $n )
         {
-          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
+          my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
           $logger->level($curr_level);
         }
       }
@@ -238,24 +262,6 @@ has die_on_error =>
     );
 
 has die_on_fatal =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 1
-    );
-
-has show_on_warning =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 0
-    );
-
-has show_on_error =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 1
-    );
-
-has show_on_fatal =>
     ( is                => 'rw'
     , isa               => 'Bool'
     , default           => 1
@@ -389,6 +395,12 @@ sub BUILD
                         , $self->M_FATAL
                         ];
   };
+
+  # Now we have initialized the sub above we can set the defaults for the
+  # log level and screen log.
+  #
+  $self->log_level($self->M_INFO);
+  $self->stderr_log_level($self->M_FATAL);
 }
 
 #-------------------------------------------------------------------------------
@@ -472,43 +484,60 @@ sub _make_logger_objects
 
   # A layout for the time
   #
-  $layout = Log::Log4perl::Layout::PatternLayout->new('%d{HH:mm:ss} %m%n');
+  $layout = Log::Log4perl::Layout::PatternLayout->new('%d{HH:mm:ss} %p{1}%m{chomp}%n');
   $self->_set_layout('log.time' => $layout);
 
   # And a layout for the milliseconds and message
   #
-  $layout = Log::Log4perl::Layout::PatternLayout->new('     %d{SSS} %m{chomp}%n');
+  $layout = Log::Log4perl::Layout::PatternLayout->new('     %d{SSS} %p{1}%m{chomp}%n');
   $self->_set_layout('log.millisec' => $layout);
 
 
-  # Create logger
+  # Create logger for file logging
   #
-  my $logger = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERNAME);
-  $self->_set_logger('' . $self->C_LOG_LOGGERNAME => $logger);
+  my $logger_file = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERFILE);
+  $self->_set_logger('' . $self->C_LOG_LOGGERFILE => $logger_file);
 
-  my %init_appender =
-     ( name             => '' . $self->C_LOG_LOGGERNAME
-     , filename         => $log_file
-     , syswrite         => 1
-     , mode             => $self->do_append_log ? 'append' : 'write'
-     , autoflush        => $self->do_flush_log ? 1 : 0
-     );
+  my $appender_file = Log::Log4perl::Appender->new
+                      ( "Log::Log4perl::Appender::File"
+                       , name           => '' . $self->C_LOG_LOGGERFILE
+                       , filename       => $log_file
+                       , syswrite       => 1
+                       , mode           => $self->do_append_log
+                                           ? 'append'
+                                           : 'write'
+                       , autoflush      => $self->do_flush_log ? 1 : 0
+                      );
 
-  my $appender = Log::Log4perl::Appender->new
-                 ( "Log::Log4perl::Appender::File"
-                 , %init_appender
-                 );
+  $appender_file->layout($self->_get_layout('log.millisec'));
+  $logger_file->add_appender($appender_file);
+  $logger_file->level('ALL');
 
-  $logger->add_appender($appender);
-  $logger->level('ALL');
-  $appender->layout($self->_get_layout('log.millisec'));
+
+  # Create logger for screen logging with its own output pattern
+  #
+  $layout = Log::Log4perl::Layout::PatternLayout->new('%p{1}%m{chomp}%n');
+  $self->_set_layout('log.screen' => $layout);
+
+  my $logger_screen = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERSCREEN);
+  $self->_set_logger('' . $self->C_LOG_LOGGERSCREEN => $logger_screen);
+
+  my $appender_screen = Log::Log4perl::Appender->new
+                        ( "Log::Log4perl::Appender::ScreenColoredLevels"
+                        , name          => '' . $self->C_LOG_LOGGERSCREEN
+                        , stderr        => 1
+                        );
+
+  $appender_screen->layout($self->_get_layout('log.screen'));
+  $logger_screen->add_appender($appender_screen);
+  $logger_screen->level('FATAL');
+
 
   # Finish setup,
   #
   $self->_logging_on;
   $self->_set_logger_initialized(1);
   $self->log($self->C_LOG_LOGINIT);
-  $self->log_level($self->M_ERROR);
 }
 
 #-------------------------------------------------------------------------------
@@ -521,8 +550,8 @@ sub _log_data_line
   return unless $self->_is_logging;
 
   $self->_force_log;
-  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
-  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
+  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERFILE};
 
   if( $self->write_start_message )
   {
@@ -542,20 +571,18 @@ sub _log_data_line
 #
 sub _log_time_line
 {
-  my( $self, $msg, $forced) = @_;
+  my( $self, $msg, $log_attr) = @_;
 
   return unless $self->_is_logging;
 
-  $self->_force_log;
-  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
-  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
+  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERFILE};
 
   $appender->layout($self->_get_layout('log.time'));
-#  $logger->trace($msg);
-  $self->_log_message( $msg, $forced);
+  $log_attr->{force_message} = 1;
+  $self->_log_message( $msg, $log_attr);
 
   $appender->layout($self->_get_layout('log.millisec'));
-  $self->_normal_log;
 }
 
 #-------------------------------------------------------------------------------
@@ -563,23 +590,25 @@ sub _log_time_line
 #
 sub _log_message
 {
-  my( $self, $msg, $forced) = @_;
+  my( $self, $msg, $log_attr) = @_;
 
   return unless $self->_is_logging;
 
-  $forced //= 0;
+  my $force_message = $log_attr->{force_message} // 0;
 
   # Get the logger and the function name from the error message. Then
   # log the message with that function.
   #
-  $self->_force_log if $forced;
-  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERNAME);
-#  my $appender = Log::Log4perl->appenders->{'' . $self->C_LOG_LOGGERNAME};
-#  $appender->layout($self->_get_layout('log.millisec'));
+  $self->_force_log if $force_message;
+  my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERFILE);
   my $l4p_fnc_name = $self->_get_log_level_function_name;
   $logger->$l4p_fnc_name($msg);
 
-  $self->_normal_log if $forced;
+  $self->_normal_log if $force_message;
+
+  # Send message to screen if stderr_log_level is set to the proper level.
+  #
+  $self->_get_logger('' . $self->C_LOG_LOGGERSCREEN)->$l4p_fnc_name($msg);
 }
 
 #-------------------------------------------------------------------------------
@@ -684,20 +713,20 @@ sub _get_start_msg
 $line
 Logging format can be one of the following 3 possibilities;
 1) date
-2) time tag line_number severity_code wrapped_message
-3) msec tag line_number severity_code wrapped_message
+2) time tag line_number severity_code message
+3) msec tag line_number severity_code message
 
-Milliseconds are shown when date and time are not changing between logs
-
-A tag is a 3 letter code representing the logging module. This is set when
-calling add_tag().
+Milliseconds are shown when date and time are not changing between log entriess
 
 Severity code is a 2 letter code.
-First is i, w, e, t, d and f for info, warning, error, trace, debug or fatal
+First is I, W, E, T, D and F for info, warning, error, trace, debug or fatal
 respectively. The second letter is s and f for success or failure respectively.
 
-Uppercase letters mean that the log will be forced while otherwise the setting
-of loglevel would prevent it.
+Uppercase letters s and f mean that the log entry would be forced while
+otherwise the setting of loglevel would prevent it.
+
+A tag is a 3 letter code representing the logging module. This must be set by
+the module by calling add_tag(). The tag is followed by a four digit line number.
 $line
 EOLEGEND
 }
@@ -788,7 +817,7 @@ sub write_log
   # The message, stackdump and so forth will only be done when
   # error is worse than info or when logging is started.
   #
-  if( $self->_is_logging or cmp_levels( $error, $self->M_INFO) > 0 )
+#  if( $self->_is_logging or cmp_levels( $error, $self->M_INFO) > 0 )
   {
     # Create the message for the log
     #
@@ -797,51 +826,26 @@ sub write_log
 
     $self->_log_data_line if $dateTxt;
 
+    my $log_attr;
+    $log_attr->{force_message} = 1 if is_forced($error);
+    $msgTxt = Text::Wrap::wrap( '', ' ' x 12, $msgTxt) if $self->message_wrapping;
+
+    # Stackdump attached to message when error level is higher than warning
+    #
+    $msgTxt .= "\n"
+             . join( ''
+                   , map { ' ' x 13 . "$_\n"}
+                         $self->_get_stack($call_level + 1)
+                   ) if cmp_levels( $error, $self->M_WARNING) > 0;
+
     if( $timeTxt )
     {
-      if( $self->message_wrapping )
-      {
-        $self->_log_time_line( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                             , is_forced($error)
-                             );
-      }
-
-      else
-      {
-        $self->_log_time_line( $msgTxt, is_forced($error));
-      }
+      $self->_log_time_line( $msgTxt, $log_attr);
     }
 
     else
     {
-      if( $self->message_wrapping )
-      {
-        $self->_log_message( Text::Wrap::wrap( '', ' ' x 12, $msgTxt)
-                           , is_forced($error)
-                           ) if $msgTxt;
-      }
-
-      else
-      {
-        $self->_log_message( $msgTxt, is_forced($error)) if $msgTxt;
-      }
-
-      $self->_log_message( join( ''
-                               , map { ' ' x 13 . "$_\n"}
-                                     $self->_get_stack($call_level + 1)
-                               )
-                         , is_forced($error)
-                         )
-         if cmp_levels( $error, $self->M_ERROR) >= 0;
-    }
-
-    if( is_error($error) and $self->show_on_error
-        or is_warning($error) and $self->show_on_warning
-        or is_fatal($error) and $self->show_on_fatal
-      )
-    {
-      say STDERR Text::Wrap::wrap( '', ' ' x 12, $msgTxt);
-      print STDERR map {' ' x 4 . $_ . "\n"} $self->_get_stack($call_level + 1);
+      $self->_log_message( $msgTxt, $log_attr) if $msgTxt;
     }
 
     if( is_error($error) and $self->die_on_error
@@ -871,19 +875,10 @@ sub _create_message
   my $previousDate = $self->_previousDate;
   my $pMsgEq = $self->_previousMsgEq;
 
-#  my $eventCode = $self->get_last_eventcode;
-#  my $severity = $self->get_last_severity;
-
   # Check the severity of the message set in the mask
   #
   my $sts = $self->_lastError;
-  my $severitySymbol = '-';
-  $severitySymbol = 'i' if $sts->is_info;
-  $severitySymbol = 'w' if $sts->is_warning;
-  $severitySymbol = 'e' if $sts->is_error;
-  $severitySymbol = 't' if $sts->is_trace;
-  $severitySymbol = 'd' if $sts->is_debug;
-  $severitySymbol = 'f' if $sts->is_fatal;
+  my $severitySymbol = '';
 
   my $stsSymbol = '-';
   $stsSymbol = 's' if $sts->is_success;
@@ -899,13 +894,10 @@ sub _create_message
   my $error = $sts->get_error;
   my $message = $sts->get_message;
 
-#say "Error: ", Scalar::Util::isdual $error ? 'Dual' : 'Normal';
-#say "Message: ", $message;
-
-  my $msgTxt = sprintf "%3.3s %4.4d %2.2s %s"
+  my $msgTxt = sprintf "%s %3.3s %4.4d %s"
+             , $severitySymbol
              , $log_tag
              , $sts->get_line
-             , $severitySymbol
              , $message
              ;
 
@@ -1001,10 +993,6 @@ sub add_tag
   }
 
   my @tagLabels = $self->get_tag_names;
-#say "AT: $log_tag, $call_level, $package, ", join( ', ', @tagLabels);
-#say "-- ", join( '', map { ' ' x 13 . "$_\n"}
-#                     $self->_get_stack($call_level + 1)
-#               );
   if( $log_tag ~~ \@tagLabels )
   {
     $self->log( $self->C_LOG_TAGLBLINUSE, [$log_tag]);

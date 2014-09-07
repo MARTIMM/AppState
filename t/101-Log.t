@@ -42,9 +42,6 @@ $app->check_directories;
 my $tagName = '101';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-#$log->show_on_warning(0);
-#$log->show_on_error(0);
-#$log->show_on_fatal(0);
 
 $log->do_append_log(0);
 $log->do_flush_log(1);
@@ -176,8 +173,6 @@ subtest 'log settings' =>
 sub
 {
   #$log->die_on_error(1);
-  $log->show_on_error(0);
-  #$log->show_on_warning(1);
   $log->do_append_log(0);
 
   $log->do_flush_log(1);

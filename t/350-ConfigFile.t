@@ -17,15 +17,8 @@ $as->initialize( config_dir => $config_dir, use_temp_dir => 1);
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
-#$log->show_on_error(0);
-#$log->show_on_warning(0);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
 $log->start_logging;
-
 $log->log_level($as->M_ERROR);
-
 $log->add_tag('350');
 
 

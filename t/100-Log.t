@@ -11,11 +11,7 @@ use AppState;
 #
 my $config_dir = 't/Log';
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                );
-$app->check_directories;
+$app->initialize( config_dir => $config_dir, check_directories => 1);
 
 #-------------------------------------------------------------------------------
 # Get log object
@@ -31,7 +27,7 @@ sub
   isa_ok( $log, $log_modulename);
   $log->add_tag($tagName);
 
-  is( $log->C_LOG_LOGGERNAME, $log_modulename, 'Check loggername');
+  is( $log->C_LOG_LOGGERFILE, $log_modulename . '::File', 'Check loggername');
   ok( $log->do_append_log == 1, 'Append to log turned on');
   ok( $log->do_flush_log == 0, 'Flushing turned off');
   is( $log->log_file, '100-Log.log', 'Logfile is 100-Log.log');
@@ -49,16 +45,17 @@ sub
   ok( $log->get_tag_modules == 4, 'Package has 4 registered modules');
   is( join( ' ', sort $log->get_tag_names), '100 =AP =LG =PM', 'Tag names check');
 
-  ok( !defined $log->log_level, 'Log level not yet defined');
+  ok( defined $log->log_level, 'Log level defined');
+  is( $log->log_level, $log->M_INFO, 'Log level set to info');
+
+  ok( defined $log->stderr_log_level, 'Standard error log level defined');
+  is( $log->stderr_log_level, $log->M_FATAL, 'Standard log level set to fatal');
+
   ok( !$log->_is_logging_forced, 'No errors of which were forced logging');
   ok( !$log->_is_logging, 'Logging not started yet');
 
   ok( !$log->die_on_error, 'Die on error off');
   ok( $log->die_on_fatal, 'Die on error on');
-
-  ok( !$log->show_on_warning, 'Show stack on warning off');
-  ok( $log->show_on_error, 'Show stack on error on');
-  ok( $log->show_on_fatal, 'Show stack on fatal on');
 
   ok( $log->write_start_message, 'Show start message on');
   
@@ -81,10 +78,6 @@ sub
 
   # Don't show stack dumps now
   #
-  $log->show_on_warning(0);
-  $log->show_on_error(0);
-  $log->show_on_fatal(0);
-
   my $sts = $log->log($log->C_LOG_LOGINIT);
   ok( !defined $sts, 'Informational messages will not return status objects');
 
@@ -125,11 +118,11 @@ sub
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
   
   ok( $log->_logger_initialized, 'Logger is initialized');
-  ok( $log->_nbr_loggers == 1, '1 Log::Log4perl logger defined');
-  isa_ok( $log->_get_logger($log->C_LOG_LOGGERNAME), 'Log::Log4perl::Logger');
-  ok( $log->_nbr_layouts == 4, '4 Log::Log4perl layouts defined');
+  ok( $log->_nbr_loggers == 2, '2 Log::Log4perl loggers defined');
+  isa_ok( $log->_get_logger($log->C_LOG_LOGGERFILE), 'Log::Log4perl::Logger');
+  ok( $log->_nbr_layouts == 5, '5 Log::Log4perl layouts defined');
   is( join( ' ', sort $log->_get_layouts)
-    , 'log.date log.millisec log.startmsg log.time'
+    , 'log.date log.millisec log.screen log.startmsg log.time'
     , 'Layout keys check'
     );
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');

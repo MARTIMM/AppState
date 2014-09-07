@@ -11,19 +11,14 @@ AppState::Log - Module to do message logging and severity status handling
   use AppState;
   use AppState::Ext::Meta_Constants;
 
-  def_sts( 'C_MY_ERROR1', 'M_ERROR', 'My first error: %s');
+  def_sts( 'C_MY_ERROR1', 'M_ERROR', 'My first error at %s %s');
 
-  my $config_dir = 't/Log';
   my $app = AppState->instance;
-  $app->initialize( config_dir => $config_dir
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                );
-  $app->check_directories;
+  $app->initialize( config_dir => 'MyProjectDir', check_directories => 1);
 
   my $log = $app->get_app_object('Log');
   $log->show_on_error(0);
-  $log->add_tag('SYN');
+  $log->add_tag('MPR');
   $log->write_start_message(0);
   $log->start_logging;
   $log->log_level($self->M_TRACE);
@@ -34,9 +29,9 @@ AppState::Log - Module to do message logging and severity status handling
   $log->log( $log->C_LOG_TRACE, [__LINE__ . ', ' . __FILE__]);
 
   # Log message with our own code
-  # Result something like 'My first error: 32, Log-pod.pl'
+  # Result something like 'My first error at 32, MyProject.pl'
   #
-  $log->log( $log->C_MY_ERROR1, [__LINE__ . ', ' . __FILE__]);
+  $log->log( $log->C_MY_ERROR1, [ __LINE__, __FILE__]);
 
 =head1 DESCRIPTION
 
@@ -57,41 +52,55 @@ An example of the logfile is shown here;
   --------------------------------------------------------------------------------
   Logging format can be one of the following 3 possibilities;
   1) date
-  2) time tag line_number severity_code wrapped_message
-  3) msec tag line_number severity_code wrapped_message
+  2) time severity_code tag line_number message
+  3) msec severity_code tag line_number message
 
   Milliseconds are shown when date and time are not changing between logs
 
-  A tag is a 3 letter code representing the logging module. This is set when
-  calling add_tag().
-
   Severity code is a 2 letter code.
-  First is i, w, e, t, d and f for info, warning, error, trace, debug or fatal
+  First is I, W, E, T, D and F for info, warning, error, trace, debug or fatal
   respectively. The second letter is s and f for success or failure respectively.
 
-  Uppercase letters mean that the log will be forced while otherwise the setting
-  of loglevel would prevent it.
+  Uppercase letters s and f mean that the log will be forced while
+  otherwise the setting of loglevel would prevent it.
+
+  A tag is a 3 letter code representing the logging module. This must be set by
+  the module by calling add_tag(). The tag is followed by a four digit line number.
   --------------------------------------------------------------------------------
 
   ----------
   2014-08-10
   ----------
-  14:09:06 =LG 0537 IS Logger initialized
-       980 =LG 0448 IS Logging started. Log level set to 'ERROR'. Starting new log
-       980 =LG 0164 IS Log level changed from 'ERROR' into 'TRACE'
-       981 =LG 1027 is Tag 'MXT' added for module 'main'
-       000 =LG 1027 is Tag '=CL' added for module
-	      'AppState::Plugins::Feature::CommandLine'
-       000 =PM 0395 is Object CommandLine created
-  14:09:07 =CL 0092 is Option processing changed: bundling
-       003 =CL 0245 is Options processed
-       004 =PM 0402 is Object CommandLine retrieved
-       004 =PM 0402 is Object ConfigManager retrieved
+  14:09:06 IS =LG 0537 Logger initialized
+       980 IS =LG 0448 Logging started. Log level set to 'ERROR'. Starting new log
+       980 IS =LG 0164 Log level changed from 'ERROR' into 'TRACE'
+       981 Is =LG 1027 Tag 'MXT' added for module 'main'
+       000 Is =LG 1027 Tag '=CL' added for module
+             'AppState::Plugins::Feature::CommandLine'
+       000 Is =PM 0395 Object CommandLine created
+  14:09:07 Is =CL 0092 Option processing changed: bundling
+       003 Is =CL 0245 Options processed
+       004 Is =PM 0402 Object CommandLine retrieved
+       004 Is =PM 0402 Object ConfigManager retrieved
 
 The top legend can be hidden by using write_start_message(0). Besides tags for
-the log module, there are also the entries from the
+the log module(=LG), there are also the entries from the
 AppState::Plugins::Feature::PluginManager (=PM) and the
-AppState::Plugins::Feature::CommandLine(=CL) modules.
+AppState::Plugins::Feature::CommandLine(=CL) modules shown in the above log.
+
+When the status of the error is higher than warning a stack dump is also shown.
+In the example below the information is minimized to only the modulename and the
+line number where the log call was issued.
+
+  14:09:07 Ef 320 0036 Config root nor config hook into data is a hash reference. Returned
+              an empty hash reference, perhaps no document selected
+               Stack dump;
+               0036 main
+               0234 Test::Builder
+               0239 Test::Builder
+               0239 Test::Builder
+               0747 Test::More
+               0037 main
 
 =head1 METHODS
 
@@ -135,14 +144,20 @@ Get the registered modulenames which have a tag defined.
 
 Get the registered tag names
 
-=head2 log_level
+=head2 log_level($log_level)
 
 Set the log level. The levels are like those used by Log::Log4perl and
 are defined in AppState::Ext::Constants. These are methods and named
 M_TRACE, M_DEBUG, M_INFO, M_WARN, M_WARNING, M_ERROR and M_FATAL in increasing
 order. M_WARN and M_WARNING return the same codes. Every log entry is compared
 to this log level and errors having lower status will not get logged. There
-are some more rules but see write_log() for more information.
+are some more rules but see write_log() for more information. Default is set to
+M_INFO.
+
+=head2 stderr_log_level($log_level)
+
+Same purpose as log_level but is for logging to standard error output. Default
+is set to M_FATAL.
 
 =head2 die_on_error($bool)
 
@@ -155,35 +170,6 @@ given.
 Control if the write_log() must end the program after handling the message with
 a fatal status. Default is on. Returns the current value when no argument is
 given.
-
-=head2 show_on_warning($bool)
-
-Control if the write_log() must show a stack dump after handling the message
-with a warning status. Default is off. Returns the current value when no
-argument is given. See show_on_error() for an example stackdump.
-
-=head2 show_on_error($bool)
-
-Control if the write_log() must show a stack dump after handling the message
-with a error status. Default is on. Returns the current value when no
-argument is given. An example stackdump of a message with an error status.
-This error (E) is forced to appear (F) and the caller was at line 65 in the
-main package. the 3 letter tag '100' was set by this main package.
-
-  100 0065 EF Error does not have an error code and/or severity code
-      Stack dump;
-      0065 main
-      0234 Test::Builder
-      0239 Test::Builder
-      0239 Test::Builder
-      0747 Test::More
-      0066 main
-
-=head2 show_on_fatal($bool)
-
-Control if the write_log() must show a stack dump after handling the message
-with a fatal status. Default is on. Returns the current value when no
-argument is given. See show_on_error() for an example stackdump.
 
 =head2 message_wrapping($bool)
 
@@ -339,9 +325,10 @@ Method start_logging() will somewhere turn C<logger_initialized> on.
 
 =head2 _loggers
 
-Get the loggers structure as a hash reference. There is only one logger defined
-called 'AppState::Plugins::Feature::Log' and is defined by code constant
-C_LOG_LOGGERNAME.
+Get the loggers structure as a hash reference. There are two loggers defined
+called 'AppState::Plugins::Feature::Log::File' and
+'AppState::Plugins::Feature::Log::Screen' They are defined by code constants
+C_LOG_LOGGERFILE and C_LOG_LOGGERSCREEN.
 
 =head2 _set_layout($logger_name => $Log_Log4perl_logger)
 
@@ -368,8 +355,9 @@ defined and the purpose and keys are shown in a table.
 
   log.startmsg  Show start message   '%m%n'
   log.date      Show date            '%n----------%n%d{yyyy-MM-dd}%n----------%n'
-  log.time      Show time and status '%d{HH:mm:ss} %m%n'
-  log.millisec  Show msec and status '     %d{SSS} %m{chomp}%n'
+  log.time      Show time and status '%d{HH:mm:ss} %p{1}%m{chomp}%n'
+  log.millisec  Show msec and status '     %d{SSS} %p{1}%m{chomp}%n'
+  log.screen    Show log to stderr   '%p{1}%m{chomp}%n'
 
 The message %m will always be <tag> <line number> <status codes> <log message>
 except for the start message which is kind of an explanation or legend. See
@@ -475,12 +463,13 @@ lower than the log_level(), they will still be processed. It is done because
 one can always see what the logger processes when logging is turned on. Fatal
 error status will kill the program unless die_on_fatal(0) is called first.
 
-  C_LOG_LOGINIT       M_F_INFO     Log initialized
-  C_LOG_LOGSTARTED    M_F_INFO     Logging started
-  C_LOG_LOGSTOPPED    M_F_INFO     Logging stopped
+  C_LOG_LOGINIT       M_TRACE      Log initialized
+  C_LOG_LOGSTARTED    M_TRACE      Logging started
+  C_LOG_LOGSTOPPED    M_TRACE      Logging stopped
   C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
   C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
-  C_LOG_LLVLCHANGED   M_F_INFO     Log level changed
+  C_LOG_LLVLCHANGED   M_TRACE      Log level changed
+  C_LOG_SCREENLOG     M_TRACE      Log to screen turned on or off
   C_LOG_TAGADDED      M_F_INFO     Tag added for calling module
   C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
   C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
@@ -489,8 +478,10 @@ error status will kill the program unless die_on_fatal(0) is called first.
 
 =head1 PROGRAM CODES
 
-  C_LOG_LOGGERNAME                 The name used to set/get the loggername from
-                                   Log::Log4perl.
+  C_LOG_LOGGERFILE                 The name used to set/get the file logger
+                                   from Log::Log4perl.
+  C_LOG_LOGGERSCREEN               The name used to set/get the screen logger
+                                   from Log::Log4perl.
 
 =head1 SEE ALSO
 

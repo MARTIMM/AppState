@@ -20,15 +20,9 @@ $as->initialize( config_dir => 't/Node');
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
-#$log->die_on_error(1);
-#$log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
+$log->do_append_log(0);
 $log->start_logging;
-
-$log->log_level($log->M_ERROR);
+$log->log_level($log->M_TRACE);
 
 #-------------------------------------------------------------------------------
 # DOM and root
