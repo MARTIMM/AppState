@@ -32,6 +32,18 @@ sub def_sts
   $message //= '';
   my $code = $_aes->M_EVNTCODE & $const_code;
   $code |= $_aes->M_SEVERITY & $_aes->$modifier;
+  
+  # Modify message to include part of the code except when $modifier = 'M_CODE'
+  #
+  if( $modifier ne 'M_CODE' )
+  {
+    my $mname = $name;
+    $mname =~ s/(.*_)//g;
+    $message = "$mname - $message";
+  }
+  
+  # Setup default code as a dual variable
+  #
   my $default = Scalar::Util::dualvar( $code, $message);
 
   # Make the code for the user. It boils down to moose's

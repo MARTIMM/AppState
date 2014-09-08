@@ -21,6 +21,7 @@ my $log = $app->get_app_object('Log');
 $log->do_flush_log(1);
 $log->start_logging;
 $log->log_level($log->M_ERROR);
+#$log->stderr_log_level($app->M_TRACE);
 $app->log_init('710');
 
 #-------------------------------------------------------------------------------
@@ -35,11 +36,11 @@ my $n = AppState::NodeTree::Node->new(name => 'root');
 
 # Failure!
 $dom->link_with_node($n);
-content_like( qr/710.*\.log$/, qr/Ef =ND \d+ Node not of proper type/, 't/Node');
+content_like( qr/710.*\.log$/, qr/Ef =ND \d+ NODENOTROOT - Node not of proper type/, 't/Node');
 
 # Failure!
 $dom->push_child($n);
-content_like( qr/710.*\.log$/, qr/Ef =ND \d+ Node not of proper type./, 't/Node');
+content_like( qr/710.*\.log$/, qr/Ef =ND \d+ NODENOTROOT - Node not of proper type./, 't/Node');
 
 is( $dom->nbr_children, 0, 'Dom has no children');
 
