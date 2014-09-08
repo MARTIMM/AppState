@@ -29,13 +29,13 @@ $columns = 80;
 # Error codes
 #
 def_sts( 'C_LOG_LOGINIT',     'M_TRACE', 'Logger initialized');
-def_sts( 'C_LOG_LOGSTARTED',  'M_TRACE', 'Logging started. Log level set to \'%s\'. %s');
+def_sts( 'C_LOG_LOGSTARTED',  'M_TRACE', "Logging started. Log level set to '%s'. %s");
 def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
-def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', q@Tag label '%s' already in use@);
-def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', q@Package '%s' already has a tag '%s'@);
+def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
+def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "ackage '%s' already has a tag '%s'");
 def_sts( 'C_LOG_LLVLCHANGED', 'M_TRACE', "Log level changed from '%s' into '%s'");
 def_sts( 'C_LOG_SCREENLOG',   'M_TRACE', "Log to screen changed from '%s' into '%s'");
-def_sts( 'C_LOG_TAGADDED',    'M_F_INFO', 'Tag \'%s\' added for module \'%s\'');
+def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
 def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
 def_sts( 'C_LOG_LOGALRINIT',  'M_F_WARNING', 'Not changed, logger already initialized');
