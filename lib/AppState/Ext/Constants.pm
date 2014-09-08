@@ -95,13 +95,19 @@ has C_MODIMMUT  =>
 #
 # 0x1012000 == M_TRACE
 has C_LOG_TRACE =>
-    ( default => Scalar::Util::dualvar( 2 | 0x10120000, 'Trace: %s')
+    ( default => Scalar::Util::dualvar( 2 | 0x10120000, 'TRACE - %s')
     , %_c_Attr
     );
 
 # 0x10240000 == M_DEBUG
 has C_LOG_DEBUG =>
-    ( default => Scalar::Util::dualvar( 3 | 0x10240000, 'Debug: %s')
+    ( default => Scalar::Util::dualvar( 3 | 0x10240000, 'DEBUG - %s')
+    , %_c_Attr
+    );
+
+# 0x11060000 == M_INFO
+has C_LOG_INFO =>
+    ( default => Scalar::Util::dualvar( 4 | 0x11060000, 'INFO - %s')
     , %_c_Attr
     );
 #
