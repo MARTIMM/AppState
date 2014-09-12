@@ -3,7 +3,7 @@
 use Modern::Perl;
 use Test::More;
 require File::Path;
-
+use Data::Dumper;
 use AppState;
 
 #-------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ is( $cfm->get_value( '/pi/abc', $rootDoc->[0]), '1', "Check set_value with hook"
 
 $cfm->drop_value( '/pi/abc', $rootDoc->[0]);
 is( $cfm->get_value( '/pi/abc', $rootDoc->[0])
-  , undef, "Check drop_value with hook"
+  , 1, "Check drop_value with hook, value was 1"
   );
 
 $cfm->set_kvalue( '/pi/abc', '/path/to/something', 'Test1', $rootDoc->[0]);
@@ -156,6 +156,7 @@ is( $cfm->pop_value( '/pi/ghi', $rootDoc->[0])
   , 't', "Check push_value and pop_value with hook"
   );
 
+$cfm->set_value( '/pi/f', [], $rootDoc->[0]);
 $cfm->unshift_value( '/pi/f', [qw(b d jh e r t)], $rootDoc->[0]);
 is( $cfm->shift_value( '/pi/f', $rootDoc->[0])
   , 'b', "Check unshift_value and shift_value with hook"
@@ -250,4 +251,6 @@ $app->cleanup;
 File::Path::remove_tree( $config_dir);
 
 
-
+__END__
+#my $dd = Data::Dumper->new( [$rootDoc], [qw(rootdoc)]);
+#say $dd->Dump;

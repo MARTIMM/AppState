@@ -5,6 +5,7 @@ use version; our $VERSION = version->parse('v0.0.4');
 use 5.010001;
 
 use namespace::autoclean;
+no autovivification qw(fetch exists delete);
 
 use Moose;
 use Moose::Util::TypeConstraints;
@@ -16,13 +17,16 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.
 #
-def_sts( 'C_DOC_SELOUTRANGE'  , 'M_ERROR', 'Document number %s out of range, document not %s');
-def_sts( 'C_DOC_DOCRETRIEVED' , 'M_INFO', 'Document %s retrieved');
-def_sts( 'C_DOC_NODOCUMENTS'  , 'M_F_WARNING', 'No documents available');
-def_sts( 'C_DOC_NOHASHREF'    , 'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
-def_sts( 'C_DOC_EVALERROR'    , 'M_ERROR', 'Error eval path %s: %s');
-def_sts( 'C_DOC_NOVALUE'      , 'M_WARNING', 'No value found at %s');
-def_sts( 'C_DOC_NOKEY'        , 'M_ERROR', 'Key not defined');
+def_sts( 'C_DOC_SELOUTRANGE',  'M_ERROR', 'Document number %s out of range, document not %s');
+def_sts( 'C_DOC_DOCRETRIEVED', 'M_TRACE', 'Document %s retrieved');
+def_sts( 'C_DOC_NODOCUMENTS',  'M_F_WARNING', 'No documents available');
+def_sts( 'C_DOC_NOHASHREF',    'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
+def_sts( 'C_DOC_EVALERROR',    'M_ERROR', 'Error eval path %s: %s');
+def_sts( 'C_DOC_NOVALUE',      'M_WARNING', 'No value found at %s');
+def_sts( 'C_DOC_NOKEY',        'M_ERROR', 'Key not defined');
+def_sts( 'C_DOC_MODTRACE',     'M_TRACE', "%s p='%s' '%s'");
+def_sts( 'C_DOC_MODKTRACE',    'M_TRACE', "%s p='%s' k='%s' %s");
+def_sts( 'C_DOC_MODERR',       'M_ERROR', "%s %s");
 
 #-------------------------------------------------------------------------------
 # Documents is an array reference, each entry in the array is a document. For
@@ -80,7 +84,6 @@ sub get_document
   my $nbrDocs = $self->nbr_documents;
   if( $nbrDocs )
   {
-#say "DN: $document > $nbrDocs";
     if( $document >= 0 and $document < $nbrDocs )
     {
       $self->log( $self->C_DOC_DOCRETRIEVED, [$document]);
@@ -90,8 +93,6 @@ sub get_document
     else
     {
       $self->log( $self->C_DOC_SELOUTRANGE, [ $document, 'retrieved']);
-#      $document = 0;
-#      $docs = $self->_get_document($document);
     }
   }
 
@@ -131,7 +132,6 @@ sub set_document
 {
   my( $self, $document, $newData) = @_;
   $document //= $self->get_current_document // 0;
-#say "Set doc: $document, $newData";
   if( $document >= 0 and $document < $self->nbr_documents )
   {
     $self->_set_document( $document, $newData);
@@ -151,7 +151,7 @@ sub set_document
 #
 sub _path2hashref
 {
-  my( $self, $path, $startRef) = @_;
+  my( $self, $path, $startRef, $value, $key) = @_;
 
   my( $cfg, $ref);
   my $docRoot = $self->get_document($self->get_current_document);
@@ -178,20 +178,62 @@ sub _path2hashref
   }
 
   $path =~ s@/{2,}@/@g;         # Remove any repetition of slashes
-  $path =~ s@^/@@;              # Remove first slash
+  $path =~ s@^/@@;              # Remove first slash if any
   $path =~ s@/$@@;              # Remove last slash
 
-  # If the path is not empty, evaluate it
+  # If the resulting path is not empty, evaluate it
   #
   if( $path )
   {
     # Split line on the slashes and wrap each resulting array entry
-    # in braces ({}) and concatenate each result. Then evaluate resulting
+    # in braces ({}) and concatenate each result. Then evaluate result
     # in an address which will be referenced to give methods the opportunity
     # to set values on the result.
     #
+    my $c;
     my $l = '$cfg->' . join( '', map { "{'$_'}" } split( '/', $path));
-    eval("\$ref = \\$l;");
+
+    # When assigning a value we need differend code to do so despite the
+    # no autovivification settings above at the start.
+    #
+    if( defined $value and defined $key )
+    {
+      $c =<<EOC;
+$l = {};
+$l\{\$key\} = \$value;
+\$ref = \\$l\{\$key\};
+EOC
+#say "C v+k:\n", $c;
+    }
+
+    elsif( defined $value)
+    {
+      $c =<<EOC;
+$l = \$value;
+\$ref = \\$l;
+EOC
+#say "C v:\n", $c;
+    }
+
+    elsif( defined $key)
+    {
+      $c =<<EOC;
+my \$va = $l\{\$key\};
+\$ref = \\\$va;
+EOC
+#say "C k:\n", $c;
+    }
+
+    else
+    {
+      $c =<<EOC;
+my \$va = $l;
+\$ref = \\\$va;
+EOC
+#say "C -:\n", $c;
+    }
+
+    eval($c);
     if( my $err = $@ )
     {
       $self->log( $self->C_DOC_EVALERROR, [$path, $err]);
@@ -204,6 +246,10 @@ sub _path2hashref
   {
     $ref = \$cfg;
   }
+
+#$doc = $self->get_document(0);
+#$dd = Data::Dumper->new( [$doc], [qw(doc2)]);
+#say $dd->Dump;
 
   return $ref;
 }
@@ -229,8 +275,8 @@ sub get_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  my $v;
-  $v = $$hashref if ref $hashref;# =~ m/^(REF|SCALAR|ARRAY|HASH)$/;
+  my $value = $$hashref if ref $hashref;
+
   $self->log( $self->C_DOC_NOVALUE, [$path]) unless ref $hashref;
 
   $self->log( $self->C_LOG_TRACE
@@ -238,7 +284,27 @@ sub get_value
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
-  return $v;
+  return $value;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub get_kvalue
+{
+  my( $self, $path, $key, $startRef) = @_;
+
+  $self->log($self->C_DOC_NOKEY) unless defined $key;
+  $key //= '';
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  my $value = $$hashref if ref $hashref;
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "get_kvalue from '$path' and '$key' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
+  return $value;
 }
 
 #-------------------------------------------------------------------------------
@@ -254,59 +320,14 @@ sub set_value
 {
   my( $self, $path, $value, $startRef) = @_;
 
-  my $hashref = $self->_path2hashref( $path, $startRef);
-  $$hashref = $value;
+  my $hashref = $self->_path2hashref( $path, $startRef, $value);
 
   $self->log( $self->C_LOG_TRACE
             , [ "set_value, $path, '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
-}
-
-#-------------------------------------------------------------------------------
-#
-sub drop_value
-{
-  my( $self, $path, $startRef) = @_;
-
-  my( $vpath, $spath) = $path =~ m@(.*)/([^/]+)$@;
-  return unless defined $spath;
-
-  my $hashref = $self->_path2hashref( $vpath, $startRef);
-  my $value;
-  if( defined $$hashref->{$spath} )
-  {
-    $value = $$hashref->{$spath};
-    delete $$hashref->{$spath} if ref $$hashref eq 'HASH';
-  }
-
-  $self->log( $self->C_LOG_TRACE
-            , ["drop_value, '$path' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-
-  return $value;
-}
-
-#-------------------------------------------------------------------------------
-#
-sub get_kvalue
-{
-  my( $self, $path, $key, $startRef) = @_;
-
-  $self->log($self->C_DOC_NOKEY) unless defined $key;
-  $key //= '';
-
-  my $hashref = $self->_path2hashref( $path, $startRef);
-
-  $self->log( $self->C_LOG_TRACE
-            , [ "get_kvalue from '$path' and '$key' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  return $$hashref->{$key};
+  return $hashref;
 }
 
 #-------------------------------------------------------------------------------
@@ -321,14 +342,38 @@ sub set_kvalue
   $key //= '';
   $value //= '';
 
-  my $hashref = $self->_path2hashref( $path, $startRef);
-  $$hashref //= {};
-  $$hashref->{$key} = $value;
+  my $hashref = $self->_path2hashref( $path, $startRef, $value, $key);
   $self->log( $self->C_LOG_TRACE
             , [ "set_kvalue, '$path', '$key', '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
+  return $hashref;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub drop_value
+{
+  my( $self, $path, $startRef) = @_;
+
+  # Split the last part of the path which needs to be removed
+  #
+  my( $vpath, $spath) = $path =~ m@(.*)/?([^/]+)$@;
+
+  my $hashref = $self->_path2hashref( $vpath, $startRef);
+  my $value;
+  if( ref $$hashref eq 'HASH' )
+  {
+    $value = delete ${$hashref}->{$spath};
+    $self->log( $self->C_DOC_MODTRACE
+              , [ 'drop_value', $path
+                , (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+  }
+  
+  return $value;
 }
 
 #-------------------------------------------------------------------------------
@@ -337,18 +382,84 @@ sub drop_kvalue
 {
   my( $self, $path, $key, $startRef) = @_;
 
+  $self->log($self->C_DOC_NOKEY) unless defined $key;
+  $key //= '';
+
   my $hashref = $self->_path2hashref( $path, $startRef);
 
-  my $value = $$hashref->{$key};
-#say "DV: $value, $hashref";
-  delete $$hashref->{$key} if ref $$hashref eq 'HASH';
-
-  $self->log( $self->C_LOG_TRACE
-            , [ "drop_kvalue from '$path' and '$key' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
+  my $value;
+  if( ref $hashref and ref $$hashref eq 'HASH' )
+  {
+    $value = delete ${$hashref}->{$key};
+    $self->log( $self->C_LOG_TRACE
+              , [ "drop_kvalue from '$path' and '$key' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+  }
+  
   return $value;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub get_item_value
+{
+  my( $self, $path, $idx, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef);
+
+
+  my $v;
+  if( ref $hashref and ref $$hashref eq 'ARRAY' )
+  {
+    $v = ${$hashref}->[$idx];
+    $self->log( $self->C_DOC_MODTRACE
+              , [ 'get_item_value', $path, " i=$idx"
+                . (ref $startRef eq 'HASH' ? ' with hook' : '')
+                ]
+              );
+  }
+  
+  else
+  {
+    $self->log( $self->C_DOC_MODERR
+              , [ 'get_item_value', 'fail'
+                ]
+              );
+  }
+
+  return $v;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub get_item_kvalue
+{
+  my( $self, $path, $key, $idx, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+
+  my $v;
+  if( ref $hashref and ref $$hashref eq 'ARRAY' )
+  {
+    $v = ${$hashref}->[$idx];
+    $self->log( $self->C_DOC_MODTRACE
+              , [ 'get_item_kvalue', $path, " i=$idx"
+                . (ref $startRef eq 'HASH' ? ' with hook' : '')
+                ]
+              );
+  }
+
+  else
+  {
+    $self->log( $self->C_DOC_MODERR
+              , [ 'get_item_kvalue', 'fail'
+                ]
+              );
+  }
+
+  return $v;
 }
 
 #-------------------------------------------------------------------------------
@@ -364,7 +475,23 @@ sub pop_value
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
-  return pop @{$$hashref};
+  return pop @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
+}
+
+#-------------------------------------------------------------------------------
+#
+sub pop_kvalue
+{
+  my( $self, $path, $key, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "pop_value from '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
+  return pop @{$$hashref} if ref $hashref and ref $$hashref  eq 'ARRAY';
 }
 
 #-------------------------------------------------------------------------------
@@ -375,13 +502,39 @@ sub push_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  push @{$$hashref}, @$values;
 
   $self->log( $self->C_LOG_TRACE
             , [ "push_value, '$path', @$values "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
+  push @{$$hashref}, @$values
+    if ref $hashref
+    and ref $$hashref eq 'ARRAY'
+    and ref $values eq 'ARRAY'
+    ;
+  return $hashref;
+}
+#-------------------------------------------------------------------------------
+# Push values on the end of an array
+#
+sub push_kvalue
+{
+  my( $self, $path, $key, $values, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "push_value, '$path', @$values "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
+  push @{$$hashref}, @$values
+    if ref $hashref
+    and ref $$hashref eq 'ARRAY'
+    and ref $values eq 'ARRAY'
+    ;
+  return $hashref;
 }
 
 #-------------------------------------------------------------------------------
@@ -397,7 +550,23 @@ sub shift_value
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
-  return shift @{$$hashref};
+  return shift @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
+}
+
+#-------------------------------------------------------------------------------
+#
+sub shift_kvalue
+{
+  my( $self, $path, $key, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "shift_value from '$path' "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
+  return shift @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
 }
 
 #-------------------------------------------------------------------------------
@@ -407,13 +576,40 @@ sub unshift_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  unshift @{$$hashref}, @$values;
 
   $self->log( $self->C_LOG_TRACE
             , [ "unshift_value, '$path', @$values "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
               ]
             );
+  unshift @{$$hashref}, @$values
+    if ref $hashref
+    and ref $$hashref eq 'ARRAY'
+    and ref $values eq 'ARRAY'
+    ;
+  return $hashref;
+}
+
+#-------------------------------------------------------------------------------
+#
+sub unshift_kvalue
+{
+  my( $self, $path, $key, $values, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+
+  $self->log( $self->C_LOG_TRACE
+            , [ "unshift_kvalue, '$path', @$values "
+              . (ref $startRef eq 'HASH' ? 'with hook' : '')
+              ]
+            );
+
+  unshift @{$$hashref}, @$values
+    if ref $hashref
+    and ref $$hashref eq 'ARRAY'
+    and ref $values eq 'ARRAY'
+    ;
+  return $hashref;
 }
 
 #-------------------------------------------------------------------------------
@@ -424,13 +620,76 @@ sub splice_value
   my( $self, $path, $spliceArgs, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  splice @{$$hashref}, @$spliceArgs;
+  if( ref $hashref and ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
+  {
+    my $off = shift @$spliceArgs;
+    my $len = shift @$spliceArgs;
+    if( defined $len )
+    {
+      splice @$$hashref, $off, $len, @$spliceArgs;
+    }
+    
+    else
+    {
+      splice @$$hashref, $off;
+    }
+    
+    $self->log( $self->C_DOC_MODTRACE
+              , [ 'splice_value', $path
+                , '[' . join( ', ', @$spliceArgs) . ']'
+                . (ref $startRef eq 'HASH' ? ' with hook' : '')
+                ]
+              );
+  }
+  
+  else
+  {
+    $self->log( $self->C_DOC_MODERR
+              , [ 'splice_value', "Result is not a reference"]
+              ) if !ref $hashref;
+  }
+  
+  return $hashref;
+}
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "push_value, '$path', @$spliceArgs "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
+#-------------------------------------------------------------------------------
+# Push values on the end of an array
+#
+sub splice_kvalue
+{
+  my( $self, $path, $key, $spliceArgs, $startRef) = @_;
+
+  my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  if( ref $hashref and ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
+  {
+    my $off = shift @$spliceArgs;
+    my $len = shift @$spliceArgs;
+    if( defined $len )
+    {
+      splice @$$hashref, $off, $len, @$spliceArgs;
+    }
+    
+    else
+    {
+      splice @$$hashref, $off;
+    }
+    
+    $self->log( $self->C_DOC_MODKTRACE
+              , [ 'splice_kvalue', $path, $key
+                , '[' . join( ', ', @$spliceArgs) . ']'
+                . (ref $startRef eq 'HASH' ? ' with hook' : '')
+                ]
+              );
+  }
+  
+  else
+  {
+    $self->log( $self->C_DOC_MODERR
+              , [ 'splice_kvalue', "Result is not a reference"]
+              ) if !ref $hashref;
+  }
+  
+  return $hashref;
 }
 
 #-------------------------------------------------------------------------------
