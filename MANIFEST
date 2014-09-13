@@ -26,24 +26,31 @@ lib/AppState/Plugins/Feature/ConfigManager.pm
 lib/AppState/Plugins/Feature/Log.pm
 lib/AppState/Plugins/Feature/NodeTree.pm
 lib/AppState/Plugins/Feature/PluginManager.pm
-lib/AppState/Plugins/Feature/Process.pm
+#lib/AppState/Plugins/Feature/Process.pm
 
-lib/AppState/Plugins/Process/MsgQueue.pm
+#lib/AppState/Plugins/Process/MsgQueue.pm
 
 lib/AppState.pm
 
 ################################################################################
 # Testing stuff
 ################################################################################
-# 000-099 Appstate
+# 000-099 Appstate basics
 #
+t/004-Constants.t
 t/005-Constants.t
-t/010-AppState.t
-t/011-AppState.t
+
+t/006-Status.t
+
+t/020-PluginManager.t
+
+t/070-AppState.t
+t/071-AppState.t
 
 # 100-199 Log module
 #
 t/100-Log.t
+t/101-Log.t
 
 # 300-399 Storage
 #
@@ -62,7 +69,7 @@ t/390-ConfigManager.t
 
 # 500-599 Process control
 #
-t/560-Process.t
+#t/560-Process.t
 
 # 700-799 Nodes and trees
 #
@@ -92,7 +99,7 @@ Changes-Documents
 Changes-Log
 Changes-NodeTree
 Changes-PluginManager
-Changes-Process
+#Changes-Process
 
 MANIFEST
 PerlCriticRc

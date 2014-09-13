@@ -47,6 +47,8 @@ $log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_logging;
 $log->log_level($self->M_TRACE);
+$log->add_tag($tagName);
+is( $log->get_log_tag(ref $self), '101', 'Log tag is 101');
 
 #-------------------------------------------------------------------------------
 # Check last error system
@@ -120,12 +122,6 @@ sub
   $log->add_subscriber( $tagName, $subscriber);
 
   $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
-  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
-  is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->is_warning, 'is warning');
-  ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
-
-  $self->wlog( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
   is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_warning, 'is warning');

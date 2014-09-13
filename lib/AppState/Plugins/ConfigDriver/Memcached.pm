@@ -79,7 +79,7 @@ sub
 
   else
   {
-    $self->wlog( "Data not retrieved", $self->C_CIO_CFGNOTREAD);
+    $self->log( $self->C_CIO_CFGNOTREAD, [$self->sha1ConfigFile]);
   }
 };
 
@@ -96,7 +96,8 @@ sub
   my $sts = $memd->set( $self->sha1ConfigFile
                       , (Encode::encode( 'UTF-8', $self->_config_text))
                       );
-  $self->wlog( "Error writing data", $self->C_CIO_CFGNOTWRITTEN) unless $sts;
+  $self->log( $self->C_CIO_CFGNOTWRITTEN, [$self->sha1ConfigFile, $sts])
+   unless $sts;
 };
 
 #-------------------------------------------------------------------------------

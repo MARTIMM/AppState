@@ -738,7 +738,7 @@ EOLEGEND
 # an optional array reference. If the call_level must be used and no values
 # are needed use an empty array ref [].
 #
-sub log
+sub wlog
 {
   my( $self, $error, $message_values, $call_level) = @_;
 

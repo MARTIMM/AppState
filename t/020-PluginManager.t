@@ -34,7 +34,7 @@ sub
                      );
   my $pnames = [$pm->get_plugin_names];
   ok( 'Log' ~~ $pnames, 'Plugin Log found');
-  ok( 'Process' ~~ $pnames, 'Plugin Process found');
+#  ok( 'Process' ~~ $pnames, 'Plugin Process found');
   ok( 'CommandLine' ~~ $pnames,  'Plugin CommandLine found');
   ok( 'NodeTree' ~~ $pnames,'Plugin NodeTree found');
   ok( 'PluginManager' ~~ $pnames, 'Plugin PluginManager found');

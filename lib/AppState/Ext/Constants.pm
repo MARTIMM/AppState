@@ -130,7 +130,7 @@ has C_LOG_INFO =>
 # operations. The calculated default can be anything but zero. When zero, the
 # constant is not created.
 #
-sub def_sts       ## no critic (RequireArgUnpacking)
+sub _def_sts       ## no critic (RequireArgUnpacking)
 {
   # Stack must be searched first
   #
@@ -186,7 +186,7 @@ sub def_sts       ## no critic (RequireArgUnpacking)
 
   else
   {
-    $self->wlog( "Module is immutable", $self->C_MODIMMUT);
+    $self->log($self->C_MODIMMUT);
   }
 
   return;
@@ -238,7 +238,7 @@ sub log_init
 # Only write to the log file when there is already a log object created by
 # the user. There may be only 2 arguments.
 #
-sub wlog
+sub _log
 {
   my( $self, $messages, $error_code, $call_level) = @_;
 
@@ -268,7 +268,7 @@ sub log
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-  $sts = $log->log( $error_code, $msg_values, $call_level + 1)
+  $sts = $log->wlog( $error_code, $msg_values, $call_level + 1)
     if ref $log eq 'AppState::Plugins::Feature::Log';
 
   return $sts;

@@ -64,7 +64,7 @@ ok( $size > 0, "AppState object size (1): $size");
 my @pns = sort $a->get_plugin_names;
 my $features = join( ' ', @pns);
 is( $features
-  , 'CommandLine ConfigManager Log NodeTree PluginManager Process'
+  , 'CommandLine ConfigManager Log NodeTree PluginManager'
   , 'Test list of plugins'
   );
 

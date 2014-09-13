@@ -7,29 +7,24 @@ use Moose;
 extends 'AppState::Ext::Constants';
 
 use AppState;
+use AppState::Ext::Meta_Constants;
+
+# Create a constant. Cannot be done after first instanciation but is tested.
+#
+def_sts( 'N',  'M_INFO', 'Message for constant N');
+
+# Create another constant.
+#
+def_sts( 'M', 'M_INFO', 'Message for constant M');
+
 
 #-------------------------------------------------------------------------------
 sub BUILD
 {
   my($self) = @_;
 
-  # Create a constant. Cannot be done after first instanciation but is tested.
-  #
-#  $self->set_code_count(hex('7b'));
-  $self->def_sts( 'N',  'M_INFO', 'Message for constant N');
   is( ref $self->can('N'), 'CODE', 'Constant N available');
-
-  # Create another constant.
-  #
-#  $self->set_code_count(hex('8b'));
-  $self->def_sts( 'M', 'M_INFO', 'Message for constant M');
   is( ref $self->can('M'), 'CODE', 'Constant M available');
-
-  $self->meta->make_immutable;
-
-  # Create another constant, should not be possible.
-  #
-  $self->def_sts( 'O', 'M_INFO');
   is( ref $self->can('O'), '', 'Constant O not available');
 
   $self->log_init('005');
@@ -38,6 +33,7 @@ sub BUILD
 #-------------------------------------------------------------------------------
 # Make object
 #
+__PACKAGE__->meta->make_immutable;
 my $self = main->new;
 isa_ok( $self, 'main');
 
@@ -45,11 +41,7 @@ isa_ok( $self, 'main');
 # Init
 #
 my $app = AppState->instance;
-$app->initialize( config_dir => 't/Constants'
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                );
-$app->check_directories;
+$app->initialize(config_dir => 't/Constants', check_directories => 1);
 
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
@@ -58,15 +50,13 @@ $log->do_flush_log(1);
 $log->start_logging;
 $log->log_level($app->M_TRACE);
 
-is( $log->get_log_tag(ref $self), '005', 'Check log tag');
-
 #-------------------------------------------------------------------------------
 subtest 'Constants test and set constant' =>
 sub
 {
   ok( $self->M_SUCCESS == 0x10000000, 'Check constant success = 0x10000000');
   ok( $self->N & $self->M_EVNTCODE, 'Check eventcode of value N');
-  is( $self->N, 'Message for constant N', 'Check text constant value N');
+  is( $self->N, 'N - Message for constant N', 'Check text constant value N');
 
   eval('$self->N(11);');
 
@@ -85,7 +75,7 @@ sub
 
   ok( $self->M_FAIL == 0x20000000, 'Check constant fail = 0x20000000');
   ok( $self->N & $self->M_EVNTCODE, 'Check evencode of value N');
-  is( $self->N, 'Message for constant N', 'Check text constant value N');
+  is( $self->N, 'N - Message for constant N', 'Check text constant value N');
 };
 
 #-------------------------------------------------------------------------------
@@ -97,7 +87,7 @@ sub
 
   ok( $self->M_SUCCESS == 0x10000000, 'Check constant success = 0x10000000');
   ok( $self->M & $self->M_EVNTCODE, 'Check evencode of value M');
-  is( $self->M, 'Message for constant M', 'Check text constant value M');
+  is( $self->M, 'M - Message for constant M', 'Check text constant value M');
 };
 
 #-------------------------------------------------------------------------------
