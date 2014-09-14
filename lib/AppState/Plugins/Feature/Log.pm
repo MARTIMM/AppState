@@ -34,7 +34,7 @@ def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
 def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
 def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "ackage '%s' already has a tag '%s'");
 def_sts( 'C_LOG_LLVLCHANGED', 'M_TRACE', "Log level changed from '%s' into '%s'");
-def_sts( 'C_LOG_SCREENLOG',   'M_TRACE', "Log to screen changed from '%s' into '%s'");
+def_sts( 'C_LOG_STDERRLOG',   'M_TRACE', "Log to stderr changed from '%s' into '%s'");
 def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
 def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
@@ -43,7 +43,7 @@ def_sts( 'C_LOG_LOGALRINIT',  'M_F_WARNING', 'Not changed, logger already initia
 # Constant codes
 #
 def_sts( 'C_LOG_LOGGERFILE',  'M_CODE', 'AppState::Plugins::Feature::Log::File');
-def_sts( 'C_LOG_LOGGERSCREEN','M_CODE', 'AppState::Plugins::Feature::Log::Screen');
+def_sts( 'C_LOG_LOGGERSTDERR','M_CODE', 'AppState::Plugins::Feature::Log::Stderr');
 
 #-------------------------------------------------------------------------------
 # Switch to append to an existing log or to start a fresh one
@@ -167,14 +167,14 @@ has stderr_log_level =>
         $o //= 0;
         return if $n == $o;
 
-        my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERSCREEN);
+        my $logger = $self->_get_logger('' . $self->C_LOG_LOGGERSTDERR);
         if( defined $logger )
         {
           my $log_level_name = $self->_get_log_level_name($n);
           $logger->level($log_level_name);
 
           my $o_str = $self->_get_log_level_name($o);
-          $self->log( $self->C_LOG_SCREENLOG, [ $o_str, $log_level_name]);
+          $self->log( $self->C_LOG_STDERRLOG, [ $o_str, $log_level_name]);
         }
       }
     );
@@ -397,7 +397,7 @@ sub BUILD
   };
 
   # Now we have initialized the sub above we can set the defaults for the
-  # log level and screen log.
+  # log level and stderr log.
   #
   $self->log_level($self->M_INFO);
   $self->stderr_log_level($self->M_FATAL);
@@ -514,23 +514,23 @@ sub _make_logger_objects
   $logger_file->level('ALL');
 
 
-  # Create logger for screen logging with its own output pattern
+  # Create logger for stderr logging with its own output pattern
   #
   $layout = Log::Log4perl::Layout::PatternLayout->new('%p{1}%m{chomp}%n');
-  $self->_set_layout('log.screen' => $layout);
+  $self->_set_layout('log.stderr' => $layout);
 
-  my $logger_screen = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERSCREEN);
-  $self->_set_logger('' . $self->C_LOG_LOGGERSCREEN => $logger_screen);
+  my $logger_stderr = Log::Log4perl->get_logger('' . $self->C_LOG_LOGGERSTDERR);
+  $self->_set_logger('' . $self->C_LOG_LOGGERSTDERR => $logger_stderr);
 
-  my $appender_screen = Log::Log4perl::Appender->new
+  my $appender_stderr = Log::Log4perl::Appender->new
                         ( "Log::Log4perl::Appender::ScreenColoredLevels"
-                        , name          => '' . $self->C_LOG_LOGGERSCREEN
+                        , name          => '' . $self->C_LOG_LOGGERSTDERR
                         , stderr        => 1
                         );
 
-  $appender_screen->layout($self->_get_layout('log.screen'));
-  $logger_screen->add_appender($appender_screen);
-  $logger_screen->level('FATAL');
+  $appender_stderr->layout($self->_get_layout('log.stderr'));
+  $logger_stderr->add_appender($appender_stderr);
+  $logger_stderr->level('FATAL');
 
 
   # Finish setup,
@@ -606,9 +606,9 @@ sub _log_message
 
   $self->_normal_log if $force_message;
 
-  # Send message to screen if stderr_log_level is set to the proper level.
+  # Send message to stderr if stderr_log_level is set to the proper level.
   #
-  $self->_get_logger('' . $self->C_LOG_LOGGERSCREEN)->$l4p_fnc_name($msg);
+  $self->_get_logger('' . $self->C_LOG_LOGGERSTDERR)->$l4p_fnc_name($msg);
 }
 
 #-------------------------------------------------------------------------------

@@ -328,8 +328,8 @@ Method start_logging() will somewhere turn C<logger_initialized> on.
 
 Get the loggers structure as a hash reference. There are two loggers defined
 called 'AppState::Plugins::Feature::Log::File' and
-'AppState::Plugins::Feature::Log::Screen' They are defined by code constants
-C_LOG_LOGGERFILE and C_LOG_LOGGERSCREEN.
+'AppState::Plugins::Feature::Log::Stderr' They are defined by code constants
+C_LOG_LOGGERFILE and C_LOG_LOGGERSTDERR.
 
 =head2 _set_layout($logger_name => $Log_Log4perl_logger)
 
@@ -358,7 +358,7 @@ defined and the purpose and keys are shown in a table.
   log.date      Show date            '%n----------%n%d{yyyy-MM-dd}%n----------%n'
   log.time      Show time and status '%d{HH:mm:ss} %p{1}%m{chomp}%n'
   log.millisec  Show msec and status '     %d{SSS} %p{1}%m{chomp}%n'
-  log.screen    Show log to stderr   '%p{1}%m{chomp}%n'
+  log.stderr    Show log to stderr   '%p{1}%m{chomp}%n'
 
 The message %m will always be <tag> <line number> <status codes> <log message>
 except for the start message which is kind of an explanation or legend. See
@@ -470,7 +470,7 @@ error status will kill the program unless die_on_fatal(0) is called first.
   C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
   C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
   C_LOG_LLVLCHANGED   M_TRACE      Log level changed
-  C_LOG_SCREENLOG     M_TRACE      Log to screen turned on or off
+  C_LOG_STDERRLOG     M_TRACE      Log level for stderr changed
   C_LOG_TAGADDED      M_INFO       Tag added for calling module
   C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
   C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
@@ -481,8 +481,8 @@ error status will kill the program unless die_on_fatal(0) is called first.
 
   C_LOG_LOGGERFILE                 The name used to set/get the file logger
                                    from Log::Log4perl.
-  C_LOG_LOGGERSCREEN               The name used to set/get the screen logger
-                                   from Log::Log4perl.
+  C_LOG_LOGGERSTDERR               The name used to set/get the screen logger
+                                   from Log::Log4perl.to send messages to stderr
 
 =head1 SEE ALSO
 

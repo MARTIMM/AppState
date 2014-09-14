@@ -122,7 +122,7 @@ sub
   isa_ok( $log->_get_logger($log->C_LOG_LOGGERFILE), 'Log::Log4perl::Logger');
   ok( $log->_nbr_layouts == 5, '5 Log::Log4perl layouts defined');
   is( join( ' ', sort $log->_get_layouts)
-    , 'log.date log.millisec log.screen log.startmsg log.time'
+    , 'log.date log.millisec log.startmsg log.stderr log.time'
     , 'Layout keys check'
     );
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
