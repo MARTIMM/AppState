@@ -41,6 +41,12 @@ object which can be checked later. Also the error can be send to clients who has
 subscribed for it. The core method is write_log(). The rest is just controlling
 the Log module. The module used to write log entries is Log::Log4perl.
 
+There are two loggers initialized. One for file output and one for stderr
+output. The catagories are 'AppState::Log::File' and 'AppState::Log::Stderr' 
+defined by constants $log->C_LOG_LOGGERFILE and $log->C_LOG_LOGGERSTDERR resp.
+The logger to write to the logfile can be controlled by do_append_log(),
+do_flush_log(), log_file(), log_file_size() and nbr_log_files().
+
 To prevent log messages which get too long because of long module names, 3
 letter tags are used for each module and can be set using add_tag(). The default
 will be '---' so it is nessesary to use that function before writing a log
@@ -49,24 +55,26 @@ will have '=LG' as its tag.
 
 An example of the logfile is shown here;
 
-  --------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
   Logging format can be one of the following 3 possibilities;
   1) date
   2) time severity_code tag line_number message
   3) msec severity_code tag line_number message
 
-  Milliseconds are shown when date and time are not changing between logs
+  Milliseconds are shown when date and time are not changing between log
+  entriess
 
-  Severity code is a 2 letter code.
-  First is I, W, E, T, D and F for info, warning, error, trace, debug or fatal
-  respectively. The second letter is s and f for success or failure respectively.
+  Severity code is a 2 letter code. First is I, W, E, T, D and F for info,
+  warning, error, trace, debug or fatal respectively. The second letter is
+  s and f for success or failure respectively.
 
-  Uppercase letters s and f mean that the log will be forced while
+  Uppercase letters s and f mean that the log entry would be forced while
   otherwise the setting of loglevel would prevent it.
 
-  A tag is a 3 letter code representing the logging module. This must be set by
-  the module by calling add_tag(). The tag is followed by a four digit line number.
-  --------------------------------------------------------------------------------
+  A tag is a 3 letter code representing the logging module. This must be
+  set by the module by calling add_tag(). The tag is followed by a four
+  digit line number.
+  ------------------------------------------------------------------------------
 
   ----------
   2014-08-10
@@ -125,17 +133,28 @@ current setting. The default will be the basename of the program with '.log'
 extention and is located in directory Appstate->instance->config_dir(). See
 L<AppState>.
 
+=head2 log_file_size($size)
+
+The maximum log file size is set by this method. When 0 or less than 0 it will
+not be used and will grow until the filesystem fills up. It will also not be
+used when appending was turned off.
+
+=head2 nbr_log_files($max_nbr_logfiles) When 0 or less than 0 or when
+appending was turned off this value will not be used.
+
+Set the maximum number of logfiles. 
+
 =head2 nbr_log_tags
 
-The number of tags set in the logging module.
+The number of tags set by using method add_tag().
 
 =head2 get_log_tag($module_name)
 
-Return the module tag string for the given module name.
+Return the 3 letter tag for the given module name.
 
 =head2 has_log_tag($module_name)
 
-Check to see if module has a tagname defined
+Check to see if a module has a tagname defined
 
 =head2 get_tag_modules
 
@@ -229,7 +248,8 @@ Get the package name from the last saved state object
 =head2 start_logging
 
 Start the log. From this moment the write_log will write to the log depending
-on the log level and if message is forced to be written.
+on the log level and if message is forced to be written. Methods do_append_log()
+and do_flush_log() must be called for changes before calling this method.
 
 =head2 stop_logging
 
@@ -237,7 +257,7 @@ Stop writing to the log.
 
 =head2 wlog( $error, $message_values, $call_level)
 
-Log will process the error as a dualvar created by Scalar::Util::dualvar. It
+Wlog() will process the error as a dualvar created by Scalar::Util::dualvar. It
 must hold a status code and a message. The message is a sprintf() string in
 which variables, whenever there are any, are substituted from $message_values.
 $message_values is an array reference. $call_level is used to denote the proper
@@ -248,13 +268,12 @@ creating the dualvar status values. The module AppState::Ext::Constants has a
 set of predefined codes defined.
 
 The function returns undef or when error is processed due to log level and what
-have you, it returns a status object of type AppState::Ext::Status. In many cases
-it might be stored in the Log module and can be queried later.
+have you, it returns a status object of type AppState::Ext::Status. In many
+cases it might be stored in the Log module and can be queried later.
 
 An example use is shown below. There are two status messages, one trace status
 and a fatal status. By default, fatal status messages will end the program after
-logging the message and showing the stack.
-
+logging the message and showing the stack on stderr.
 
   package MyMod
   {
@@ -264,18 +283,44 @@ logging the message and showing the stack.
     use AppState::Ext::Meta_Constants;
 
     def_sts( 'C_FILEOPENED', 'M_TRACE', 'File %s opened');
-    def_sts( 'C_PROGRAMFAILURE', 'M_FATAL', 'Failure, cannot continue');
+    def_sts( 'C_PROGRAMFAILURE', 'M_FATAL', 'Cannot open file %s, %s');
 
     sub open_file
     {
       my( $self, $filename) = @_;
 
       my $log = AppState->instance->get_app_object('Log');
-      open my $fh, '<', $filename or $log->log($self->C_PROGRAMFAILURE);
+      open my $fh, '<', $filename
+         or $log->log( $self->C_PROGRAMFAILURE, [ $filename, $!]);
       $log->log( $self->C_FILEOPENED, [$filename]);
-      ...
     }
   };
+
+  package main
+  {
+    use MyMod;
+    use AppState;
+
+    my $app = AppState->instance;
+    $app->initialize(check_directories =>1);
+
+    my $log = $app->get_app_object('Log');
+    $log->start_logging;
+    $log->log_level($app->M_TRACE);
+
+    $mm = MyMod->new;
+    $mm->open_file('non_existent_file.txt');
+
+    $app->cleanup;
+  };
+
+Output on stderr after the program was killed is something like;
+
+  Ff --- 0016 PROGRAMFAILURE - Cannot open file non_existent_file.txt, No such
+              file or directory
+               Stack dump;
+               0016 MyMod
+               0035 main
 
 
 =head1 PRIVATE METHODS
@@ -286,7 +331,11 @@ accident.
 
 =head2 _log_tag
 
-Return the hash reference of the module tags table.
+Return the hash reference of the module tags table. Cannot be written to. The
+method add_tag() will use _set_log_tag() to modify the hash.
+The keys in the hash are the names of the modules and their values are the 3
+letter tag used in the log output. The first entry is that of the log module;
+C<'AppState::Plugins::Feature::Log' => '=LG'>
 
 =head2 _set_log_tag( $module_name => $tag_name)
 
@@ -324,28 +373,30 @@ Check if logger is initialized.
 
 Method start_logging() will somewhere turn C<logger_initialized> on.
 
-=head2 _loggers
+=cut
 
-Get the loggers structure as a hash reference. There are two loggers defined
-called 'AppState::Plugins::Feature::Log::File' and
-'AppState::Plugins::Feature::Log::Stderr' They are defined by code constants
-C_LOG_LOGGERFILE and C_LOG_LOGGERSTDERR.
-
-=head2 _set_layout($logger_name => $Log_Log4perl_logger)
-
-Set the Log::Log4perl::Logger logger to the $logger_name.
-
-=head2 _get_logger($logger_name)
-
-Get the Log::Log4perl::Logger logger using the $logger_name.
-
-=head2 _nbr_loggers
-
-Get the number of defined loggers.
-
-=head2 _get_loggers
-
-Get all logger names.
+#=head2 _loggers
+#
+#Get the loggers structure as a hash reference. There are two loggers defined
+#called 'AppState::Plugins::Feature::Log::File' and
+#'AppState::Plugins::Feature::Log::Stderr' They are defined by code constants
+#C_LOG_LOGGERFILE and C_LOG_LOGGERSTDERR.
+#
+#=head2 _set_layout($logger_name => $Log_Log4perl_logger)
+#
+#Set the Log::Log4perl::Logger logger to the $logger_name.
+#
+#=head2 _get_logger($logger_name)
+#
+#Get the Log::Log4perl::Logger logger using the $logger_name.
+#
+#=head2 _nbr_loggers
+#
+#Get the number of defined loggers.
+#
+#=head2 _get_loggers
+#
+#Get all logger names.
 
 =head2 _logger_layouts
 
@@ -426,13 +477,14 @@ Cleaning up the module by stopping log output and deleting subscribers.
 
 =head2 _make_logger_objects
 
-Create the Log::Log4perl and its pattern layouts.
+Create the Log::Log4perl loggers, appenders and their pattern layouts.
 
 =head2 _log_data_line
 
-Write the date. When a start message is needed this will be written first.
+Write the date. When a start message is needed this will be written first. It
+uses the pattern log.startmsg, if needed, and the pattern log.date.
 
-=head2 _log_time_line( $msg, $forced)
+=head2 _log_time_line( $msg, $log_attr)
 
 Write the time and message depending on log level and if message is forced
 to be written.

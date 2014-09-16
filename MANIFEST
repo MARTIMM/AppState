@@ -37,6 +37,8 @@ lib/AppState.pm
 ################################################################################
 # 000-099 Appstate basics
 #
+t/001-Code-Tests.t
+
 t/004-Constants.t
 t/005-Constants.t
 

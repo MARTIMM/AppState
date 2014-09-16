@@ -1,6 +1,6 @@
-<map version="0.9.0">
+<map version="1.0.1">
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
-<node CREATED="1364292703431" ID="ID_1395924001" MODIFIED="1380920239902" TEXT="AppState Project">
+<node CREATED="1364292703431" ID="ID_1395924001" MODIFIED="1410861827389" TEXT="AppState Project">
 <richcontent TYPE="NOTE"><html>
   <head>
     
@@ -10,7 +10,8 @@
       Singleton Class
     </p>
   </body>
-</html></richcontent>
+</html>
+</richcontent>
 <font NAME="SansSerif" SIZE="12"/>
 <node CREATED="1364292719404" ID="ID_844350238" MODIFIED="1369509912778" POSITION="right" STYLE="fork" TEXT="Config">
 <font BOLD="true" NAME="SansSerif" SIZE="12"/>
@@ -67,6 +68,10 @@
 <node CREATED="1369509370065" ID="ID_133054655" MODIFIED="1369509405115" TEXT="repeated datestamps are removed">
 <icon BUILTIN="button_ok"/>
 </node>
+<node CREATED="1410861691671" ID="ID_837661278" MODIFIED="1410861704690" TEXT="remove wrapping"/>
+<node CREATED="1410861705194" ID="ID_401456658" MODIFIED="1410861726476" TEXT="one logger">
+<node CREATED="1410861730531" ID="ID_28098512" MODIFIED="1410861739315" TEXT="more appenders"/>
+</node>
 </node>
 <node CREATED="1364292732899" ID="ID_359999170" MODIFIED="1365096606935" POSITION="right" TEXT="Process">
 <font BOLD="true" NAME="SansSerif" SIZE="12"/>
@@ -87,6 +92,7 @@
 </node>
 </node>
 <node CREATED="1373314853785" ID="ID_1153607433" MODIFIED="1380910189118" TEXT="Server">
+<linktarget COLOR="#b0b0b0" DESTINATION="ID_1153607433" ENDARROW="None" ENDINCLINATION="-24;-32;" ID="Arrow_ID_448214634" SOURCE="ID_758668380" STARTARROW="Default" STARTINCLINATION="15;60;"/>
 <node CREATED="1373314919115" ID="ID_1944826644" MODIFIED="1373314945720" TEXT="Local">
 <node CREATED="1364292835572" ID="ID_1123313746" MODIFIED="1365583611548" TEXT="dbus">
 <icon BUILTIN="full-1"/>
@@ -116,6 +122,7 @@
 <node CREATED="1373228638058" ID="ID_1872678956" MODIFIED="1380910992077" TEXT="Roles">
 <font NAME="SansSerif" SIZE="12"/>
 <node CREATED="1373228658381" ID="ID_300258738" MODIFIED="1380910239403" TEXT="ConfigIO">
+<linktarget COLOR="#b0b0b0" DESTINATION="ID_300258738" ENDARROW="Default" ENDINCLINATION="25;-269;" ID="Arrow_ID_1886947829" SOURCE="ID_1434694420" STARTARROW="None" STARTINCLINATION="14;-183;"/>
 <font BOLD="true" NAME="SansSerif" SIZE="12"/>
 <icon BUILTIN="button_ok"/>
 </node>
