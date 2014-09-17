@@ -38,8 +38,8 @@ def_sts( 'C_LOG_LOGSTARTED',  'M_TRACE', "Logging started. File log level set to
 def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
 def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
 def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "Package '%s' already has a tag '%s'");
-def_sts( 'C_LOG_LLVLCHANGED', 'M_TRACE', "Log level changed from '%s' into '%s'");
-def_sts( 'C_LOG_STDERRLOG',   'M_TRACE', "Log level to stderr changed from '%s' into '%s'");
+def_sts( 'C_LOG_FILELOGLVL',  'M_TRACE', "Log level changed from '%s' into '%s'");
+def_sts( 'C_LOG_STDERRLOGLVL','M_TRACE', "Log level to stderr changed from '%s' into '%s'");
 def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
 def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
@@ -171,7 +171,7 @@ has log_level =>
           $logger->level($log_level_name);
 
           my $o_str = $self->_get_log_level_name($o);
-          $self->log( $self->C_LOG_LLVLCHANGED, [ $o_str, $log_level_name]);
+          $self->log( $self->C_LOG_FILELOGLVL, [ $o_str, $log_level_name]);
         }
       }
     );
@@ -194,7 +194,7 @@ has stderr_log_level =>
           $logger->level($log_level_name);
 
           my $o_str = $self->_get_log_level_name($o);
-          $self->log( $self->C_LOG_STDERRLOG, [ $o_str, $log_level_name]);
+          $self->log( $self->C_LOG_STDERRLOGLVL, [ $o_str, $log_level_name]);
         }
       }
     );

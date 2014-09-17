@@ -521,8 +521,8 @@ error status will kill the program unless die_on_fatal(0) is called first.
   C_LOG_LOGSTOPPED    M_TRACE      Logging stopped
   C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
   C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
-  C_LOG_LLVLCHANGED   M_TRACE      Log level changed
-  C_LOG_STDERRLOG     M_TRACE      Log level for stderr changed
+  C_LOG_FILELOGLVL    M_TRACE      Log level for file logging changed
+  C_LOG_STDERRLOGLVL  M_TRACE      Log level for stderr changed
   C_LOG_TAGADDED      M_INFO       Tag added for calling module
   C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
   C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
