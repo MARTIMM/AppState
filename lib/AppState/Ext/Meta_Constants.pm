@@ -71,7 +71,9 @@ sub def_sts
 sub cmp_levels
 {
   my( $error1, $error2) = @_;
-  return ($error1 & $_aes->M_LEVELMSK) <=> ($error2 & $_aes->M_LEVELMSK);
+
+  my $lvl_msk = $_aes->M_LEVELMSK;
+  return ($error1 & $lvl_msk) <=> ($error2 & $lvl_msk);
 }
 
 #-------------------------------------------------------------------------------

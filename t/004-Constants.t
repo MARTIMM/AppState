@@ -48,7 +48,7 @@ $log->die_on_fatal(0);
 $log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_logging;
-$log->log_level($app->M_TRACE);
+$log->file_log_level($app->M_TRACE);
 
 #-------------------------------------------------------------------------------
 subtest 'Constants test and set constant' =>

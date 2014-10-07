@@ -23,7 +23,7 @@ $log->start_logging;
 
 # Some tests are dealing with success stories
 #
-$log->log_level($app->M_TRACE);
+$log->file_log_level($app->M_TRACE);
 $log->add_tag('390');
 
 #-------------------------------------------------------------------------------

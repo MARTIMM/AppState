@@ -16,7 +16,7 @@ $app->check_directories;
 
 my $log = $app->get_app_object('Log');
 $log->start_logging;
-$log->log_level($app->M_TRACE);
+$log->file_log_level($app->M_TRACE);
 #$log->stderr_log_level($app->M_TRACE);
 
 $log->add_tag('320');

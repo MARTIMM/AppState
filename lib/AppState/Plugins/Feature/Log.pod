@@ -41,10 +41,10 @@ object which can be checked later. Also the error can be send to clients who has
 subscribed for it. The core method is write_log(). The rest is just controlling
 the Log module. The module used to write log entries is Log::Log4perl.
 
-There are two loggers initialized. One for file output and one for stderr
-output. The catagories are 'AppState::Log::File' and 'AppState::Log::Stderr' 
-defined by constants $log->C_LOG_LOGGERFILE and $log->C_LOG_LOGGERSTDERR resp.
-The logger to write to the logfile can be controlled by do_append_log(),
+There are three root loggers. These are for logging to file, email and for
+stderr output. Their catagories are 'A_File', 'A_Email' and 'A_Stderr'  defined
+by constants $log->ROOT_FILE and $log->ROOT_STDERR resp. The
+logger to write to the logfile can be controlled by do_append_log(),
 do_flush_log(), log_file(), log_file_size() and nbr_log_files().
 
 To prevent log messages which get too long because of long module names, 3
@@ -164,19 +164,7 @@ Get the registered modulenames which have a tag defined.
 
 Get the registered tag names
 
-=head2 log_level($log_level)
-
-Set the log level. The levels are like those used by Log::Log4perl and
-are defined in AppState::Ext::Constants. These are methods and named
-M_TRACE, M_DEBUG, M_INFO, M_WARN, M_WARNING, M_ERROR and M_FATAL in increasing
-order. M_WARN and M_WARNING return the same codes. Every log entry is compared
-to this log level and errors having lower status will not get logged. There
-are some more rules but see write_log() for more information. Default is set to
-M_INFO.
-
-=head2 stderr_log_level($log_level)
-
-Same purpose as log_level but is for logging to standard error output. Default
+Same purpose as log_level but is for logging to email error output. Default
 is set to M_FATAL.
 
 =head2 die_on_error($bool)
@@ -244,6 +232,41 @@ Get the filename from the last saved state object
 =head2 get_sender_package
 
 Get the package name from the last saved state object
+
+=head2 file_log_level($log_level)
+
+Set the log level. The levels are like those used by Log::Log4perl and
+are defined in AppState::Ext::Constants. These are methods and named
+M_TRACE, M_DEBUG, M_INFO, M_WARN, M_WARNING, M_ERROR and M_FATAL in increasing
+order. M_WARN and M_WARNING return the same codes. Every log entry is compared
+to this log level and errors having lower status will not get logged. There
+are some more rules but see write_log() for more information. Default is set to
+M_INFO.
+
+Instead of a log level value, one can give a hash with two keys. One for the
+level and one for the package. This is used to set a level on behalf of another 
+module. It is nessesary that the module must be prefixed with the root loggers
+name. Example is $log->ROOT_FILE . "::Foo::Bar". To change the root
+loggers level one can use the string 'root' instead of $log->ROOT_FILE.
+
+Example;
+
+  # Set root logger logging level to fatal only
+  #
+  $log->file_log_level( { level => $log->M_FATAL, package => 'root'});
+
+  # Set current module logging level to info so for this module all messages
+  # are shown except trace and debug.
+  #
+  $log->file_log_level($log->M_INFO);
+
+
+=head2 stderr_log_level($log_level)
+
+Same purpose as log_level but is for logging to standard error output. Default
+level for root logger is set to M_FATAL.
+
+=head2 email_log_level($log_level)
 
 =head2 start_logging
 
@@ -337,6 +360,23 @@ The keys in the hash are the names of the modules and their values are the 3
 letter tag used in the log output. The first entry is that of the log module;
 C<'AppState::Plugins::Feature::Log' => '=LG'>
 
+=head2 _log_levels
+
+A readonly hash ref to store logger levels. The keys are the modulenames
+prefixed with the rootpath of one of the root loggers. The values are the levels
+found in AppState::Ext::Constants. Examples are $self->M_INFO and $self->M_FATAL
+
+=head2 _set_log_lvl
+
+=head2 _get_log_lvl
+
+=head2 _get_log_lvls
+
+=head2 _clr_log_lvls
+
+=head2 _nbr_log_lvls
+
+
 =head2 _set_log_tag( $module_name => $tag_name)
 
 Method to set the modules tagname.
@@ -372,31 +412,6 @@ Check if logger is initialized.
 =head2 _set_logger_initialized
 
 Method start_logging() will somewhere turn C<logger_initialized> on.
-
-=cut
-
-#=head2 _loggers
-#
-#Get the loggers structure as a hash reference. There are two loggers defined
-#called 'AppState::Plugins::Feature::Log::File' and
-#'AppState::Plugins::Feature::Log::Stderr' They are defined by code constants
-#C_LOG_LOGGERFILE and C_LOG_LOGGERSTDERR.
-#
-#=head2 _set_layout($logger_name => $Log_Log4perl_logger)
-#
-#Set the Log::Log4perl::Logger logger to the $logger_name.
-#
-#=head2 _get_logger($logger_name)
-#
-#Get the Log::Log4perl::Logger logger using the $logger_name.
-#
-#=head2 _nbr_loggers
-#
-#Get the number of defined loggers.
-#
-#=head2 _get_loggers
-#
-#Get all logger names.
 
 =head2 _logger_layouts
 
@@ -479,6 +494,8 @@ Cleaning up the module by stopping log output and deleting subscribers.
 
 Create the Log::Log4perl loggers, appenders and their pattern layouts.
 
+=head2 _create_stderr_root_logger
+
 =head2 _log_data_line
 
 Write the date. When a start message is needed this will be written first. It
@@ -521,20 +538,23 @@ error status will kill the program unless die_on_fatal(0) is called first.
   C_LOG_LOGSTOPPED    M_TRACE      Logging stopped
   C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
   C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
-  C_LOG_FILELOGLVL    M_TRACE      Log level for file logging changed
-  C_LOG_STDERRLOGLVL  M_TRACE      Log level for stderr changed
+  C_LOG_LOGGERLVL     M_TRACE      Level for some logger changed
   C_LOG_TAGADDED      M_INFO       Tag added for calling module
   C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
   C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
   C_LOG_LOGALRINIT    M_F_WARNING  Log already initialized. Happens with append,
                                    flush and hide message legend changes.
+  C_LOG_ILLLEVELCD    M_F_ERROR    Illegal logger level
+
 
 =head1 PROGRAM CODES
 
-  C_LOG_LOGGERFILE                 The name used to set/get the file logger
-                                   from Log::Log4perl.
-  C_LOG_LOGGERSTDERR               The name used to set/get the screen logger
-                                   from Log::Log4perl.to send messages to stderr
+  ROOT_FILE            The name used to set/get the root logger for file logging
+                       from Log::Log4perl.
+  ROOT_STDERR          The name used to set/get the root logger from
+                       Log::Log4perl.to send messages to stderr.
+  ROOT_EMAIL           The name used to set/get the root logger for email
+                       logging from Log::Log4perl.
 
 =head1 SEE ALSO
 

@@ -21,7 +21,7 @@ $app->check_directories;
 
 my $log = $app->get_app_object('Log');
 $log->start_logging;
-$log->log_level($log->M_ERROR);
+$log->file_log_level($log->M_ERROR);
 
 #-------------------------------------------------------------------------------
 # DOM and root

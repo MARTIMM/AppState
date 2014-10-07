@@ -53,6 +53,8 @@ t/071-AppState.t
 #
 t/100-Log.t
 t/101-Log.t
+t/102-Log.t
+t/103-Log.t
 
 # 300-399 Storage
 #

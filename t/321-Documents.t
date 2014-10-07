@@ -18,7 +18,7 @@ $app->initialize( config_dir => 't/Documents', check_directories => 1);
 my $log = $app->get_app_object('Log');
 $log->do_append_log(0);
 $log->start_logging;
-$log->log_level($app->M_TRACE);
+$log->file_log_level($app->M_TRACE);
 #$log->stderr_log_level($app->M_TRACE);
 $log->add_tag('320');
 

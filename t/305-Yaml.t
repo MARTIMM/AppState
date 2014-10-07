@@ -18,7 +18,7 @@ $as->initialize( config_dir => 't/Yaml'
 
 my $log = $as->get_app_object('Log');
 $log->start_logging;
-$log->log_level($as->M_ERROR);
+$log->file_log_level($as->M_ERROR);
 $log->add_tag('305');
 
 #-------------------------------------------------------------------------------

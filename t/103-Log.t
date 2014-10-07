@@ -1,3 +1,87 @@
+#-------------------------------------------------------------------------------
+package Foo
+{
+  use Modern::Perl;
+  use Test::Most;
+  use Moose;
+  extends 'AppState::Ext::Constants';
+
+  use AppState;
+  use AppState::Ext::Meta_Constants;
+  sub BUILD
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    $log->add_tag('Foo');
+  }
+
+  # Foo logger name testing
+  #
+  sub t0
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't0, Foo logger names' =>
+    sub
+    {
+      is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::Foo', 'Stderr logger name = A_Stderr::Foo');
+      is( $log->get_logger_name($log->ROOT_FILE), 'A_File::Foo', 'File logger name = A_File::Foo');
+      is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::Foo', 'Email logger name = A_Email::Foo');
+    };
+  }
+
+  # Foo log levels are from root level.
+  #
+  sub t1
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't1, Foo root level' =>
+    sub
+    {
+      is( $log->stderr_log_level, $log->M_FATAL, 'Stderr log level is FATAL from root');
+      is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
+      is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
+    };
+  }
+
+  # Still same as root level after change in main
+  #
+  sub t2
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't2, Foo root level' =>
+    sub
+    {
+      is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
+      is( $log->stderr_log_level, $log->M_FATAL, 'Stderr log level is FATAL from root');
+      is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
+
+      $log->file_log_level($log->M_WARN);
+      is( $log->file_log_level, $log->M_WARN, 'File log level changed, is now WARN');
+    };
+  }
+
+  sub x
+  {
+    my( $self, $main, $sts_texts) = @_;
+#say STDERR sprintf( "Running x() show STS2 = %08X", $main->STS2);
+    my $log = AppState->instance->get_app_object('Log');
+
+#say STDERR "Log 1: @$sts_texts";
+    my $count = 1;
+    foreach my $sts_text (@$sts_texts)
+    {
+      my $ecode = 'STS' . $count++;
+      $log->log( $main->$ecode, [ $main->$ecode, $sts_text]);
+#say STDERR "Log: $ecode, $main->$ecode, $sts_text";
+    }
+  }
+};
+
+#-------------------------------------------------------------------------------
+package Foo::Bar
+{
+};
+
+#-------------------------------------------------------------------------------
 # Testing module AppState/Config.pm
 #
 use Modern::Perl;
@@ -14,16 +98,25 @@ use AppState::Ext::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Make a few status messages
 #
-def_sts( qw( C_ERR_1 M_ERROR), 'Error 1, arg=%s');
-def_sts( qw( C_ERR_2 M_ERROR), 'Error 2, %d != %d');
-def_sts( qw( C_INF_1 M_INFO), 'Message Data=%02d.');
+my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+my $count = 1;
+foreach my $sts_text (@$sts_texts)
+{
+  def_sts( "STS$count", $sts_text, 'Status is %08X with %s severity');
+  $count++;
+}
+say STDERR "Log 1: @$sts_texts";
 
 #-------------------------------------------------------------------------------
 # Make object from main package.
 #
+has foo =>
+    ( is                => 'rw'
+    , isa               => 'Foo'
+    );
+
 __PACKAGE__->meta->make_immutable;
 my $self = main->new;
-isa_ok( $self, 'main');
 
 #-------------------------------------------------------------------------------
 # Init
@@ -36,48 +129,62 @@ $app->initialize( config_dir => $config_dir
                 , check_directories => 1
                 );
 
+$self->foo(Foo->new);
+
 #-------------------------------------------------------------------------------
 # Get log object
 #
-my $tagName = '101';
+my $tagName = '103';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
+
 $log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_logging;
-#$log->stderr_log_level($self->M_TRACE);
-$log->file_log_level($self->M_TRACE);
-$log->add_tag($tagName);
-is( $log->get_log_tag(ref $self), '101', 'Log tag is 101');
+
+#-------------------------------------------------------------------------------
+# Test for default rootlogger level values
+#
+subtest 'Test logger names' =>
+sub
+{
+  is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::main', 'Stderr logger name = A_Stderr::main');
+  is( $log->get_logger_name($log->ROOT_FILE), 'A_File::main', 'File logger name = A_File::main');
+  is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::main', 'Email logger name = A_Email::main');
+
+  $self->foo->t0;
+};
+
+subtest 'Test rootlogger levels' =>
+sub
+{
+  is( $log->stderr_log_level, $log->M_FATAL, 'Stderr log level is FATAL from root');
+  is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
+  is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
+
+  $self->foo->t1;
+  $log->file_log_level($self->M_INFO);
+  $self->foo->t2;
+};
+
+#-------------------------------------------------------------------------------
+
+  $log->stderr_log_level({ package => 'root', level => $self->M_TRACE});
+  $log->file_log_level($self->M_TRACE);
+  $log->add_tag($tagName);
 
 #-------------------------------------------------------------------------------
 # Check last error system
 #
-subtest 'last error tests' =>
+subtest 'Test sub packages tests' =>
 sub
 {
-  # Set level
-  #
-  $log->file_log_level($self->M_TRACE);
-
-  my $lineNbr = __LINE__;
-  my $sts = $log->write_log( 'This has gone ok ....', 0xAB | $app->M_INFO);
-  ok( !defined $sts, 'Info messages and lower should not return status objects');
-
-  ok( $log->is_last_success, 'Status is success');
-  ok( !$log->is_last_fail, 'Status is not a failure');
-  ok( !$log->is_last_forced, 'Message is not forced');
-  like( $log->get_last_message, qr/This has gone ok/, 'Info message');
-  ok( $log->get_last_error == (0xAB | $app->M_INFO), 'Check error code');
-  ok( $log->is_last_success, 'M_INFO is successfull');
-  ok( $log->get_last_eventcode == 0xAB, 'Event code is 0xAB');
-  ok( $log->get_sender_line_no == $lineNbr + 1, 'Check sender line number in file');
-  is( $log->get_sender_file, 't/101-Log.t', 'Check sender file name');
-  is( $log->get_sender_package, 'main', 'Check sender package name');
+  pass "Tests";
+  $self->foo->x( $self, $sts_texts);
 };
 
 $app->cleanup;
-File::Path::remove_tree($config_dir);
+#File::Path::remove_tree($config_dir);
 done_testing();
 exit(0);
 

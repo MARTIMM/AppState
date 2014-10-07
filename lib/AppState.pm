@@ -1,8 +1,7 @@
 package AppState;
 
 use Modern::Perl;
-use version; our $VERSION = qv('v0.4.17');
-#use 5.010001 ;
+use version; our $VERSION = qv('v0.4.18');
 use 5.10.1;
 
 use namespace::autoclean;
@@ -123,8 +122,6 @@ sub BUILD
   # the proper order to see to it that the new() function is not called
   # directly. Throw an exeption when the tests fail. This is maybe a costly
   # check but it will be once in the lifetime of the object.
-  # Also do not use '__PACKAGE__->meta->make_immutable;' at the end of the
-  # module.
   #
   # Class                               Calls
   # -----                               -----
@@ -132,21 +129,13 @@ sub BUILD
   # Class::Singleton                    AppState::_new_instance
   # <Some user classs>                  Class::Singleton::instance
   #
-  my $start = 0;
   my $found = 0;
-  my $count = 0;
   my $i = 0;
   my $callInfo = '';
   while( my( $p, $f, $l, $s) = caller($i++) )
   {
 #print  STDERR "X:  $p, $l, $s\n";
     if( $p eq 'Class::Singleton' and $s eq 'AppState::_new_instance' )
-    {
-      $start = 1;
-      $found = 1;
-    }
-
-    elsif( $p eq 'Class::Singleton' and $s eq 'AppState::_new_instance' )
     {
       $found = 1;
     }
@@ -158,7 +147,7 @@ sub BUILD
   }
 #print STDERR "\n";
 
-  $self->log( $self->C_APP_ILLAPPINIT, [$callInfo]) unless $start and $found;
+  $self->log( $self->C_APP_ILLAPPINIT, [$callInfo]) unless $found;
 
   return;
 }
@@ -184,35 +173,10 @@ sub initialize
 {
   my( $self, %o) = @_;
 
-  # Set tag of AppState
-  #
-  $self->log_init('=AP');
+#!!!!!!!! return if init
 
-  # Initialize plugin manager
-  #
-  if( !$self->nbr_plugins )
-  {
-    my $pm = $self->_plugin_manager;
-
-    # Prepare search of feature plugins
-    #
-    my $path = Cwd::realpath($INC{"AppState.pm"});
-    $path =~ s@/AppState.pm@@;
-
-    # Search for any modules
-    #
-    $pm->search_plugins( { base => $path
-                         , max_depth => 4
-                         , search_regex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
-                         , api_test => [ qw()]
-                         }
-                       );
-#say "Features: ";
-#$pm->list_plugin_names;
-#say "Keys: ", join( ', ', $pm->get_plugin_names);
-
-    $pm->initialize;
-  }
+  my $nbr_plugins = $self->nbr_plugins;
+  my $pm = $self->_plugin_manager;
 
   # Setup directory names
   #
@@ -225,7 +189,59 @@ sub initialize
 
   $self->cleanup_temp_dir($o{cleanup_temp_dir}) if defined $o{cleanup_temp_dir};
 
-  $self->check_directories if $o{check_directories};
+  if( $o{check_directories} )
+  {
+    # Check and create missing directories
+    #
+    $self->check_directories;
+
+if(0)
+{
+    if( !$nbr_plugins and $o{init_logging})
+    {
+      my $path = Cwd::realpath($INC{"AppState.pm"});
+      $path =~ s@/AppState.pm@@;
+
+      $pm->set_plugin
+           ( { base => $path
+             , modules => ['AppState/Plugins/Feature/Log']
+             , api_test => [qw()]
+             }
+           );
+    }
+}
+  }
+
+
+
+  # Set tag of AppState
+  #
+  $self->log_init('=AP');
+
+  # Initialize plugin manager if there where no plugins
+  #
+  if( !$nbr_plugins )
+  {
+    # Prepare search of feature plugins
+    #
+    my $path = Cwd::realpath($INC{"AppState.pm"});
+    $path =~ s@/AppState.pm@@;
+
+    # Search for any modules
+    #
+    $pm->search_plugins
+         ( { base => $path
+           , max_depth => 4
+           , search_regex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
+           , api_test => [qw()]
+           }
+         );
+#say "Features: ";
+#$pm->list_plugin_names;
+#say "Keys: ", join( ', ', $pm->get_plugin_names);
+
+    $pm->initialize;
+  }
 
   return;
 }
@@ -324,6 +340,7 @@ sub get_app_object
 
   if( !defined $object )
   {
+# Need logging now
     say STDERR 'Object not instantiated. Something went wrong';
     if( !$self->nbr_plugins )
     {

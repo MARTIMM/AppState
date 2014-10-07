@@ -27,7 +27,10 @@ sub
   isa_ok( $log, $log_modulename);
   $log->add_tag($tagName);
 
-  is( $log->C_LOG_LOGGERFILE, 'AppState::Log::File', 'Check loggername');
+  is( $log->ROOT_FILE, 'A_File', 'Check root file loggername');
+  is( $log->ROOT_STDERR, 'A_Stderr', 'Check root stderr loggername');
+  is( $log->ROOT_EMAIL, 'A_Email', 'Check root email loggername');
+
   ok( $log->do_append_log == 1, 'Append to log turned on');
   ok( $log->do_flush_log == 0, 'Flushing turned off');
   is( $log->log_file, '100-Log.log', 'Logfile is 100-Log.log');
@@ -47,8 +50,8 @@ sub
   ok( $log->get_tag_modules == 4, 'Package has 4 registered modules');
   is( join( ' ', sort $log->get_tag_names), '100 =AP =LG =PM', 'Tag names check');
 
-  ok( defined $log->log_level, 'Log level defined');
-  is( $log->log_level, $log->M_TRACE, 'Log level set to info');
+  ok( defined $log->file_log_level, 'Log level defined');
+  is( $log->file_log_level, $log->M_TRACE, 'Log level set to info');
 
   ok( defined $log->stderr_log_level, 'Standard error log level defined');
   is( $log->stderr_log_level, $log->M_FATAL, 'Standard log level set to fatal');
@@ -76,7 +79,7 @@ sub
 
   # We want to log all.
   #
-  $log->log_level($log->M_TRACE);
+  $log->file_log_level($log->M_TRACE);
 
   # Don't show stack dumps now
   #
@@ -133,6 +136,6 @@ sub
 #-------------------------------------------------------------------------------
 done_testing();
 $app->cleanup;
-File::Path::remove_tree($config_dir);
+#File::Path::remove_tree($config_dir);
 exit(0);
 

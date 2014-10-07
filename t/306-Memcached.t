@@ -19,7 +19,7 @@ $as->check_directories;
 
 my $log = $as->get_app_object('Log');
 $log->start_logging;
-$log->log_level($as->M_TRACE);
+$log->file_log_level($as->M_TRACE);
 $log->add_tag('306');
 
 #pass('Initialized');

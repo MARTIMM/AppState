@@ -34,6 +34,7 @@ def_sts( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
 def_sts( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');
 def_sts( 'C_PLG_FUNCSTUBFAIL', 'M_FATAL', 'Error evaluating function stub %s::%s. err: %s');
 def_sts( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
+def_sts( 'C_PLG_NOPLGOBJ',     'M_F_ERROR', 'No plugin object');
 
 # Object creation codes
 #
@@ -188,7 +189,7 @@ sub search_plugins
 #-------------------------------------------------------------------------------
 # Instead of search give the specific path names of the modules.
 #
-sub set_plugins
+sub set_plugin
 {
   my( $self, $set) = @_;
 
@@ -230,6 +231,27 @@ sub set_plugins
                                   }
                        );
     }
+  }
+}
+
+#-------------------------------------------------------------------------------
+# Provide the object for the plugin. Not yet shure if this method is for normal
+# use so keep private for the moment.
+#
+sub _set_plugin_object
+{
+  my( $self, $plugin_name, $plugin_object) = @_;
+
+  my $plugin = $self->get_plugin($plugin_name);
+  if( defined $plugin and ref $plugin_object )
+  {
+    $plugin->{object} = $plugin_object;
+  }
+
+  else
+  {
+    $self->log( $self->C_PLG_PLGNOTDEF, [$plugin_name]) unless defined $plugin;
+    $self->log( $self->C_PLG_NOPLGOBJ) unless ref $plugin_object;
   }
 }
 

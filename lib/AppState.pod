@@ -22,7 +22,7 @@ AppState - Module to give an application a base of utilities using plugins
   # Write a log message. For information about this plugin
   # see C<AppState::Plugins::Feature::Log>.
   #
-  $log->log_level($log->M_TRACE);
+  $log->file_log_level($log->M_TRACE);
   $log->write_log( "Hello World", 1 | $log->M_INFO);
   
   $app->cleanup;
@@ -30,14 +30,27 @@ AppState - Module to give an application a base of utilities using plugins
 
 =head1 DESCRIPTION
 
-This module can be used to setup basic facilities used in almost every program
-without too much thinking. The module on itself does not do much but is the
-portal to other modules via a plugin mechanism. The important thing is that the
-AppState module is a singleton. This means that whereever you need the module
-in the program the address of the object will be the same. Because of that
-the modules instanciated via AppState are also having the same address when
-their objects are retreived. This is the main usage point of the AppState set
-of modules. 
+This framework consists of a set of modules to provide basic facilities for a
+program. In the case of a program this can be a logging facility, a commandline
+parser and a configuration manager.
+
+This framework can be compared to e.g. a house which will always have a hall,
+kitchen, living rooms and a bedroom.
+
+Now there are plenty modules doing all this and this framework will use them too
+so there are no new inventions. The strong point of the framework is the way you
+can use the same objects for the subtasks anywhere in your program whithout the
+need for you to convert them into singletons.
+
+The AppState module on itself does not do much but is the portal to other
+modules via a plugin mechanism. The important thing is that the AppState module
+is a singleton. This means that whereever you need the object in the program the
+object will be the same. Because of that the modules instanciated
+via AppState are also having the same address when their objects are retreived.
+This is the main usage point of the AppState module.
+
+Beside this, there is another thing to mention. Your program needs a place where
+to locate log and configuration files.
 
 No plugin objects are instanciated when they are not used from AppState.
 

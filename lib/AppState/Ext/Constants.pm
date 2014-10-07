@@ -130,7 +130,8 @@ has C_LOG_INFO =>
 # operations. The calculated default can be anything but zero. When zero, the
 # constant is not created.
 #
-sub _def_sts       ## no critic (RequireArgUnpacking)
+# Obsolete
+sub XXdef_sts       ## no critic (RequireArgUnpacking)
 {
   # Stack must be searched first
   #

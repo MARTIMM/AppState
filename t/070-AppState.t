@@ -93,7 +93,7 @@ my $log = $app->get_app_object('Log');
 
 $log->do_append_log(0);
 $log->start_logging;
-$log->log_level($log->M_TRACE);
+$log->file_log_level($log->M_TRACE);
 my $tagName = '010';
 $log->add_tag($tagName);
 
