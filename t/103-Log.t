@@ -8,11 +8,22 @@ package Foo
 
   use AppState;
   use AppState::Ext::Meta_Constants;
+
+  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+  my $count = 1;
+  foreach my $sts_text (@$sts_texts)
+  {
+    def_sts( "FOO$count", $sts_text, 'Status is %08X with %s severity');
+    $count++;
+  }
+
   sub BUILD
   {
+    my( $self) = @_;
     my $log = AppState->instance->get_app_object('Log');
     $log->add_tag('Foo');
   }
+  __PACKAGE__->meta->make_immutable;
 
   # Foo logger name testing
   #
@@ -42,45 +53,117 @@ package Foo
     };
   }
 
-  # Still same as root level after change in main
+  # Test level change in Foo
   #
   sub t2
   {
     my $log = AppState->instance->get_app_object('Log');
-    subtest 't2, Foo root level' =>
+    subtest 't2, Foo level change' =>
     sub
     {
-      is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
-      is( $log->stderr_log_level, $log->M_FATAL, 'Stderr log level is FATAL from root');
-      is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
-
       $log->file_log_level($log->M_WARN);
       is( $log->file_log_level, $log->M_WARN, 'File log level changed, is now WARN');
     };
   }
 
-  sub x
+  sub log_all_log_levels
   {
-    my( $self, $main, $sts_texts) = @_;
-#say STDERR sprintf( "Running x() show STS2 = %08X", $main->STS2);
+    my( $self, $sts_texts) = @_;
     my $log = AppState->instance->get_app_object('Log');
 
-#say STDERR "Log 1: @$sts_texts";
     my $count = 1;
     foreach my $sts_text (@$sts_texts)
     {
-      my $ecode = 'STS' . $count++;
-      $log->log( $main->$ecode, [ $main->$ecode, $sts_text]);
-#say STDERR "Log: $ecode, $main->$ecode, $sts_text";
+      my $ecode = 'FOO' . $count++;
+      $log->log( $self->$ecode, [ $self->$ecode, $sts_text]);
     }
   }
 };
 
 #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 package Foo::Bar
 {
+  use Modern::Perl;
+  use Test::Most;
+  use Moose;
+  extends 'AppState::Ext::Constants';
+
+  use AppState;
+  use AppState::Ext::Meta_Constants;
+
+  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+  my $count = 1;
+  foreach my $sts_text (@$sts_texts)
+  {
+    def_sts( "BAR$count", $sts_text, 'Status is %08X with %s severity');
+    $count++;
+  }
+
+  sub BUILD
+  {
+    my( $self) = @_;
+    my $log = AppState->instance->get_app_object('Log');
+    $log->add_tag('Bar');
+  }
+  __PACKAGE__->meta->make_immutable;
+
+  # Bar logger name testing
+  #
+  sub t0
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't0, Foo::Bar logger names' =>
+    sub
+    {
+      is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::Foo::Bar', 'Stderr logger name = A_Stderr::Foo::Bar');
+      is( $log->get_logger_name($log->ROOT_FILE), 'A_File::Foo::Bar', 'File logger name = A_File::Foo::Bar');
+      is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::Foo::Bar', 'Email logger name = A_Email::Foo::Bar');
+    };
+  }
+
+  # Bar log levels are from root level and higher. WARN is set in Foo.
+  #
+  sub t1
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't1, Foo::Bar root level' =>
+    sub
+    {
+      is( $log->stderr_log_level, $log->M_FATAL, 'Stderr log level is FATAL from root');
+      is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
+      is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
+    };
+  }
+
+  # Test level change in Bar
+  #
+  sub t2
+  {
+    my $log = AppState->instance->get_app_object('Log');
+    subtest 't2, Foo::Bar level change' =>
+    sub
+    {
+      $log->file_log_level($log->M_ERROR);
+      is( $log->file_log_level, $log->M_ERROR, 'File log level changed, is now ERROR');
+    };
+  }
+
+  sub log_all_log_levels
+  {
+    my( $self, $sts_texts) = @_;
+    my $log = AppState->instance->get_app_object('Log');
+
+    my $count = 1;
+    foreach my $sts_text (@$sts_texts)
+    {
+      my $ecode = 'BAR' . $count++;
+      $log->log( $self->$ecode, [ $self->$ecode, $sts_text]);
+    }
+  }
 };
 
+#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 # Testing module AppState/Config.pm
 #
@@ -96,16 +179,15 @@ use AppState;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
-# Make a few status messages
+# Make a few status messages in main package
 #
 my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
 my $count = 1;
 foreach my $sts_text (@$sts_texts)
 {
-  def_sts( "STS$count", $sts_text, 'Status is %08X with %s severity');
+  def_sts( "MAIN$count", $sts_text, 'Status is %08X with %s severity');
   $count++;
 }
-say STDERR "Log 1: @$sts_texts";
 
 #-------------------------------------------------------------------------------
 # Make object from main package.
@@ -113,6 +195,14 @@ say STDERR "Log 1: @$sts_texts";
 has foo =>
     ( is                => 'rw'
     , isa               => 'Foo'
+    );
+
+#-------------------------------------------------------------------------------
+# Make object from main package.
+#
+has bar =>
+    ( is                => 'rw'
+    , isa               => 'Foo::Bar'
     );
 
 __PACKAGE__->meta->make_immutable;
@@ -123,13 +213,10 @@ my $self = main->new;
 #
 my $config_dir = 't/Log';
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                , check_directories => 1
-                );
+$app->initialize( config_dir => $config_dir, check_directories => 1);
 
 $self->foo(Foo->new);
+$self->bar(Foo::Bar->new);
 
 #-------------------------------------------------------------------------------
 # Get log object
@@ -137,10 +224,10 @@ $self->foo(Foo->new);
 my $tagName = '103';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-
 $log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_logging;
+$log->add_tag($tagName);
 
 #-------------------------------------------------------------------------------
 # Test for default rootlogger level values
@@ -152,9 +239,14 @@ sub
   is( $log->get_logger_name($log->ROOT_FILE), 'A_File::main', 'File logger name = A_File::main');
   is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::main', 'Email logger name = A_Email::main');
 
+  # Test logger names in Foo and Foo::Bar
+  #
   $self->foo->t0;
+  $self->bar->t0;
 };
 
+#-------------------------------------------------------------------------------
+#
 subtest 'Test rootlogger levels' =>
 sub
 {
@@ -162,31 +254,120 @@ sub
   is( $log->file_log_level, $log->M_TRACE, 'File log level is TRACE from root');
   is( $log->email_log_level, $log->M_FATAL, 'Email log level is FATAL from root');
 
+  # Test root logger levels in Foo, Change main logger level and check
+  # again in Foo and test change in Foo.
+  #
   $self->foo->t1;
+  $self->bar->t1;
   $log->file_log_level($self->M_INFO);
+  $self->foo->t1;
+  $self->bar->t1;
   $self->foo->t2;
+  $self->bar->t2;
 };
 
 #-------------------------------------------------------------------------------
-
-  $log->stderr_log_level({ package => 'root', level => $self->M_TRACE});
-  $log->file_log_level($self->M_TRACE);
-  $log->add_tag($tagName);
+# Change default stderr root level
+#
+#$log->stderr_log_level({ package => 'root', level => $self->M_TRACE});
 
 #-------------------------------------------------------------------------------
-# Check last error system
+# Check log messages from MAIN
 #
-subtest 'Test sub packages tests' =>
+subtest 'Log messages from MAIN' =>
 sub
 {
-  pass "Tests";
-  $self->foo->x( $self, $sts_texts);
+  $self->log_all_log_levels($sts_texts);
+
+  # file level for main was set to INFO above
+  #
+  &cunlike("Ts 103 \\d+ MAIN1 - Status is 10120... with M_TRACE severity");
+  &cunlike("Ds 103 \\d+ MAIN2 - Status is 10240... with M_DEBUG severity");
+  &clike("Is 103 \\d+ MAIN3 - Status is 11060... with M_INFO severity");
+  &clike("W- 103 \\d+ MAIN4 - Status is 02080... with M_WARN severity");
+  &clike("W- 103 \\d+ MAIN5 - Status is 02080... with M_WARNING severity");
+  &clike("Ef 103 \\d+ MAIN6 - Status is 240A0... with M_ERROR severity");
+  &clike("Ff 103 \\d+ MAIN7 - Status is 204C0... with M_FATAL severity");
 };
 
+#-------------------------------------------------------------------------------
+# Check log messages from Foo
+#
+subtest 'Log messages from Foo' =>
+sub
+{
+  $self->foo->log_all_log_levels($sts_texts);
+
+  # file level for FOO was set to WARN above
+  #
+  &cunlike("Ts Foo \\d+ FOO1 - Status is 10120... with M_TRACE severity");
+  &cunlike("Ds Foo \\d+ FOO2 - Status is 10240... with M_DEBUG severity");
+  &cunlike("Is Foo \\d+ FOO3 - Status is 11060... with M_INFO severity");
+  &clike("W- Foo \\d+ FOO4 - Status is 02080... with M_WARN severity");
+  &clike("W- Foo \\d+ FOO5 - Status is 02080... with M_WARNING severity");
+  &clike("Ef Foo \\d+ FOO6 - Status is 240A0... with M_ERROR severity");
+  &clike("Ff Foo \\d+ FOO7 - Status is 204C0... with M_FATAL severity");
+};
+
+#-------------------------------------------------------------------------------
+# Check log messages from Foo::Bar
+#
+subtest 'Log messages from Foo::Bar' =>
+sub
+{
+  $self->bar->log_all_log_levels($sts_texts);
+
+  # file level for Foo::Bar was set to Error above
+  #
+  &cunlike("Ts Bar \\d+ BAR1 - Status is 10120... with M_TRACE severity");
+  &cunlike("Ds Bar \\d+ BAR2 - Status is 10240... with M_DEBUG severity");
+  &cunlike("Is Bar \\d+ BAR3 - Status is 11060... with M_INFO severity");
+  &cunlike("W- Bar \\d+ BAR4 - Status is 02080... with M_WARN severity");
+  &cunlike("W- Bar \\d+ BAR5 - Status is 02080... with M_WARNING severity");
+  &clike("Ef Bar \\d+ BAR6 - Status is 240A0... with M_ERROR severity");
+  &clike("Ff Bar \\d+ BAR7 - Status is 204C0... with M_FATAL severity");
+};
+
+#-------------------------------------------------------------------------------
 $app->cleanup;
-#File::Path::remove_tree($config_dir);
+File::Path::remove_tree($config_dir);
 done_testing();
 exit(0);
+
+
+################################################################################
+#
+sub log_all_log_levels
+{
+  my( $self, $sts_texts) = @_;
+
+  my $log = AppState->instance->get_app_object('Log');
+
+  my $count = 1;
+  foreach my $sts_text (@$sts_texts)
+  {
+    my $ecode = 'MAIN' . $count++;
+    $log->log( $self->$ecode, [ $self->$ecode, $sts_text]);
+  }
+}
+
+################################################################################
+#
+sub clike
+{
+  my($test) = @_;
+#  diag("Test like: qr/$test/");
+  content_like( qr/103.*\.log$/, qr/$test/, $config_dir);
+}
+
+################################################################################
+#
+sub cunlike
+{
+  my($test) = @_;
+#  diag("Test unlike: qr/$test/");
+  content_unlike( qr/103.*\.log$/, qr/$test/, $config_dir);
+}
 
 __END__
 
