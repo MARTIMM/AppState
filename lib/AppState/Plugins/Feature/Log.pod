@@ -144,7 +144,7 @@ appending was turned off this value will not be used.
 
 Set the maximum number of logfiles. 
 
-=head2 nbr_log_tags
+=head2 nbr_log_tags()
 
 The number of tags set by using method add_tag().
 
@@ -156,11 +156,11 @@ Return the 3 letter tag for the given module name.
 
 Check to see if a module has a tagname defined
 
-=head2 get_tag_modules
+=head2 get_tag_modules()
 
 Get the registered modulenames which have a tag defined.
 
-=head2 get_tag_names
+=head2 get_tag_names()
 
 Get the registered tag names
 
@@ -352,15 +352,19 @@ This is documentation for me only! Everything can change at any point in the
 future and is only mentioned here to prevent users overwriting the methods by
 accident.
 
-=head2 _log_tag
+=head2 _log_tag()
 
-Return the hash reference of the module tags table. Cannot be written to. The
-method add_tag() will use _set_log_tag() to modify the hash.
-The keys in the hash are the names of the modules and their values are the 3
-letter tag used in the log output. The first entry is that of the log module;
+Return the hash reference of the module tags table. Readonly. The method
+add_tag() will use _set_log_tag() to modify the hash. The keys in the hash are
+the names of the modules and their values are the 3 letter tag used in the log
+output. The first entry is that of the log module;
 C<'AppState::Plugins::Feature::Log' => '=LG'>
 
-=head2 _log_levels
+=head2 _set_log_tag( $module => $tag)
+
+Set the tag(value) of a module(key).
+
+=head2 _log_levels()
 
 A readonly hash ref to store logger levels. The keys are the modulenames
 prefixed with the rootpath of one of the root loggers. The values are the levels
@@ -533,6 +537,8 @@ lower than the log_level(), they will still be processed. It is done because
 one can always see what the logger processes when logging is turned on. Fatal
 error status will kill the program unless die_on_fatal(0) is called first.
 
+  Status name         Severity     Note
+  
   C_LOG_LOGINIT       M_TRACE      Log initialized
   C_LOG_LOGSTARTED    M_TRACE      Logging started
   C_LOG_LOGSTOPPED    M_TRACE      Logging stopped
@@ -549,12 +555,14 @@ error status will kill the program unless die_on_fatal(0) is called first.
 
 =head1 PROGRAM CODES
 
-  ROOT_FILE            The name used to set/get the root logger for file logging
-                       from Log::Log4perl.
-  ROOT_STDERR          The name used to set/get the root logger from
-                       Log::Log4perl.to send messages to stderr.
-  ROOT_EMAIL           The name used to set/get the root logger for email
-                       logging from Log::Log4perl.
+  Code                Value        Note
+  
+  ROOT_FILE           A_File       The name used to set/get the root logger for
+                                   file logging from Log::Log4perl.
+  ROOT_STDERR         A_Stderr     The name used to set/get the root logger from
+                                   Log::Log4perl.to send messages to stderr.
+  ROOT_EMAIL          A_Email      The name used to set/get the root logger for
+                                   email logging from Log::Log4perl.
 
 =head1 SEE ALSO
 
