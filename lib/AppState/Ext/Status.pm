@@ -10,17 +10,18 @@ use namespace::autoclean;
 use Moose;
 extends qw(AppState::Ext::Constants);
 
-#use AppState::Ext::Meta_Constants ();
+use AppState::Ext::Meta_Constants ('def_sts');
+use Types::Standard qw(Dict Optional Int Str);
 
 #-------------------------------------------------------------------------------
 # Error codes
 #
-my %_c_Attr = (is => 'ro', init_arg => undef, lazy => 1);
+#my %_c_Attr = ( is => 'ro', init_arg => undef, lazy => 1);
 
 #def_sts( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
 #has C_STS_INITOK        => ( default => $self->M_TRACE, %_c_Attr);
 
-#def_sts( 'C_STS_UNKNKEY', 'M_WARN');
+def_sts( 'C_STS_UNKNKEY', 'M_ERROR', 'Unknown/insufficient status information');
 #has C_STS_UNKNKEY       => ( default => $self->M_WARN, %_c_Attr);
 
 # Codes
@@ -46,6 +47,29 @@ has status =>
         , file          => ''
         , package       => ''
         };
+      }
+    , traits            => ['Hash']
+    , handles           =>
+      { _clear_status   => 'clear'
+      }
+    );
+
+# Type::Tiny structure to check the status attribute with using Type::Standard
+#
+has _status_types =>
+    ( is                => 'ro'
+    , isa               => 'Type::Tiny'
+    , default           =>
+      sub
+      {
+        return Dict
+        ( [ message       => Str
+          , error         => Int
+          , line          => Optional[Int]
+          , file          => Optional[Str]
+          , package       => Optional[Str]
+          ]
+        )
       }
     );
 
@@ -225,7 +249,7 @@ sub get_caller_info
 #
 sub get_line
 {
-  my( $self, $item) = @_;
+  my($self) = @_;
 
   return $self->status->{line} // 0;
 }
@@ -234,7 +258,7 @@ sub get_line
 #
 sub get_file
 {
-  my( $self, $item) = @_;
+  my($self) = @_;
 
   return $self->status->{file} // '';
 }
@@ -243,7 +267,7 @@ sub get_file
 #
 sub get_package
 {
-  my( $self, $item) = @_;
+  my($self) = @_;
 
   return $self->status->{package} // '';
 }
@@ -253,32 +277,30 @@ sub get_package
 #
 sub set_status
 {
-  my( $self, %status_fields) = @_;
-  my $sts = 0;
+  my( $self, $status_fields, $call_level) = @_;
 
-  foreach my $sts_key (keys %status_fields)
-  {
-    if( $sts_key !~ m/^(error|message|line|file|package|call_level)$/ )
-    {
-      # If anything goes wrong set the object with our own message and error
-      #
-      $self->set_error($self->M_ERROR | 2);
-      $self->set_message("Unknown key '$sts_key' to set status fields");
-      $self->set_caller_info(0);
-      $sts = 1;
-      last;
-    }
-  }
+  my $sts = 0;
+  $self->_clear_status;
 
   # If everything was set right then set the data. If a field call_level was
   # used then ignore the line, file and package info and get that info from
   # set_caller_info().
   #
-  if( !$sts )
+  if( $self->_status_types()->check($status_fields) )
   {
-    my $cl = delete $status_fields{call_level};
-    $self->_status(\%status_fields);
-    $self->set_caller_info($cl+1) if defined $cl;
+    $self->_status($status_fields);
+    $self->set_caller_info($call_level+1) if defined $call_level;
+  }
+
+  else
+  {
+#say STDERR "X: ", join( ', ', map { "$_ => '$status_fields->{$_}'"} (sort keys %$status_fields));
+    # If anything goes wrong set the object with our own message and error
+    #
+    $self->set_error(0 + $self->C_STS_UNKNKEY);
+    $self->set_message('' . $self->C_STS_UNKNKEY);
+    $self->set_caller_info(1);
+    $sts = $self;
   }
 
   # Return 0 on success

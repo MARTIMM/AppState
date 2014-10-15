@@ -136,6 +136,6 @@ sub
 #-------------------------------------------------------------------------------
 done_testing();
 $app->cleanup;
-#File::Path::remove_tree($config_dir);
+File::Path::remove_tree($config_dir);
 exit(0);
 

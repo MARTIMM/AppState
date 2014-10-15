@@ -934,11 +934,12 @@ sub write_log
   # Make the status object to be returned later.
   #
   my $status = AppState::Ext::Status->new;
-  $status->set_status( error     => $error
-                     , message   => $message
-                     , line      => $l
-                     , file      => $f
-                     , package   => $package
+  $status->set_status( { error     => 0 + $error    # if dualvar add 0 to get int
+                       , message   => '' . $message # if dualvar concat '' to get str
+                       , line      => $l
+                       , file      => $f
+                       , package   => $package
+                       }
                      );
   # Notification to subscribed users only when status is worse than M_INFO
   #

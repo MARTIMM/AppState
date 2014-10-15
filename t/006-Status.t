@@ -55,7 +55,6 @@ sub
   ok( $sts->is_forced, 'is forced');
 
   ok( $sts->get_eventcode == 24, 'event code is 24');
-
   is( $sts->get_message, 'test of', 'message still the same');
 
 # -- Keep this line below for the test!!
@@ -75,6 +74,10 @@ sub
   ok( $sts->is_success, 'is successfull');
   ok( !$sts->is_warning, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
+  is( $sts->get_message, 'State object initialized ok', 'init message');
+  like( $sts->get_file, qr/Status\.pm/, 'Status.pm');
+  is( $sts->get_package, 'AppState::Ext::Status', 'Status package');
+  is( $sts->get_line('line'), 352, 'Line 352');
 };
 
 #-------------------------------------------------------------------------------
@@ -85,13 +88,14 @@ sub
   #
 # -- Keep this line below for the test!!
 # line 52000 "test-file2.pm"
-  $sts->set_status( message => 'test 2'
-                  , error => $sts->M_DEBUG | 27
-                  , line => __LINE__
-                  , file => __FILE__
-                  , package => __PACKAGE__
+  $sts->set_status( { message => 'test 2'
+                    , error => $sts->M_DEBUG | 27
+                    , line => __LINE__                  # this is line 52002
+                    , file => __FILE__
+                    , package => __PACKAGE__
+                    }
                   );
-# line 90 "006-Status.t"
+# line 95 "006-Status.t"
 
   # Test them
   #
@@ -111,22 +115,41 @@ sub
   is( $sts->get_message, 'test 2', 'message test 2');
 
   like( $sts->get_file('file'), qr/test-file2.pm/, 'File test-file2.pm');
-  ok( $sts->get_line('line') == 52002, 'Line 52002');
+  is( $sts->get_line('line'), 52002, 'Line 52002');
   is( $sts->get_package('package'), 'main', 'Package main');
+};
+
+#-------------------------------------------------------------------------------
+subtest 'Failing fill of status object using set_status()' =>
+sub
+{
+  # Too little information for set_status
+  #
+  my $s = $sts->set_status( { message => 'test 3'});
+
+  is( ref $s, 'AppState::Ext::Status', 'Should be set_status error');
+  ok( $s->is_error, 'is an error');
+  is( $s->get_message, 'UNKNKEY - Unknown/insufficient status information', 'error message');
 };
 
 #-------------------------------------------------------------------------------
 subtest 'Fill object using set_status() and call_level' =>
 sub
 {
-  # Set code and status
+  # File, line and package keywords are optional. Without using call_level
+  # they will not be set.
   #
 # -- Keep this line below for the test!!
 # line 53000 "test-file3.pm"
-  $sts->set_status( message => 'test 3'
+  my $s = $sts->set_status
+                ( { message => 'test 3'
                   , error => $sts->M_F_TRACE | 28
-                  , call_level => 0
-                  );
+                  , line => __LINE__                 # this is line 52003
+                  , package => __PACKAGE__
+                  }
+                );
+
+  is( ref $s, '', 'Should be no set_status error');
 
   # Test them
   #
@@ -141,13 +164,26 @@ sub
   ok( !$sts->is_fatal, 'is not fatal');
   ok( $sts->is_forced, 'is forced');
 
-  ok( $sts->get_eventcode == 28, 'second event code is 24');
+  ok( $sts->get_eventcode == 28, 'second event code is 28');
 
   is( $sts->get_message, 'test 3', 'message test 3');
 
-  like( $sts->get_file('file'), qr/test-file3.pm/, 'File test-file3.pm');
-  ok( $sts->get_line('line') == 53000, 'Line 53000');
-  is( $sts->get_package('package'), 'main', 'Package main');
+  is( $sts->get_file, '', 'File test-file3.pm');
+  ok( $sts->get_line == 53003, 'Line 53003');
+  is( $sts->get_package, 'main', 'Package main');
+
+
+  # Now call with call_level == 0
+  #
+  my $s = $sts->set_status( { message => 'test 3'
+                            , error => $sts->M_F_TRACE | 28
+                            }
+                          , 0
+                          );
+  like( $sts->get_file, qr/test-file3.pm/, 'File test-file3.pm');
+  is( $sts->get_line, 53034, 'Line 53034');
+  is( $sts->get_package, 'main', 'Package main');
+
 };
 
 #-------------------------------------------------------------------------------
