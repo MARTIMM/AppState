@@ -2,7 +2,7 @@ package AppState::Ext::Status;
 
 use Modern::Perl;
 
-use version; our $VERSION = version->parse('v0.0.3');
+use version; our $VERSION = version->parse('v0.0.4');
 use 5.010001;
 
 use namespace::autoclean;
@@ -16,17 +16,7 @@ use Types::Standard qw(Dict Optional Int Str);
 #-------------------------------------------------------------------------------
 # Error codes
 #
-#my %_c_Attr = ( is => 'ro', init_arg => undef, lazy => 1);
-
-#def_sts( 'C_STS_INITOK', 'M_TRACE', 'State object initialized ok');
-#has C_STS_INITOK        => ( default => $self->M_TRACE, %_c_Attr);
-
 def_sts( 'C_STS_UNKNKEY', 'M_ERROR', 'Unknown/insufficient status information');
-#has C_STS_UNKNKEY       => ( default => $self->M_WARN, %_c_Attr);
-
-# Codes
-#
-#    def_sts( 'C_STS_', 0);
 
 #-------------------------------------------------------------------------------
 # Error codes for Constants module. The error code can be a dualvar which if so

@@ -77,7 +77,10 @@ sub
   is( $sts->get_message, 'State object initialized ok', 'init message');
   like( $sts->get_file, qr/Status\.pm/, 'Status.pm');
   is( $sts->get_package, 'AppState::Ext::Status', 'Status package');
-  is( $sts->get_line('line'), 352, 'Line 352');
+
+#  is( $sts->get_line('line'), 352, 'Line 352');
+# There is a line number but changes everytime when maintaining Status.pm
+
 };
 
 #-------------------------------------------------------------------------------
@@ -175,11 +178,11 @@ sub
 
   # Now call with call_level == 0
   #
-  my $s = $sts->set_status( { message => 'test 3'
-                            , error => $sts->M_F_TRACE | 28
-                            }
-                          , 0
-                          );
+  $s = $sts->set_status( { message => 'test 3'
+                         , error => $sts->M_F_TRACE | 28
+                         }
+                       , 0
+                       );
   like( $sts->get_file, qr/test-file3.pm/, 'File test-file3.pm');
   is( $sts->get_line, 53034, 'Line 53034');
   is( $sts->get_package, 'main', 'Package main');
