@@ -59,9 +59,12 @@ $log->write_log( "Modify default config object", 1|$log->M_INFO);
 
 # When dieonerr == 0
 $cfm->select_config_object('someConfigObject');
-is( $log->get_last_error
-  , $cfm->C_CFM_CFGNOTEXIST
-  , "config object name 'someConfigObject' should not exist"
+is( $log->get_last_error, 0 + $cfm->C_CFM_CFGNOTEXIST, "Error code 1");
+
+$cfm->select_config_object('someConfigObject');
+is( $log->get_last_message
+  , 'CFGNOTEXIST - Config someConfigObject not existent'
+  , "Error message 1"
   );
 
 #-------------------------------------------------------------------------------
@@ -82,9 +85,12 @@ my $configObjList = join( ' ', sort $cfm->get_config_object_names);
 is( $configObjList, 'ddump defaultConfigObject', "Check list of object names");
 
 $cfm->select_config_object('defaultConfigObject');
-is( $log->get_last_error
-  , $cfm->C_CFM_CFGSELECTED
-  , "config object name 'defaultConfigObject' selected"
+is( $log->get_last_error, 0 + $cfm->C_CFM_CFGSELECTED, "Error code 2");
+
+$cfm->select_config_object('defaultConfigObject');
+is( $log->get_last_message
+  , 'CFGSELECTED - Config defaultConfigObject selected'
+  , "Error message 2"
   );
 
 #-------------------------------------------------------------------------------
@@ -94,10 +100,10 @@ is( $cfm->nbr_documents, 0, "No documents");
 
 $log->write_log( "Add two documents", 1|$log->M_INFO);
 $cfm->add_documents( {}
-                  , [ qw(a b c d)
-                    , { abc => 'def', p => {def => 223}}
-                    ]
-                  );
+                   , [ qw(a b c d)
+                     , { abc => 'def', p => {def => 223}}
+                     ]
+                   );
 
 $log->write_log( "Overwrite first document", 1|$log->M_INFO);
 $cfm->set_document( undef, { pqr => 'xyz', def => 390});
@@ -170,16 +176,16 @@ $cfm->select_config_object('ddump');
 my $ddumpFilename = $cfm->config_file;
 
 $cfm->drop_config_object('ddump');
-is( $log->get_last_error, $cfm->C_CFM_CFGDROPPED, "Drop op ok");
+is( $log->get_last_error, 0 + $cfm->C_CFM_CFGDROPPED, "Drop op ok");
 
 ok( $cfm->has_config_object('ddump') == 0, "Config object ddump dropped");
 ok( -e $ddumpFilename, "File for config ddump still exist");
 
 $cfm->add_config_object( 'ddump', { store_type     => 'DataDumper'
-                                , location      => $cfm->C_CFF_WORKDIR
-                                , request_file   => 'myConfig'
-                                }
-                     );
+                                  , location      => $cfm->C_CFF_WORKDIR
+                                  , request_file   => 'myConfig'
+                                  }
+                       );
 $cfm->store_type('Yaml');
 unlink $cfm->config_file;
 
@@ -196,7 +202,7 @@ $log->write_log( "Testing copy documents from one file to the other", 1|$log->M_
 
 $cfm->select_config_object('defaultConfigObject');
 is( $log->get_last_error
-  , $cfm->C_CFM_CFGSELECTED
+  , 0 + $cfm->C_CFM_CFGSELECTED
   , "config object name 'defaultConfigObject' selected"
   );
 my $sizefn1 = -s $cfm->config_file;
@@ -205,7 +211,7 @@ my $documents = $cfm->get_documents;
 
 $cfm->select_config_object('ddump');
 is( $log->get_last_error
-  , $cfm->C_CFM_CFGSELECTED
+  , 0 + $cfm->C_CFM_CFGSELECTED
   , "config object name 'defaultConfigObject' selected"
   );
 $cfm->set_documents($documents);
@@ -241,7 +247,7 @@ my $filename = $f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;
 ok( -e $filename, "Storable config $f created");
 $cfm->remove_config_object('ddump');
-is( $log->get_last_error, $cfm->C_CFM_CFGFLREMOVED, "Remove op ok");
+is( $log->get_last_error, 0 + $cfm->C_CFM_CFGFLREMOVED, "Remove op ok");
 ok( !-e $filename, "Storable config will not exist anymore");
 
 #-------------------------------------------------------------------------------

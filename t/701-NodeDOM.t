@@ -5,6 +5,7 @@ use Test::Most;
 
 use AppState;
 use AppState::NodeTree::NodeDOM;
+use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -25,7 +26,7 @@ isa_ok( $nt0, 'AppState::NodeTree::NodeDOM');
 
 my $nt1 = AppState::NodeTree::NodeDOM->new;
 $nt0->link_with_node($nt1);
-is( $log->get_last_error, $nt0->C_NDM_NODENOTROOT, "Link went wrong");
+ok( $log->get_last_error == $nt0->C_NDM_NODENOTROOT, "Link went wrong");
 
 
 $nt0->search_nodes( { type => $nt0->C_NDM_CMP_NAME

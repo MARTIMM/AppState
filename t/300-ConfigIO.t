@@ -77,7 +77,10 @@ $self->_configFile($filename);
 $log->clear_last_error;
 $self->save($docs);
 
-is( $log->get_last_error, $self->C_CIO_CFGNOTWRITTEN, 'Save error, path is wrong');
+is( $log->get_last_error
+  , 0 + $self->C_CIO_CFGNOTWRITTEN
+  , 'Save error, path is wrong'
+  );
 
 # Change and try again
 #

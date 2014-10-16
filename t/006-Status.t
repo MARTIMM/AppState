@@ -183,6 +183,9 @@ sub
                          }
                        , 0
                        );
+
+  is( ref $s, '', 'Should be no set_status error');
+
   like( $sts->get_file, qr/test-file3.pm/, 'File test-file3.pm');
   is( $sts->get_line, 53034, 'Line 53034');
   is( $sts->get_package, 'main', 'Package main');

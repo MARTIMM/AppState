@@ -53,7 +53,7 @@ sub
 
   is( ref $d->get_document(2), '', 'Document 2 = undef');
   $d->select_document(2);
-  is( $log->get_last_error, $d->C_DOC_SELOUTRANGE, 'Check select failure');
+  is( $log->get_last_error, 0 + $d->C_DOC_SELOUTRANGE, 'Check select failure');
   is( $d->get_current_document, 0, 'Current document = 0');
   is( ref $d->get_document, 'HASH', 'Document 0 = HASH');
 

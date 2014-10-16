@@ -45,6 +45,9 @@ has status =>
     );
 
 # Type::Tiny structure to check the status attribute with using Type::Standard
+# Error, package and line must be given. Message and file can be omitted because
+# the message can be set in the error as a dualvar and file can be found
+# indirectly via package.
 #
 has _status_types =>
     ( is                => 'ro'
@@ -53,13 +56,13 @@ has _status_types =>
       sub
       {
         return Dict
-        ( [ message       => Str
-          , error         => Int
-          , line          => Optional[Int]
+        ( [ error         => Int
+          , package       => Str
+          , line          => Int
+          , message       => Optional[Str]
           , file          => Optional[Str]
-          , package       => Optional[Str]
           ]
-        )
+        );
       }
     );
 
@@ -217,7 +220,6 @@ sub set_caller_info
 
   $call_level //= 0;
   my( $p, $f, $l) = caller($call_level);
-#say "Caller: $p, $f, $l";
   $self->status->{line} = $l;
   $self->status->{file} = $f;
   $self->status->{package} = $p;
@@ -276,10 +278,18 @@ sub set_status
   # used then ignore the line, file and package info and get that info from
   # set_caller_info().
   #
+  if( defined $call_level )
+  {
+#    $self->set_caller_info($call_level+1);
+    my( $p, $f, $l) = caller($call_level);
+    $status_fields->{line} = $l;
+    $status_fields->{file} = $f;
+    $status_fields->{package} = $p;
+  }
+
   if( $self->_status_types()->check($status_fields) )
   {
     $self->_status($status_fields);
-    $self->set_caller_info($call_level+1) if defined $call_level;
   }
 
   else
