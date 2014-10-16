@@ -189,47 +189,47 @@ by a stack dump will always be wrapped.
 
 Control if a legend must be written at the start of the logfile. Default is 1.
 
-=head2 clear_last_error
+=head2 clear_last_error()
 
 Initialize to a successful state
 
-=head2 is_last_success
+=head2 is_last_success()
 
 Test if status is successful
 
-=head2 is_last_fail
+=head2 is_last_fail()
 
 Test if status is a failure
 
-=head2 is_last_forced
+=head2 is_last_forced()
 
 Test if status is forced
 
-=head2 get_last_message
+=head2 get_last_message()
 
 Get the message from the last saved state object
 
-=head2 get_last_error
+=head2 get_last_error()
 
 Get the error from the last saved state object
 
-=head2 get_last_severity
+=head2 get_last_severity()
 
 Get the severity from the last saved state object
 
-=head2 get_last_eventcode
+=head2 get_last_eventcode()
 
 Get the eventcode from the last saved state object
 
-=head2 get_sender_line_no
+=head2 get_sender_line_no()
 
 Get the line number from the last saved state object
 
-=head2 get_sender_file
+=head2 get_sender_file()
 
 Get the filename from the last saved state object
 
-=head2 get_sender_package
+=head2 get_sender_package()
 
 Get the package name from the last saved state object
 
@@ -268,13 +268,20 @@ level for root logger is set to M_FATAL.
 
 =head2 email_log_level($log_level)
 
-=head2 start_logging
+Same purpose as log_level but is for logging to standard error output. Default
+level for root logger is set to M_FATAL.
+
+=head2 plugin_cleanup()
+
+Cleaning up the module by stopping log output and deleting subscribers.
+
+=head2 start_logging()
 
 Start the log. From this moment the write_log will write to the log depending
 on the log level and if message is forced to be written. Methods do_append_log()
 and do_flush_log() must be called for changes before calling this method.
 
-=head2 stop_logging
+=head2 stop_logging()
 
 Stop writing to the log.
 
@@ -345,6 +352,19 @@ Output on stderr after the program was killed is something like;
                0016 MyMod
                0035 main
 
+=head2 write_log( $messages, $error, $call_level)
+
+Write messages to the log
+
+=head2 get_log_lvl($logger_name)
+
+Get the level set previously for a logger. When not set it searches a level
+higher until up to the root logger.
+
+=head2 add_tag( $tag, $call_level, $package)
+
+Add a 3 letter tag. By default the call_level is 0, that is the callers package
+will be used to link to the tag. It is possible to enter another package name.
 
 =head1 PRIVATE METHODS
 
@@ -360,9 +380,13 @@ the names of the modules and their values are the 3 letter tag used in the log
 output. The first entry is that of the log module;
 C<'AppState::Plugins::Feature::Log' => '=LG'>
 
-=head2 _set_log_tag( $module => $tag)
+=head2 _set_log_tag( $module => $tag, ...)
 
 Set the tag(value) of a module(key).
+
+=head2 $_test_levels
+
+Sub to test the level for the *_log_level() methods
 
 =head2 _log_levels()
 
@@ -370,54 +394,47 @@ A readonly hash ref to store logger levels. The keys are the modulenames
 prefixed with the rootpath of one of the root loggers. The values are the levels
 found in AppState::Ext::Constants. Examples are $self->M_INFO and $self->M_FATAL
 
-=head2 _set_log_lvl
+=head2 _set_log_lvl( $logger_name => $log_level, ...)
 
-=head2 _get_log_lvl
+Set new logging level for logger.
 
-=head2 _get_log_lvls
+=head2 _get_log_lvl($logger_name)
 
-=head2 _clr_log_lvls
+Get the log level for the logger
 
-=head2 _nbr_log_lvls
-
-
-=head2 _set_log_tag( $module_name => $tag_name)
-
-Method to set the modules tagname.
-
-=head2 _logging_is_forced
+=head2 _logging_is_forced()
 
 Check to see if error has a forced bit enabled.
 
-=head2 _force_log
+=head2 _force_log()
 
 Force logging of message independend of log_level
 
-=head2 _normal_log
+=head2 _normal_log()
 
 Logging is normal in respect to log_level. That is, not forced.
 
-=head2 _is_logging
+=head2 _is_logging()
 
 Check to see if logging is started or not.
 
-=head2 _logging_on
+=head2 _logging_on()
 
 Turn logging on. Done in start_logging().
 
-=head2 _logging_off
+=head2 _logging_off()
 
 Turn logging off. Done in stop_logging.
 
-=head2 _logger_initialized
+=head2 _logger_initialized()
 
 Check if logger is initialized.
 
-=head2 _set_logger_initialized
+=head2 _set_logger_initialized()
 
 Method start_logging() will somewhere turn C<logger_initialized> on.
 
-=head2 _logger_layouts
+=head2 _logger_layouts()
 
 Get the logger layouts structure as a hash reference. There are 4 logger layouts
 defined and the purpose and keys are shown in a table.
@@ -446,14 +463,6 @@ using a pattern also shown above in the table.
 
 Get the layout from the layout hash.
 
-=head2 _nbr_layouts
-
-Get the number of layouts
-
-=head2 _get_layouts
-
-Get all layout keys
-
 =head2 _previousMsg($msg)
 
 Save previous message. This is used to prevent repetion of the same message.
@@ -477,10 +486,11 @@ no log will be done.
 
 =head2 _lastError($status_object)
 
-Status object is saved here so the log object can be queried for its values.
-See also clear_last_error, is_last_success, is_last_fail, is_last_forced,
-get_last_message, get_last_error, get_last_severity, get_last_eventcode,
-get_sender_line_no, get_sender_file, get_sender_package
+Status object (AppState::Ext::Status) is saved here so the log object can be
+queried for its values. See also clear_last_error, is_last_success,
+is_last_fail, is_last_forced, get_last_message, get_last_error,
+get_last_severity, get_last_eventcode, get_sender_line_no, get_sender_file,
+get_sender_package
 
 =head2 BUILD
 
@@ -490,17 +500,13 @@ Moose build function to initialize after creating attributes.
 
 Cleanup before deleting the object
 
-=head2 plugin_cleanup
-
-Cleaning up the module by stopping log output and deleting subscribers.
-
-=head2 _make_logger_objects
+=head2 _make_logger_objects()
 
 Create the Log::Log4perl loggers, appenders and their pattern layouts.
 
-=head2 _create_stderr_root_logger
+=head2 _create_stderr_root_logger()
 
-=head2 _log_data_line
+=head2 _log_data_line()
 
 Write the date. When a start message is needed this will be written first. It
 uses the pattern log.startmsg, if needed, and the pattern log.date.
@@ -518,16 +524,21 @@ Write message depending on log level and if message is forced to be written.
 
 Convert the status from the mask into the name used by Log::Log4perl
 
-=head2 _get_log_level_function_name
+=head2 _get_log_level_function_name()
 
 Find Log::Log4perl log level function name from severity code in status object
 
-=head2 _get_start_msg
+=head2 _get_start_msg()
 
 Get the start message/legend
 
+=head2 _create_message
 
+Create the final string send to the logger.
 
+=head2 _get_stack($call_level)
+
+Return stack starting at call_level which is by default 0.
 
 
 =head1 STATUS CODES

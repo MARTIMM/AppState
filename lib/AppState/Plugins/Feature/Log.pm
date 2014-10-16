@@ -7,7 +7,7 @@ package AppState::Plugins::Feature::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
-use version; our $VERSION = '' . version->parse("v0.4.13");
+use version; our $VERSION = '' . version->parse("v0.4.14");
 
 use namespace::autoclean;
 
@@ -162,9 +162,6 @@ has _log_levels =>
     , handles           =>
       { _set_log_lvl    => 'set'
       , _get_log_lvl    => 'get'
-      , _get_log_lvls   => 'keys'
-      , _clr_log_lvls   => 'clear'
-      , _nbr_log_lvls   => 'count'
       }
     );
 
@@ -295,8 +292,6 @@ has _logger_layouts =>
     , handles           =>
       { _set_layout      => 'set'
       , _get_layout      => 'get'
-      , _nbr_layouts     => 'count'
-      , _get_layouts     => 'keys'
       }
     , init_arg          => undef
     , default           => sub{ return {}; }
