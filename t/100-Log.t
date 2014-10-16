@@ -65,8 +65,6 @@ sub
   ok( $log->write_start_message, 'Show start message on');
   
   ok( !$log->_logger_initialized, 'Logger not initialized');
-#  ok( $log->_nbr_loggers == 0, 'No Log::Log4perl logger defined');
-#  ok( $log->_nbr_layouts == 0, 'No Log::Log4perl layouts defined');
 };
 
 #-------------------------------------------------------------------------------
@@ -123,13 +121,6 @@ sub
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
   
   ok( $log->_logger_initialized, 'Logger is initialized');
-#  ok( $log->_nbr_loggers == 2, '2 Log::Log4perl loggers defined');
-#  isa_ok( $log->_get_logger($log->C_LOG_LOGGERFILE), 'Log::Log4perl::Logger');
-  ok( $log->_nbr_layouts == 5, '5 Log::Log4perl layouts defined');
-  is( join( ' ', sort $log->_get_layouts)
-    , 'log.date log.millisec log.startmsg log.stderr log.time'
-    , 'Layout keys check'
-    );
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
 };
 
