@@ -27,9 +27,9 @@ sub
   isa_ok( $log, $log_modulename);
   $log->add_tag($tagName);
 
-  is( $log->ROOT_FILE, 'A_File', 'Check root file loggername');
-  is( $log->ROOT_STDERR, 'A_Stderr', 'Check root stderr loggername');
-  is( $log->ROOT_EMAIL, 'A_Email', 'Check root email loggername');
+  is( $log->ROOT_FILE, 'A::File', 'Check root file loggername');
+  is( $log->ROOT_STDERR, 'A::Stderr', 'Check root stderr loggername');
+  is( $log->ROOT_EMAIL, 'A::Email', 'Check root email loggername');
 
   ok( $log->do_append_log == 1, 'Append to log turned on');
   ok( $log->do_flush_log == 0, 'Flushing turned off');

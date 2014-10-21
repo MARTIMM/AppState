@@ -33,9 +33,9 @@ package Foo
     subtest 't0, Foo logger names' =>
     sub
     {
-      is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::Foo', 'Stderr logger name = A_Stderr::Foo');
-      is( $log->get_logger_name($log->ROOT_FILE), 'A_File::Foo', 'File logger name = A_File::Foo');
-      is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::Foo', 'Email logger name = A_Email::Foo');
+      is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::Foo', 'Stderr logger name = A::Stderr::Foo');
+      is( $log->get_logger_name($log->ROOT_FILE), 'A::File::Foo', 'File logger name = A::File::Foo');
+      is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::Foo', 'Email logger name = A::Email::Foo');
     };
   }
 
@@ -116,9 +116,9 @@ package Foo::Bar
     subtest 't0, Foo::Bar logger names' =>
     sub
     {
-      is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::Foo::Bar', 'Stderr logger name = A_Stderr::Foo::Bar');
-      is( $log->get_logger_name($log->ROOT_FILE), 'A_File::Foo::Bar', 'File logger name = A_File::Foo::Bar');
-      is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::Foo::Bar', 'Email logger name = A_Email::Foo::Bar');
+      is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::Foo::Bar', 'Stderr logger name = A::Stderr::Foo::Bar');
+      is( $log->get_logger_name($log->ROOT_FILE), 'A::File::Foo::Bar', 'File logger name = A::File::Foo::Bar');
+      is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::Foo::Bar', 'Email logger name = A::Email::Foo::Bar');
     };
   }
 
@@ -153,6 +153,7 @@ package Foo::Bar
   {
     my( $self, $sts_texts) = @_;
     my $log = AppState->instance->get_app_object('Log');
+    $log->email_log_level($log->M_TRACE);
 
     my $count = 1;
     foreach my $sts_text (@$sts_texts)
@@ -235,9 +236,9 @@ $log->add_tag($tagName);
 subtest 'Test logger names' =>
 sub
 {
-  is( $log->get_logger_name($log->ROOT_STDERR), 'A_Stderr::main', 'Stderr logger name = A_Stderr::main');
-  is( $log->get_logger_name($log->ROOT_FILE), 'A_File::main', 'File logger name = A_File::main');
-  is( $log->get_logger_name($log->ROOT_EMAIL), 'A_Email::main', 'Email logger name = A_Email::main');
+  is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::main', 'Stderr logger name = A::Stderr::main');
+  is( $log->get_logger_name($log->ROOT_FILE), 'A::File::main', 'File logger name = A::File::main');
+  is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::main', 'Email logger name = A::mail::main');
 
   # Test logger names in Foo and Foo::Bar
   #
@@ -269,7 +270,7 @@ sub
 #-------------------------------------------------------------------------------
 # Change default stderr root level
 #
-#$log->stderr_log_level({ package => 'root', level => $self->M_TRACE});
+### $log->stderr_log_level({ package => 'root', level => $self->M_TRACE});
 
 #-------------------------------------------------------------------------------
 # Check log messages from MAIN
@@ -329,10 +330,32 @@ sub
 };
 
 #-------------------------------------------------------------------------------
+# Stop logging
+#
+subtest 'Test finish/restarting logging' =>
+sub
+{
+  # Trace level wil log all to file but turning of logging will inhibit
+  #
+  $log->file_log_level($log->M_TRACE);
+  $log->stop_logging;
+  $log->wlog( $log->C_LOG_TRACE, ['Finish log']);
+  &cunlike("Ts 103 \\d+ TRACE - Finish log");
+
+  # Start again and log
+  #
+  $log->start_logging;
+  $log->wlog( $log->C_LOG_DEBUG, ['Start log again']);
+  &clike("Ds 103 \\d+ DEBUG - Start log again");
+};
+
+#-------------------------------------------------------------------------------
 $app->cleanup;
 File::Path::remove_tree($config_dir);
 done_testing();
 exit(0);
+
+
 
 
 ################################################################################
@@ -370,6 +393,15 @@ sub cunlike
 }
 
 __END__
+
+
+
+
+
+
+
+
+
 
 #-------------------------------------------------------------------------------
 # Info and warnings are not sent to the log unless forced.
@@ -599,12 +631,11 @@ foreach my $count1 (1..2)
 #-------------------------------------------------------------------------------
 # Stop logging
 #
-#subtest 'finish logging' =>
-#sub
-#{
+subtest 'finish logging' =>
+sub
+{
   $log->stop_logging;
-#  is( $log->isLogFileOpen, '', 'Logfile should be closed again');
-#};
+};
 
 #-------------------------------------------------------------------------------
 $app->cleanup;

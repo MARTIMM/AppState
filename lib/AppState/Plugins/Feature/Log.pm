@@ -47,9 +47,9 @@ def_sts( 'C_LOG_ILLLEVELCD',  'M_F_ERROR', 'Illegal logger level %s');
 
 # Constant codes
 #
-def_sts( 'ROOT_STDERR','M_CODE', 'A_Stderr');
-def_sts( 'ROOT_FILE',  'M_CODE', 'A_File');
-def_sts( 'ROOT_EMAIL', 'M_CODE', 'A_Email');
+def_sts( 'ROOT_STDERR', 'M_CODE', 'A::Stderr');
+def_sts( 'ROOT_FILE',   'M_CODE', 'A::File');
+def_sts( 'ROOT_EMAIL',  'M_CODE', 'A::Email');
 
 #-------------------------------------------------------------------------------
 # Switch to append to an existing log or to start a fresh one
@@ -373,7 +373,7 @@ sub BUILD
   my $level_sub =
   sub
   {
-    my( $self, $logger_prefix, $type_text, $level) = @_;
+    my( $self, $logger_prefix, $level) = @_;
     my( $package, $f, $l, $logger_name);
 
     # Setter or getter ?
@@ -445,24 +445,28 @@ sub BUILD
   };
 
   # Add three methods to modify logger levels using defined sub above
+  # Where in the call to &$level_sub ( shift @_, qw( ROOT_FILE File), @_)
+  # shift @_ is the log object ($self), ROOT_FILE is the logger prefix in this
+  # case $log->ROOT_FILE and the rest of the arguments come with @_ which will
+  # only be the level to be set for the root logger.
   #
   my $meta = Class::MOP::Class->initialize(__PACKAGE__);
   $meta->make_mutable;
   $meta->add_method
          ( file_log_level => sub
-           { return &$level_sub ( shift @_, qw( ROOT_FILE File), @_)
+           { return &$level_sub ( shift @_, 'ROOT_FILE', @_)
            }
          );
 
   $meta->add_method
          ( stderr_log_level => sub
-           { return &$level_sub ( shift @_, qw( ROOT_STDERR Stderr), @_)
+           { return &$level_sub ( shift @_, 'ROOT_STDERR', @_)
            }
          );
 
   $meta->add_method
          ( email_log_level => sub
-           { return &$level_sub ( shift @_, qw( ROOT_EMAIL Email), @_)
+           { return &$level_sub ( shift @_, 'ROOT_EMAIL', @_)
            }
          );
   $meta->make_immutable;
@@ -513,8 +517,8 @@ sub start_logging
   #
   my $level_str = $self->_get_log_level_name($self->file_log_level);
   my $stderr_level_str = $self->_get_log_level_name($self->stderr_log_level);
-  Log::Log4perl->get_logger('' . $self->ROOT_FILE)->level($level_str);
-  Log::Log4perl->get_logger('' . $self->ROOT_STDERR)->level($stderr_level_str);
+###  Log::Log4perl->get_logger('' . $self->ROOT_FILE)->level($level_str);
+###  Log::Log4perl->get_logger('' . $self->ROOT_STDERR)->level($stderr_level_str);
 
   # Write first entry to log file
   #
@@ -548,6 +552,7 @@ sub _make_logger_objects
 
   $self->_create_file_root_logger;
   $self->_create_stderr_root_logger;
+  $self->_create_email_root_logger;
 
   # Finish setup,
   #
@@ -633,20 +638,46 @@ sub _create_stderr_root_logger
   my $layout = Log::Log4perl::Layout::PatternLayout->new('%p{1}%m{chomp}%n');
   $self->_set_layout('log.stderr' => $layout);
 
-  my $logger_stderr = Log::Log4perl->get_logger('' . $self->ROOT_STDERR);
+  my $logger = Log::Log4perl->get_logger('' . $self->ROOT_STDERR);
 
-  my $appender_stderr = Log::Log4perl::Appender->new
-                        ( "Log::Log4perl::Appender::ScreenColoredLevels"
-                        , name          => '' . $self->ROOT_STDERR
-                        , stderr        => 1
-#                        , layout        => $layout
-                        );
+  my $appender = Log::Log4perl::Appender->new
+                 ( "Log::Log4perl::Appender::ScreenColoredLevels"
+                 , name          => '' . $self->ROOT_STDERR
+                 , stderr        => 1
+                 );
 
-  $appender_stderr->layout($layout);
-  $logger_stderr->add_appender($appender_stderr);
-#  $logger_stderr->level($self->_get_log_level_name($self->stderr_log_level));
+  $appender->layout($layout);
+  $logger->add_appender($appender);
+#  $logger->level($self->_get_log_level_name($self->stderr_log_level));
 #say STDERR 'STDERR: ', $self->stderr_log_level, ' == ', $self->_get_log_level_name($self->stderr_log_level);
-#  $logger_stderr->level('TRACE');
+#  $logger->level('TRACE');
+}
+
+#-------------------------------------------------------------------------------
+# Create email root logger setup
+#
+sub _create_email_root_logger
+{
+  my($self) = @_;
+
+  # Create logger for email logging with its own output pattern
+  #
+  my $layout = Log::Log4perl::Layout::PatternLayout->new('%p{1}%m{chomp}%n');
+  $self->_set_layout('log.email' => $layout);
+
+  my $logger = Log::Log4perl->get_logger('' . $self->ROOT_EMAIL);
+
+  my $appender = Log::Log4perl::Appender->new
+                 ( 'Log::Dispatch::Email::MailSendmail'
+                 , name          => '' . $self->ROOT_EMAIL
+                 , subject       => 'Error found'
+                 , from          => 'marcel@localhost'
+                 , to            => 'marcel@localhost'
+                 , buffered      => 1
+                 );
+
+  $appender->layout($layout);
+  $logger->add_appender($appender);
 }
 
 #-------------------------------------------------------------------------------
@@ -654,7 +685,7 @@ sub _create_stderr_root_logger
 #
 sub _log_data_line
 {
-  my( $self) = @_;
+  my($self) = @_;
 
   return unless $self->_is_logging;
 
@@ -675,7 +706,8 @@ sub _log_data_line
     $logger->trace($self->_get_start_msg);
   }
 
-  # Change pattern again to log the date string
+  # Change pattern again to log the date string. There is no message
+  # to be shown.
   #
   $appender->layout($self->_get_layout('log.date'));
   $logger->trace('undisplayed message');
@@ -743,6 +775,14 @@ sub _log_message
   #
   $logger_name = '' . $self->ROOT_STDERR . "::$log_attr->{package}";
   Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
+
+  # Send message to email if email_log_level is set to the proper level.
+  # This logger does not need change of layout patterns like the file logger
+  # because date and time is not printed.
+  #
+  $logger_name = '' . $self->ROOT_EMAIL . "::$log_attr->{package}";
+  Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
+#say STDERR "L: $logger_name, $l4p_fnc_name";
 }
 
 #-------------------------------------------------------------------------------
