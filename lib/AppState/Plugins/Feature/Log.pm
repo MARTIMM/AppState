@@ -44,6 +44,7 @@ def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code an
 def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
 def_sts( 'C_LOG_LOGALRINIT',  'M_F_WARNING', 'Not changed, logger already initialized');
 def_sts( 'C_LOG_ILLLEVELCD',  'M_F_ERROR', 'Illegal logger level %s');
+def_sts( 'C_LOG_EXTERNFATAL', 'M_FATAL', 'Fatal error from external module: %s');
 
 # Constant codes
 #
@@ -477,6 +478,38 @@ sub BUILD
   $self->file_log_level( { level => $self->M_TRACE, package => 'root'});
   $self->stderr_log_level( { level => $self->M_FATAL, package => 'root'});
   $self->email_log_level( { level => $self->M_FATAL, package => 'root'});
+
+  # When the program dies somewhere out of our control, catch it here and
+  # convert it into a fatal error. Example found in log4perl FAQ.
+  #
+  my $external_die_handler =
+  sub
+  {
+    if( $^S )
+    {
+      # We're in an eval {} and don't want log
+      # this message but catch it later
+      return;
+    }
+
+    # Prevent loops of fatal calls because of a die in write_log().
+    #
+    delete $SIG{__DIE__};
+    $self->message_wrapping(0);
+
+    my $error = $_[0];
+    my @errors = split( "\t", $error);
+    $self->write_log( [join( "", @errors)], $self->C_LOG_EXTERNFATAL);
+
+
+    # $SIG{__DIE__} = $external_die_handler;
+    $self->stop_logging;
+    my $app = AppState->instance;
+    $app->cleanup;
+    die; # sprintf("Fatal error from external module: \n\t@_");
+  };
+  
+  $SIG{__DIE__} = $external_die_handler;
 }
 
 #-------------------------------------------------------------------------------
@@ -512,7 +545,7 @@ sub start_logging
 
   $self->_make_logger_objects unless $self->_logger_initialized;
   $self->_logging_on;
-  
+
   # Set logging levels explicitly
   #
   my $level_str = $self->_get_log_level_name($self->file_log_level);
@@ -759,10 +792,13 @@ sub _log_message
   my $logger_name = '' . $self->ROOT_FILE . "::$log_attr->{package}";
   my $logger = Log::Log4perl->get_logger($logger_name);
   my $l4p_fnc_name = $self->_get_log_level_function_name;
+
+#  $msg =~ s/[\n]+/ /gm if $self->message_wrapping;
   my $msgTxt = $self->message_wrapping
                ? Text::Wrap::wrap( '', ' ' x 21, $msg)
                : $msg
                ;
+
   $logger->$l4p_fnc_name($msgTxt);
 
   # Turn back to normal logging if the message was forced to be printed
@@ -924,7 +960,8 @@ sub wlog
   $call_level //= 0;
   $message_values //= [];
   my $message = '' . $error;
-  $message = sprintf( $message, @$message_values) if scalar(@$message_values);
+  $message = sprintf( $message, @$message_values)
+     if ref $message_values eq 'ARRAY' and scalar(@$message_values);
 
   return $self->write_log( $message, $error, $call_level + 1);
 }
@@ -1019,6 +1056,8 @@ sub write_log
     $self->stop_logging;
     my $app = AppState->instance;
     $app->cleanup;
+
+    delete $SIG{__DIE__};
     die $msgTxt;
   }
 
@@ -1085,8 +1124,6 @@ sub _create_message
     $pMsgEq = 0;
     $previousMsg = $msgTxt;
   }
-
-  $msgTxt =~ s/[\n]+/ /gm;
 
   my $date = DateTime->now;
   my $timeTxt = $date->hms;
