@@ -240,8 +240,6 @@ $cfm->modify_config_object( 'ddump', { store_type => 'Storable'
                                      , location => $cfm->C_CFF_WORKDIR
                                      }
                           );
-#unlink $cfm->config_file;
-
 $cfm->save;
 my $filename = $f = $cfm->config_file;
 $f =~ s@.*?([^/]+)$@$1@;

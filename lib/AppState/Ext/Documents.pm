@@ -173,10 +173,11 @@ sub _path2hashref
 
   else
   {
-    $cfg = {};
-    $self->log($self->C_DOC_NOHASHREF);
+    return $self->log($self->C_DOC_NOHASHREF);
   }
 
+  # Cleanup the path a bit.
+  #
   $path =~ s@/{2,}@/@g;         # Remove any repetition of slashes
   $path =~ s@^/@@;              # Remove first slash if any
   $path =~ s@/$@@;              # Remove last slash
@@ -199,11 +200,11 @@ sub _path2hashref
     if( defined $value and defined $key )
     {
       $c =<<EOC;
-$l = {};
-$l\{\$key\} = \$value;
-\$ref = \\$l\{\$key\};
+$l = {} unless ref $l eq 'HASH';
+$l\{'$key'\} = \$value;
+\$ref = \\$l\{'$key'};
 EOC
-#say "C v+k:\n", $c;
+#say STDERR "C v+k:\n", $c;
     }
 
     elsif( defined $value)
@@ -212,7 +213,7 @@ EOC
 $l = \$value;
 \$ref = \\$l;
 EOC
-#say "C v:\n", $c;
+#say STDERR "C v:\n", $c;
     }
 
     elsif( defined $key)
@@ -221,7 +222,7 @@ EOC
 my \$va = $l\{\$key\};
 \$ref = \\\$va;
 EOC
-#say "C k:\n", $c;
+#say STDERR "C k:\n", $c;
     }
 
     else
@@ -230,13 +231,13 @@ EOC
 my \$va = $l;
 \$ref = \\\$va;
 EOC
-#say "C -:\n", $c;
+#say STDERR "C -:\n", $c;
     }
 
     eval($c);
     if( my $err = $@ )
     {
-      $self->log( $self->C_DOC_EVALERROR, [$path, $err]);
+      return $self->log( $self->C_DOC_EVALERROR, [$path, $err]);
     }
   }
 
@@ -342,7 +343,10 @@ sub set_kvalue
   $key //= '';
   $value //= '';
 
+  # Generate a reference. Check for errors first before using.
+  #
   my $hashref = $self->_path2hashref( $path, $startRef, $value, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
   $self->log( $self->C_LOG_TRACE
             , [ "set_kvalue, '$path', '$key', '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
@@ -386,7 +390,7 @@ sub drop_kvalue
   $key //= '';
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-
+say STDERR "dkv $$hashref, $key";
   my $value;
   if( ref $hashref and ref $$hashref eq 'HASH' )
   {

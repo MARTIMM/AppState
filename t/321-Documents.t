@@ -63,6 +63,9 @@ sub
 
   $d->set_kvalue( '/p', 'a 1/5', 10);
   is( $d->get_kvalue( '/p', 'a 1/5'), 10, "value at /p/'a 1/5' is set to 10");
+  $d->set_kvalue( '/p', 'a 1/6', 11);
+  is( $d->get_kvalue( '/p', 'a 1/5'), 10, "value at /p/'a 1/5' still set to 10");
+  is( $d->get_kvalue( '/p', 'a 1/6'), 11, "value at /p/'a 1/6' is set to 11");
 
   $hr = $d->set_value( '/a/b/c/d', 11, $hook);
   cmp_deeply( $hr, \11, 'Test $hr = \11');
@@ -88,7 +91,10 @@ sub
 
   $v = $d->drop_kvalue( '/p', 'a 1/5');
   is( $v, 10, "value at /p/'a 1/5' was 10");
-  cmp_deeply( $doc->{p}, {}, 'a 1/5 gone');
+  cmp_deeply( $doc->{p}, {'a 1/6' => 11}, 'a 1/5 gone');
+  $v = $d->drop_kvalue( '/p', 'a 1/6');
+  is( $v, 11, "value at /p/'a 1/6' was 11");
+  cmp_deeply( $doc->{p}, {}, 'a 1/6 also gone');
 
   $v = $d->drop_kvalue( '/p', 'a 1/5');
   ok( !defined $v, "No value found at /p', 'a 1/5'");
