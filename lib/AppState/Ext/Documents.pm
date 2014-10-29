@@ -21,9 +21,11 @@ def_sts( 'C_DOC_SELOUTRANGE',  'M_ERROR', 'Document number %s out of range, docu
 def_sts( 'C_DOC_DOCRETRIEVED', 'M_TRACE', 'Document %s retrieved');
 def_sts( 'C_DOC_NODOCUMENTS',  'M_F_WARNING', 'No documents available');
 def_sts( 'C_DOC_NOHASHREF',    'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
+def_sts( 'C_DOC_NOARRAYREF',   'M_ERROR', 'No array reference at %s');
 def_sts( 'C_DOC_EVALERROR',    'M_ERROR', 'Error eval path %s: %s');
 def_sts( 'C_DOC_NOVALUE',      'M_WARNING', 'No value found at %s');
 def_sts( 'C_DOC_NOKEY',        'M_ERROR', 'Key not defined');
+def_sts( 'C_DOC_KEYNOTEXIST',  'M_WARNING', 'Key %s does not exist');
 def_sts( 'C_DOC_MODTRACE',     'M_TRACE', "%s p='%s' '%s'");
 def_sts( 'C_DOC_MODKTRACE',    'M_TRACE', "%s p='%s' k='%s' %s");
 def_sts( 'C_DOC_MODERR',       'M_ERROR', "%s %s");
@@ -252,7 +254,11 @@ EOC
 #$dd = Data::Dumper->new( [$doc], [qw(doc2)]);
 #say $dd->Dump;
 
-  return $ref;
+#say "Ref \$ref = ", ref $ref;
+
+  # Be sure to return a reference or a status object
+  #
+  return ref $ref ? $ref : $self->log($self->C_DOC_NOVALUE);
 }
 
 #-------------------------------------------------------------------------------
@@ -263,8 +269,9 @@ sub get_keys
 
   my $keys = [];
   my $hashref = $self->_path2hashref( $path, $startRef);
-  $keys = [keys %{$$hashref}] if ref $$hashref eq 'HASH';
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
+  $keys = [keys %{$$hashref}];
   $self->log( $self->C_LOG_TRACE, ["get_keys from '$path'"]);
   return $keys;
 }
@@ -276,9 +283,18 @@ sub get_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  my $value = $$hashref if ref $hashref;
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_DOC_NOVALUE, [$path]) unless ref $hashref;
+  my $value;
+  if( defined $$hashref )
+  {
+    $value = $$hashref;
+  }
+
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, [$path]);
+  }
 
   $self->log( $self->C_LOG_TRACE
             , [ "get_value from '$path' "
@@ -294,17 +310,28 @@ sub get_kvalue
 {
   my( $self, $path, $key, $startRef) = @_;
 
-  $self->log($self->C_DOC_NOKEY) unless defined $key;
+  return $self->log($self->C_DOC_NOKEY) unless defined $key;
   $key //= '';
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  my $value = $$hashref if ref $hashref;
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "get_kvalue from '$path' and '$key' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
+  my $value;
+  if( defined $$hashref )
+  {
+    $value = $$hashref;
+    $self->log( $self->C_LOG_TRACE
+              , [ "get_kvalue from '$path' and '$key' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, [$path]);
+  }
+
   return $value;
 }
 
@@ -322,7 +349,7 @@ sub set_value
   my( $self, $path, $value, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, $value);
-
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
   $self->log( $self->C_LOG_TRACE
             , [ "set_value, $path, '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
@@ -337,8 +364,8 @@ sub set_kvalue
 {
   my( $self, $path, $key, $value, $startRef) = @_;
 
-  $self->log($self->C_DOC_NOKEY) unless defined $key;
-  $self->log( $self->C_DOC_NOVALUE, [$path]) unless defined $value;
+  return $self->log($self->C_DOC_NOKEY) unless defined $key;
+  return $self->log( $self->C_DOC_NOVALUE, [$path]) unless defined $value;
 
   $key //= '';
   $value //= '';
@@ -366,8 +393,10 @@ sub drop_value
   my( $vpath, $spath) = $path =~ m@(.*)/?([^/]+)$@;
 
   my $hashref = $self->_path2hashref( $vpath, $startRef);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+
   my $value;
-  if( ref $$hashref eq 'HASH' )
+  if( defined ${$hashref}->{$spath} )
   {
     $value = delete ${$hashref}->{$spath};
     $self->log( $self->C_DOC_MODTRACE
@@ -377,6 +406,11 @@ sub drop_value
               );
   }
   
+  else
+  {
+    return $self->log( $self->C_DOC_KEYNOTEXIST, [$spath]);
+  }
+
   return $value;
 }
 
@@ -386,13 +420,13 @@ sub drop_kvalue
 {
   my( $self, $path, $key, $startRef) = @_;
 
-  $self->log($self->C_DOC_NOKEY) unless defined $key;
-  $key //= '';
+  return $self->log($self->C_DOC_NOKEY) unless defined $key;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-say STDERR "dkv $$hashref, $key";
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+
   my $value;
-  if( ref $hashref and ref $$hashref eq 'HASH' )
+  if( ref $$hashref eq 'HASH' )
   {
     $value = delete ${$hashref}->{$key};
     $self->log( $self->C_LOG_TRACE
@@ -400,6 +434,11 @@ say STDERR "dkv $$hashref, $key";
                 . (ref $startRef eq 'HASH' ? 'with hook' : '')
                 ]
               );
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_KEYNOTEXIST, [$key]);
   }
   
   return $value;
@@ -412,7 +451,7 @@ sub get_item_value
   my( $self, $path, $idx, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
   my $v;
   if( ref $hashref and ref $$hashref eq 'ARRAY' )
@@ -425,12 +464,14 @@ sub get_item_value
               );
   }
   
+  elsif( ref $$hashref )
+  {
+    return $self->log( $self->C_DOC_NOARRAYREF, ["$path\[$idx\]"]);
+  }
+  
   else
   {
-    $self->log( $self->C_DOC_MODERR
-              , [ 'get_item_value', 'fail'
-                ]
-              );
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[$idx\]"]);
   }
 
   return $v;
@@ -443,9 +484,10 @@ sub get_item_kvalue
   my( $self, $path, $key, $idx, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
   my $v;
-  if( ref $hashref and ref $$hashref eq 'ARRAY' )
+  if( ref $$hashref eq 'ARRAY' )
   {
     $v = ${$hashref}->[$idx];
     $self->log( $self->C_DOC_MODTRACE
@@ -457,10 +499,7 @@ sub get_item_kvalue
 
   else
   {
-    $self->log( $self->C_DOC_MODERR
-              , [ 'get_item_kvalue', 'fail'
-                ]
-              );
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[$idx\]"]);
   }
 
   return $v;
@@ -473,13 +512,22 @@ sub pop_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "pop_value from '$path' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  return pop @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
+  if( ref $$hashref eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "pop_value from '$path' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    return pop @{$$hashref};
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -489,13 +537,22 @@ sub pop_kvalue
   my( $self, $path, $key, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "pop_value from '$path' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  return pop @{$$hashref} if ref $hashref and ref $$hashref  eq 'ARRAY';
+  if( ref $$hashref  eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "pop_value from '$path' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    return pop @{$$hashref};
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -506,17 +563,23 @@ sub push_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "push_value, '$path', @$values "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  push @{$$hashref}, @$values
-    if ref $hashref
-    and ref $$hashref eq 'ARRAY'
-    and ref $values eq 'ARRAY'
-    ;
+  if( ref $$hashref eq 'ARRAY' and ref $values eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "push_value, '$path', @$values "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    push @{$$hashref}, @$values;
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
+
   return $hashref;
 }
 #-------------------------------------------------------------------------------
@@ -527,17 +590,23 @@ sub push_kvalue
   my( $self, $path, $key, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "push_value, '$path', @$values "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  push @{$$hashref}, @$values
-    if ref $hashref
-    and ref $$hashref eq 'ARRAY'
-    and ref $values eq 'ARRAY'
-    ;
+  if( ref $$hashref eq 'ARRAY' and ref $values eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "push_value, '$path', @$values "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    push @{$$hashref}, @$values;
+  }
+  
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
+
   return $hashref;
 }
 
@@ -548,13 +617,22 @@ sub shift_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "shift_value from '$path' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  return shift @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
+  if( ref $$hashref eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "shift_value from '$path' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    return shift @{$$hashref};
+  }
+
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -564,13 +642,22 @@ sub shift_kvalue
   my( $self, $path, $key, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "shift_value from '$path' "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  return shift @{$$hashref} if ref $hashref and ref $$hashref eq 'ARRAY';
+  if( ref $$hashref eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "shift_value from '$path' "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    return shift @{$$hashref};
+  }
+
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -580,17 +667,23 @@ sub unshift_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "unshift_value, '$path', @$values "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
-  unshift @{$$hashref}, @$values
-    if ref $hashref
-    and ref $$hashref eq 'ARRAY'
-    and ref $values eq 'ARRAY'
-    ;
+  if( ref $$hashref eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "unshift_value, '$path', @$values "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
+    unshift @{$$hashref}, @$values;
+  }
+
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
+
   return $hashref;
 }
 
@@ -601,18 +694,24 @@ sub unshift_kvalue
   my( $self, $path, $key, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
 
-  $self->log( $self->C_LOG_TRACE
-            , [ "unshift_kvalue, '$path', @$values "
-              . (ref $startRef eq 'HASH' ? 'with hook' : '')
-              ]
-            );
+  if( ref $$hashref eq 'ARRAY' )
+  {
+    $self->log( $self->C_LOG_TRACE
+              , [ "unshift_kvalue, '$path', @$values "
+                . (ref $startRef eq 'HASH' ? 'with hook' : '')
+                ]
+              );
 
-  unshift @{$$hashref}, @$values
-    if ref $hashref
-    and ref $$hashref eq 'ARRAY'
-    and ref $values eq 'ARRAY'
-    ;
+    unshift @{$$hashref}, @$values;
+  }
+
+  else
+  {
+    return $self->log( $self->C_DOC_NOVALUE, ["$path\[\]"]);
+  }
+
   return $hashref;
 }
 
@@ -624,7 +723,9 @@ sub splice_value
   my( $self, $path, $spliceArgs, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  if( ref $hashref and ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+
+  if( ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
   {
     my $off = shift @$spliceArgs;
     my $len = shift @$spliceArgs;
@@ -664,7 +765,9 @@ sub splice_kvalue
   my( $self, $path, $key, $spliceArgs, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  if( ref $hashref and ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
+  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+
+  if( ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
   {
     my $off = shift @$spliceArgs;
     my $len = shift @$spliceArgs;

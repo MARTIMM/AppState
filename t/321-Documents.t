@@ -18,7 +18,7 @@ $app->initialize( config_dir => 't/Documents', check_directories => 1);
 my $log = $app->get_app_object('Log');
 $log->do_append_log(0);
 $log->start_logging;
-$log->file_log_level($app->M_TRACE);
+$log->file_log_level( { level => $app->M_INFO, package => 'root'});
 #$log->stderr_log_level($app->M_TRACE);
 $log->add_tag('320');
 
@@ -29,27 +29,32 @@ $d->add_documents({});
 $d->select_document(0);
 my $doc = $d->get_document(0);
 
-# Set a path in the doc for startRef tests
+# Set a path in the doc for startRef tests and set $hook to the
+# second value in the array.
 #
 $d->set_value( '/hook', [ 'a', {}]);
 my $hook = $d->get_item_value( '/hook', 1);
 cmp_deeply( $doc->{hook}, [ 'a', {}], 'Test hook start data');
 
-
 #-------------------------------------------------------------------------------
 subtest getx_value =>
 sub
 {
-  ok( !defined $d->get_value('/a/b/c/d'), 'value at /a/b/c/d not defined');
+  my $v = $d->get_value('/a/b/c/d');
+  is( ref $v, 'AppState::Ext::Status', 'return status for errors');
+  ok( $v->get_error == $d->C_DOC_NOVALUE, 'value at /a/b/c/d not defined');
   ok( !exists $doc->{a}, 'a does not exist');
 
-  ok( !defined $d->get_kvalue( '/p', 'a 1/5'), "value at /p/'a 1/5' not defined");
+  $v = $d->get_kvalue( '/p', 'a 1/5');
+  ok( $v->get_error == $d->C_DOC_NOVALUE, "value at /p/'a 1/5' not defined");
   ok( !exists $doc->{p}, 'p does not exist');
 
-  ok( !defined $d->get_value( '/a/b/c/d', $hook), 'value /a/b/c/d at hook not defined');
+  $v = $d->get_value( '/a/b/c/d', $hook);
+  ok( $v->get_error == $d->C_DOC_NOVALUE, 'value /a/b/c/d at hook not defined');
   ok( !exists $doc->{hook}[1]{a}, 'hooked a does not exist');
 
-  ok( !defined $d->get_kvalue( '/p', 'a 1/5', $hook), "value /p/'a 1/5' at hook not defined");
+  $v = $d->get_kvalue( '/p', 'a 1/5', $hook);
+  ok( $v->get_error == $d->C_DOC_NOVALUE, "value /p/'a 1/5' at hook not defined");
   ok( !exists $doc->{hook}[1]{p}, 'p does not exist');
 };
 
@@ -72,6 +77,10 @@ sub
   is( $d->get_value( '/a/b/c/d', $hook), 11, 'value /a/b/c/d at hook is set to 11');
   cmp_deeply( $doc->{hook}[1]{a}, {b=>{c=>{d=>11}}}, 'hook = 11');
 
+#my $dd = Data::Dumper->new( [$d->get_value('/')], [qw(root)]);
+#say $dd->Dump;
+#exit(0);
+
   $d->set_kvalue( '/p', 'a 1/5', 11, $hook);
   is( $d->get_kvalue( '/p', 'a 1/5', $hook), 11, "value at /p/'a 1/5' is set to 11");
   cmp_deeply( $doc->{hook}[1]{p}, {'a 1/5' => 11}, 'keyed hook = 11');
@@ -85,6 +94,10 @@ sub
   is( $v, 10, 'value saved from /a/b/c/d is 10');
   ok( !exists $doc->{a}{b}{c}{d}, '/a/b/c/d does not exist anymore');
   ok( exists $doc->{a}{b}{c}, '/a/b/c still exist');
+
+  $v = $d->drop_value('/a/b/c/d');
+  is( ref $v, 'AppState::Ext::Status', 'not possible to remove /a/b/c/d again');
+  ok( $v->get_error == $d->C_DOC_KEYNOTEXIST, 'key d not existent');
 
   $v = $d->drop_value('a');
   ok( !exists $doc->{a}, '/a does not exist anymore');
@@ -110,7 +123,8 @@ sub
 
   $v = $d->drop_kvalue( '/p', 'a 1/5', $hook);
   is( $v, 11, "value at /p/'a 1/5' was 11 at hook");
-  ok( !defined $d->get_kvalue( '/p', 'a 1/5', $hook), "value at /p/'a 1/5' dropped at hook");
+  $v = $d->get_kvalue( '/p', 'a 1/5', $hook);
+  ok( $v->get_error == $d->C_DOC_NOVALUE, "value at /p/'a 1/5' dropped at hook");
 
   $v = $d->drop_kvalue( '/p', 'a 1/5', $hook);
   ok( !defined $v, "No value found at hook");
