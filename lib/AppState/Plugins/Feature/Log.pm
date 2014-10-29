@@ -377,71 +377,74 @@ sub BUILD
     my( $self, $logger_prefix, $level) = @_;
     my( $package, $f, $l, $logger_name);
 
-    # Setter or getter ?
-    #
-    if( defined $level )
-    {
-      # When $package is not the proper level to set, it is possible to use
-      # a structure where this can be set to the proper value. The special value
-      # 'root' is used to set level of the root logger in $logger_prefix.
-      #
-      $logger_name = '';
-      if( ref $level eq 'HASH' )
-      {
-        $package = $level->{package} if defined $level->{package};
-        $level = $level->{level} = $level->{level} // $self->M_FATAL;
+    $logger_name = '';
 
+    # When the callers package is not the proper package to set the level for
+    # it is possible to use a structure where another package can be set to
+    # the proper value. The special value 'root' is used to set level of the
+    # root logger in $logger_prefix.
+    #
+    if( ref $level eq 'HASH' )
+    {
+      $package = $level->{package} if defined $level->{package};
+      $level = $level->{level} if defined $level->{level};
+
+      # Setter function, set proper level.
+      #
+      if( defined $level )
+      {
         $logger_name .= $self->$logger_prefix
                       . ($package eq 'root' ? '' : "::$package")
                       ;
       }
 
-      else
-      {
-        ( $package, $f, $l) = caller(1);
-        $logger_name .= $self->$logger_prefix . "::$package";
-      }
-
-      # Check level code
-      #
-      if( !$_test_levels->($level) )
-      {
-        $self->log( $self->C_LOG_ILLLEVELCD, [$level]);
-        return;
-      }
-
-      # Save level for this package
-      #
-      $self->_set_log_lvl($logger_name => $level);
-
-      my $logger = Log::Log4perl->get_logger($logger_name);
-      my $log_level_name = $self->_get_log_level_name($level);
-      $logger->level($log_level_name);
-
-      $self->log( $self->C_LOG_LOGGERLVL, [ $logger_name, $log_level_name]);
-    }
-
-    else
-    {
       # Getter function, so return proper level.
       #
-      if( ref $level eq 'HASH' )
+      else
       {
         $package = $level->{package} if defined $level->{package};
         $logger_name .= $self->$logger_prefix
                       . ($package eq 'root' ? '' : "::$package")
                       ;
-      }
 
-      else
-      {
-        ( $package, $f, $l) = caller(1);
-        $logger_name .= $self->$logger_prefix . "::$package";
+        return $self->get_log_lvl($logger_name);
       }
-
-      $level = $self->get_log_lvl($logger_name);
     }
 
+    # Setter function, so return proper level.
+    #
+    elsif( defined $level )
+    {
+      ( $package, $f, $l) = caller(1);
+      $logger_name .= $self->$logger_prefix . "::$package";
+    }
+
+    # Getter function, so return proper level.
+    #
+    else
+    {
+      ( $package, $f, $l) = caller(1);
+      $logger_name .= $self->$logger_prefix . "::$package";
+      return $self->get_log_lvl($logger_name);
+    }
+
+    # Check level code
+    #
+    if( !$_test_levels->($level) )
+    {
+      return $self->log( $self->C_LOG_ILLLEVELCD, [$level]);
+    }
+
+    # Save level for this package
+    #
+    $self->_set_log_lvl($logger_name => $level);
+
+    # Set level for appropriate logger
+    #
+    my $logger = Log::Log4perl->get_logger($logger_name);
+    my $log_level_name = $self->_get_log_level_name($level);
+    $logger->level($log_level_name);
+    $self->log( $self->C_LOG_LOGGERLVL, [ $logger_name, $log_level_name]);
     return $level;
   };
 
