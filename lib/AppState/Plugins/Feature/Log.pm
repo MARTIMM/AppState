@@ -26,9 +26,17 @@ use Log::Log4perl::Level;
 use AppState::Ext::Status;
 use AppState::Ext::Meta_Constants;
 require Scalar::Util;
+require match::simple;
 
-use Text::Wrap ('$columns');
-$columns = 71; # Number of columns left for message See logger patterns.
+use Text::Wrap;
+
+# Number of columns left for message See logger patterns and break line pattern.
+#
+#local $Text::Wrap::break = '[\s\n]';
+local $Text::Wrap::columns = 71;
+local $Text::Wrap::huge = 'overflow'; # [perl #120641] Text::Wrap "This shouldn't happen" with '=' in text
+
+use Types::Standard qw(Dict Optional Int Str);
 
 #-------------------------------------------------------------------------------
 # Error codes
@@ -361,94 +369,16 @@ sub BUILD
     # Codes are dualvars. doesn't matter if code is compared as string
     # or as number. But using a number might compare quicker.
     #
-    return 0 + $_[0] ~~ [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
-                        , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
-                        , $self->M_FATAL
-                        ];
-  };
-  
-  # Make sub to define a logging level for a Log4perl logger. Root loggers are
-  # defined by $logger_prefix. The calls will set a level for any logger created
-  # by adding the adjusted package name to the $logger_prefix.
-  #
-  my $level_sub =
-  sub
-  {
-    my( $self, $logger_prefix, $level) = @_;
-    my( $package, $f, $l, $logger_name);
-
-    $logger_name = '';
-
-    # When the callers package is not the proper package to set the level for
-    # it is possible to use a structure where another package can be set to
-    # the proper value. The special value 'root' is used to set level of the
-    # root logger in $logger_prefix.
-    #
-    if( ref $level eq 'HASH' )
-    {
-      $package = $level->{package} if defined $level->{package};
-      $level = $level->{level} if defined $level->{level};
-
-      # Setter function, set proper level.
-      #
-      if( defined $level )
-      {
-        $logger_name .= $self->$logger_prefix
-                      . ($package eq 'root' ? '' : "::$package")
-                      ;
-      }
-
-      # Getter function, so return proper level.
-      #
-      else
-      {
-        $package = $level->{package} if defined $level->{package};
-        $logger_name .= $self->$logger_prefix
-                      . ($package eq 'root' ? '' : "::$package")
-                      ;
-
-        return $self->get_log_lvl($logger_name);
-      }
-    }
-
-    # Setter function, so return proper level.
-    #
-    elsif( defined $level )
-    {
-      ( $package, $f, $l) = caller(1);
-      $logger_name .= $self->$logger_prefix . "::$package";
-    }
-
-    # Getter function, so return proper level.
-    #
-    else
-    {
-      ( $package, $f, $l) = caller(1);
-      $logger_name .= $self->$logger_prefix . "::$package";
-      return $self->get_log_lvl($logger_name);
-    }
-
-    # Check level code
-    #
-    if( !$_test_levels->($level) )
-    {
-      return $self->log( $self->C_LOG_ILLLEVELCD, [$level]);
-    }
-
-    # Save level for this package
-    #
-    $self->_set_log_lvl($logger_name => $level);
-
-    # Set level for appropriate logger
-    #
-    my $logger = Log::Log4perl->get_logger($logger_name);
-    my $log_level_name = $self->_get_log_level_name($level);
-    $logger->level($log_level_name);
-    $self->log( $self->C_LOG_LOGGERLVL, [ $logger_name, $log_level_name]);
-    return $level;
+    return match::simple::match
+           ( 0 + $_[0]
+           , [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
+             , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
+             , $self->M_FATAL
+             ]
+           );
   };
 
-  # Add three methods to modify logger levels using defined sub above
+  # Add three methods to modify logger levels using _set_log_level().
   # Where in the call to &$level_sub ( shift @_, qw( ROOT_FILE File), @_)
   # shift @_ is the log object ($self), ROOT_FILE is the logger prefix in this
   # case $log->ROOT_FILE and the rest of the arguments come with @_ which will
@@ -458,21 +388,23 @@ sub BUILD
   $meta->make_mutable;
   $meta->add_method
          ( file_log_level => sub
-           { return &$level_sub ( shift @_, 'ROOT_FILE', @_)
+           { return &_set_log_level( shift @_, 'ROOT_FILE', @_)
            }
          );
 
   $meta->add_method
          ( stderr_log_level => sub
-           { return &$level_sub ( shift @_, 'ROOT_STDERR', @_)
+           { return &_set_log_level( shift @_, 'ROOT_STDERR', @_)
            }
          );
 
   $meta->add_method
          ( email_log_level => sub
-           { return &$level_sub ( shift @_, 'ROOT_EMAIL', @_)
+           { return &_set_log_level( shift @_, 'ROOT_EMAIL', @_)
            }
          );
+
+
   $meta->make_immutable;
 
   # Now we have initialized the sub above we can set the defaults for the
@@ -532,6 +464,87 @@ sub plugin_cleanup
   $self->stop_logging;
   $self->delete_all_subscribers;
 }
+  
+#-------------------------------------------------------------------------------
+# Make sub to define a logging level for a Log4perl logger. Root loggers are
+# defined by $logger_prefix. The calls will set a level for any logger created
+# by adding the adjusted package name to the $logger_prefix.
+#
+sub _set_log_level
+{
+  my( $self, $logger_prefix, $level) = @_;
+  my( $package, $f, $l, $logger_name);
+
+  $logger_name = '';
+
+  # When the callers package is not the proper package to set the level for
+  # it is possible to use a structure where another package can be set to
+  # the proper value. The special value 'root' is used to set level of the
+  # root logger in $logger_prefix.
+  #
+  if( ref $level eq 'HASH' )
+  {
+    $package = $level->{package} if defined $level->{package};
+    $level = $level->{level} if defined $level->{level};
+
+    # Setter function, set proper level.
+    #
+    if( defined $level )
+    {
+      $logger_name .= $self->$logger_prefix
+                    . ($package eq 'root' ? '' : "::$package")
+                    ;
+    }
+
+    # Getter function, so return proper level.
+    #
+    else
+    {
+      $package = $level->{package} if defined $level->{package};
+      $logger_name .= $self->$logger_prefix
+                    . ($package eq 'root' ? '' : "::$package")
+                    ;
+
+      return $self->get_log_lvl($logger_name);
+    }
+  }
+
+  # Setter function, so return proper level.
+  #
+  elsif( defined $level )
+  {
+    ( $package, $f, $l) = caller(1);
+    $logger_name .= $self->$logger_prefix . "::$package";
+  }
+
+  # Getter function, so return proper level.
+  #
+  else
+  {
+    ( $package, $f, $l) = caller(1);
+    $logger_name .= $self->$logger_prefix . "::$package";
+    return $self->get_log_lvl($logger_name);
+  }
+
+  # Check level code
+  #
+  if( !$_test_levels->($level) )
+  {
+    return $self->log( $self->C_LOG_ILLLEVELCD, [$level]);
+  }
+
+  # Save level for this package
+  #
+  $self->_set_log_lvl($logger_name => $level);
+
+  # Set level for appropriate logger
+  #
+  my $logger = Log::Log4perl->get_logger($logger_name);
+  my $log_level_name = $self->_get_log_level_name($level);
+  $logger->level($log_level_name);
+  $self->log( $self->C_LOG_LOGGERLVL, [ $logger_name, $log_level_name]);
+  return $level;
+}
 
 #-------------------------------------------------------------------------------
 #
@@ -546,8 +559,15 @@ sub start_logging
   $self->_previousDate('');
   $self->_previousTime('');
 
-  $self->_make_logger_objects unless $self->_logger_initialized;
-  $self->_logging_on;
+  if( $self->_logger_initialized )
+  {
+    $self->_logging_on;
+  }
+
+  else
+  {
+    $self->_make_logger_objects;
+  }
 
   # Set logging levels explicitly
   #
@@ -586,7 +606,8 @@ sub _make_logger_objects
 {
   my($self) = @_;
 
-  $self->_create_file_root_logger;
+  #$self->_create_file_root_logger;
+  $self->init_file_logger({});
   $self->_create_stderr_root_logger;
   $self->_create_email_root_logger;
 
@@ -598,11 +619,48 @@ sub _make_logger_objects
 }
 
 #-------------------------------------------------------------------------------
+# Provide attributes for the File or FileRotate appenders
+# The attributes name, syswrite are overwritten. filename is set if not
+# provided.
+#
+sub init_file_logger
+{
+  my( $self, $logger_attr) = @_;
+
+  # When not defined, set to empty hash
+  #
+  $logger_attr //= {};
+
+  my $config_dir = AppState->instance->config_dir;
+
+  # Always overide
+  #
+  $logger_attr->{name} = '' . $self->ROOT_FILE;
+  $logger_attr->{syswrite} = 1;
+
+  # The filename will be in the config directory and taken from the
+  # moose attributes by default. If set in the hash the caller must
+  # provide the path to the file.
+  #
+  $logger_attr->{filename} //= $config_dir . '/' . $self->log_file;
+  $logger_attr->{mode} //= $self->do_append_log ? 'append' : 'write';
+  $logger_attr->{autoflush} //= $self->do_flush_log ? 1 : 0;
+  $logger_attr->{size} //= 0;
+  $logger_attr->{max} //= 0;
+  
+  my $dispatch_name = 'Log::Dispatch::File';
+  $dispatch_name = 'Log::Dispatch::FileRotate'
+    if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
+
+  $self->_create_file_root_logger( $dispatch_name, $logger_attr);
+}
+
+#-------------------------------------------------------------------------------
 # Create file root logger setup
 #
 sub _create_file_root_logger
 {
-  my($self) = @_;
+  my( $self, $dispatch_name, $appender_attr) = @_;
 
   my $config_dir = AppState->instance->config_dir;
   my $log_file = $config_dir . '/' . $self->log_file;
@@ -631,26 +689,27 @@ sub _create_file_root_logger
 
   # Create root logger for file logging
   #
-  my $logger_file = Log::Log4perl->get_logger('' . $self->ROOT_FILE);
+#  my $logger_file = Log::Log4perl->get_logger('' . $self->ROOT_FILE);
+  my $logger_file = Log::Log4perl->get_logger($appender_attr->{name});
 
-  my $appender_attr =
-     { name           => '' . $self->ROOT_FILE
-     , filename       => $log_file
-     , syswrite       => 1
-     , mode           => $self->do_append_log ? 'append' : 'write'
-     , autoflush      => $self->do_flush_log ? 1 : 0
-     };
+#  my $appender_attr =
+#     { name           => '' . $self->ROOT_FILE
+#     , filename       => $log_file
+#     , syswrite       => 1
+#     , mode           => $self->do_append_log ? 'append' : 'write'
+#     , autoflush      => $self->do_flush_log ? 1 : 0
+#     };
 
-  my $dispatch_name = 'Log::Dispatch::File';
-  if( $self->do_append_log
-  and $self->log_file_size > 0
-  and $self->nbr_log_files > 0
-    )
-  {
-    $dispatch_name = 'Log::Dispatch::FileRotate';
-    $appender_attr->{size} = $self->log_file_size;
-    $appender_attr->{max} = $self->nbr_log_files;
-  }
+#  my $dispatch_name = 'Log::Dispatch::File';
+#  if( $self->do_append_log
+#  and $self->log_file_size > 0
+#  and $self->nbr_log_files > 0
+#    )
+#  {
+#    $dispatch_name = 'Log::Dispatch::FileRotate';
+#    $appender_attr->{size} = $self->log_file_size;
+#    $appender_attr->{max} = $self->nbr_log_files;
+#  }
 
   my $appender_file = Log::Log4perl::Appender->new
                       ( $dispatch_name
@@ -660,6 +719,47 @@ sub _create_file_root_logger
   $appender_file->layout($self->_get_layout('log.millisec'));
   $logger_file->add_appender($appender_file);
   $logger_file->level($self->_get_log_level_name($self->file_log_level));
+
+  # Turn logging off first, the call to file_log_level(...) or
+  # start_file_logging() should turn it on
+  #
+  #$logger_file->level('OFF');
+}
+
+#-------------------------------------------------------------------------------
+# Provide attributes for the ScreenColoredLevels appenders
+# The attributes name is overwritten.
+#
+sub init_stderr_logger
+{
+  my( $self, $logger_attr) = @_;
+
+  # When not defined, set to empty hash
+  #
+  $logger_attr //= {};
+
+  my $config_dir = AppState->instance->config_dir;
+
+  # Always overide
+  #
+  $logger_attr->{name} = '' . $self->ROOT_FILE;
+  $logger_attr->{syswrite} = 1;
+
+  # The filename will be in the config directory and taken from the
+  # moose attributes by default. If set in the hash the caller must
+  # provide the path to the file.
+  #
+  $logger_attr->{filename} //= $config_dir . '/' . $self->log_file;
+  $logger_attr->{mode} //= $self->do_append_log ? 'append' : 'write';
+  $logger_attr->{autoflush} //= $self->do_flush_log ? 1 : 0;
+  $logger_attr->{size} //= 0;
+  $logger_attr->{max} //= 0;
+  
+  my $dispatch_name = 'Log::Dispatch::File';
+  $dispatch_name = 'Log::Dispatch::FileRotate'
+    if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
+
+  $self->_create_file_root_logger( $dispatch_name, $logger_attr);
 }
 
 #-------------------------------------------------------------------------------
@@ -1248,7 +1348,7 @@ sub add_tag
   }
 
   my @tagLabels = $self->get_tag_names;
-  if( $log_tag ~~ \@tagLabels )
+  if( match::simple::match( $log_tag, \@tagLabels) )
   {
     $self->log( $self->C_LOG_TAGLBLINUSE, [$log_tag]);
   }
