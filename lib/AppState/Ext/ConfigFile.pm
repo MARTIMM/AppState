@@ -12,6 +12,7 @@ use Moose::Util::TypeConstraints;
 extends qw(AppState::Ext::Constants);
 
 require Storable;
+require match::simple;
 
 use AppState;
 use AppState::Ext::Documents;
@@ -231,9 +232,12 @@ sub BUILD
       # Codes are dualvars. doesn't matter if code is compared as string
       # or as number. But using a number might compare quicker.
       #
-      return 0 + $_[0] ~~ [ $self->C_CFF_CONFIGDIR, $self->C_CFF_WORKDIR
-                          , $self->C_CFF_FILEPATH, $self->C_CFF_TEMPDIR
-                          ];
+      return match::simple::match
+             ( 0 + $_[0]
+             , [ 0 + $self->C_CFF_CONFIGDIR, 0 + $self->C_CFF_WORKDIR
+               , 0 + $self->C_CFF_FILEPATH, 0 + $self->C_CFF_TEMPDIR
+               ]
+             );
     };
 
 #  }

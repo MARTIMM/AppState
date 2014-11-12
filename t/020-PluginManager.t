@@ -6,6 +6,7 @@ use Test::Most;
 use Moose;
 
 use AppState::Plugins::Feature::PluginManager;
+require match::simple;
 
 #-------------------------------------------------------------------------------
 # Make object
@@ -33,12 +34,12 @@ sub
                        }
                      );
   my $pnames = [$pm->get_plugin_names];
-  ok( 'Log' ~~ $pnames, 'Plugin Log found');
-#  ok( 'Process' ~~ $pnames, 'Plugin Process found');
-  ok( 'CommandLine' ~~ $pnames,  'Plugin CommandLine found');
-  ok( 'NodeTree' ~~ $pnames,'Plugin NodeTree found');
-  ok( 'PluginManager' ~~ $pnames, 'Plugin PluginManager found');
-  ok( 'ConfigManager' ~~ $pnames, 'Plugin ConfigManager found');
+  ok( match::simple::match( 'Log', $pnames), 'Plugin Log found');
+#  ok( match::simple::match( 'Process', $pnames), 'Plugin Process found');
+  ok( match::simple::match( 'CommandLine', $pnames),  'Plugin CommandLine found');
+  ok( match::simple::match( 'NodeTree', $pnames),'Plugin NodeTree found');
+  ok( match::simple::match( 'PluginManager', $pnames), 'Plugin PluginManager found');
+  ok( match::simple::match( 'ConfigManager', $pnames), 'Plugin ConfigManager found');
 };
 
 #-------------------------------------------------------------------------------
