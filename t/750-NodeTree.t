@@ -9,7 +9,7 @@ require File::Path;
 # Loading AppState module
 #
 use AppState;
-use AppState::NodeTree::Node;
+use AppState::Plugins::Feature::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -75,7 +75,7 @@ my $dom = $nt->convert_to_node_tree($data);
 #-------------------------------------------------------------------------------
 # Testing node data
 #
-isa_ok( $dom, 'AppState::NodeTree::NodeDOM', 'Top level node is a dom node');
+isa_ok( $dom, 'AppState::Plugins::Feature::NodeTree::NodeDOM', 'Top level node is a dom node');
 is( $dom->nbr_children, 1, 'Number of children should be 1');
 
 my $child = $dom->get_child(0);
@@ -191,7 +191,7 @@ sub doSearchAndTest
 
   $node->search_nodes($searchCfg);
   my $str = join( ' '
-                , map { ref $_ eq 'AppState::NodeTree::NodeDOM'
+                , map { ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeDOM'
                         ? 'D'
                         : $_->name
                       } $node->get_found_nodes
@@ -205,11 +205,11 @@ sub doXPathAndTest
 {
   my( $node, $path, $nodeList) = @_;
 
-  my $nodeStr = ref $node eq 'AppState::NodeTree::NodeDOM' ? 'D' : $node->name;
+  my $nodeStr = ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeDOM' ? 'D' : $node->name;
   my $message = sprintf "%-40.40s: %-30.30s", "$path", "$nodeList (From $nodeStr)";
   $node->xpath($path);
   my $str = join( ' '
-                , map { ref $_ eq 'AppState::NodeTree::NodeDOM'
+                , map { ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeDOM'
                         ? 'D'
                         : $_->name
                       } $node->get_found_nodes

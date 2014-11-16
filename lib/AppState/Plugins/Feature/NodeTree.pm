@@ -1,7 +1,7 @@
 package AppState::Plugins::Feature::NodeTree;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse("v0.3.5");
+use version; our $VERSION = version->parse("v0.3.6");
 use 5.010001;
 
 use namespace::autoclean;
@@ -11,16 +11,16 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 require AppState;
-require AppState::NodeTree::Node;
-require AppState::NodeTree::NodeDOM;
-require AppState::NodeTree::NodeText;
-require AppState::NodeTree::NodeAttr;
+require AppState::Plugins::Feature::NodeTree::Node;
+require AppState::Plugins::Feature::NodeTree::NodeDOM;
+require AppState::Plugins::Feature::NodeTree::NodeText;
+require AppState::Plugins::Feature::NodeTree::NodeAttr;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::NodeTree::Node/NodeRoot');
+def_sts( 'C_NT_NOTNODE'         ,'M_ERROR', 'Cannot use other types of node than AppState::Plugins::Feature::NodeTree::Node/NodeRoot');
 def_sts( 'C_NT_ADDATTR'         ,'M_INFO', 'Add attrs to node=%s');
 def_sts( 'C_NT_NODEADDTOPARENT' ,'M_INFO', 'Add node %s to parent %s');
 def_sts( 'C_NT_ADDTEXTTOPARENT' ,'M_INFO', 'Add text to parent=%s');
@@ -138,7 +138,7 @@ sub convert_to_node_tree
   my( $self, $rawData, $node) = @_;
 
   my( $dom, $root);
-  if( ref($node) =~ m/AppState::NodeTree::Node(Root)?/ )
+  if( ref($node) =~ m/AppState::Plugins::Feature::NodeTree::Node(Root)?/ )
   {
     $root = $node;
   }
@@ -151,8 +151,8 @@ sub convert_to_node_tree
 
   else
   {
-    $dom = AppState::NodeTree::NodeDOM->new;
-    $root = AppState::NodeTree::NodeRoot->new;
+    $dom = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
+    $root = AppState::Plugins::Feature::NodeTree::NodeRoot->new;
     $dom->link_with_node($root);
   }
 
@@ -161,23 +161,23 @@ sub convert_to_node_tree
   # Attach an element on top of the node tree denoting a Document DOM node
   #
   $node = $node_tree->xpath_get_root_node;
-  if( ref $node eq 'AppState::NodeTree::Node' )
+  if( ref $node eq 'AppState::Plugins::Feature::NodeTree::Node' )
   {
-    $dom = AppState::NodeTree::NodeDOM->new;
-    $root = AppState::NodeTree::NodeRoot->new;
+    $dom = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
+    $root = AppState::Plugins::Feature::NodeTree::NodeRoot->new;
     $dom->link_with_node($root);
     $root->link_with_node($node);
     $node = $dom;
   }
 
-  elsif( ref $node eq 'AppState::NodeTree::NodeRoot' )
+  elsif( ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeRoot' )
   {
-    $dom = AppState::NodeTree::NodeDOM->new;
+    $dom = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
     $dom->link_with_node($node);
     $node = $dom;
   }
 
-  elsif( ref $node eq 'AppState::NodeTree::NodeDOM' )
+  elsif( ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeDOM' )
   {
   }
 
@@ -349,7 +349,7 @@ sub _convert_to_node_tree
       #
 #      if( $rawDataNode )
 #      {
-        $node = AppState::NodeTree::NodeText->new( value => '' . $rawDataNode);
+        $node = AppState::Plugins::Feature::NodeTree::NodeText->new( value => '' . $rawDataNode);
         $parent_node->link_with_node($node);
 #      }
     }
@@ -374,20 +374,20 @@ sub _mkNode
     # instead of a nodename with attributes. Make a text node having the
     # whole item line as its value. There will be no attributes.
     #
-    $node = AppState::NodeTree::NodeText->new( value => '' . $rawDataNode);
+    $node = AppState::Plugins::Feature::NodeTree::NodeText->new( value => '' . $rawDataNode);
     $parent_node->link_with_node($node);
     $self->log( $self->C_NT_ADDTEXTTOPARENT, [$parent_node->name]);
   }
 
   else
   {
-    $node = AppState::NodeTree::Node->new( name => $nodename);
+    $node = AppState::Plugins::Feature::NodeTree::Node->new( name => $nodename);
     $parent_node->link_with_node($node);
     $self->log( $self->C_NT_NODEADDTOPARENT, [ $node->name, $parent_node->name]);
 
     if( defined $value )
     {
-      my $nodeT = AppState::NodeTree::NodeText->new( value => '' . $value);
+      my $nodeT = AppState::Plugins::Feature::NodeTree::NodeText->new( value => '' . $value);
       $node->link_with_node($nodeT);
       $self->log( $self->C_NT_ADDTEXTTOPARENT, [$node->name]);
     }
@@ -440,7 +440,7 @@ sub _setAttributes
     $ov =~ s/^['"]//;
     $ov =~ s/['"]$//;
 
-    my $nodeA = AppState::NodeTree::NodeAttr->new( name => $ok
+    my $nodeA = AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => $ok
                                                  , value => '' . $ov
                                                  );
     $node->link_with_node($nodeA);
@@ -662,7 +662,7 @@ __END__
 
 =head1 NAME
 
-AppState::NodeTree - Create a tree of nodes from a specific data structure
+AppState::Plugins::Feature::NodeTree - Create a tree of nodes from a specific data structure
 
 =head1 SYNOPSIS
 
@@ -737,7 +737,7 @@ to the following rules.
 #    - a
 #    - b
 #
-# 'Nodes' is given to AppState::NodeTree::convert_to_node_tree() to be converted
+# 'Nodes' is given to AppState::Plugins::Feature::NodeTree::convert_to_node_tree() to be converted
 # into a tree of nodes. Below the 'Nodes' there is an array of items. Each item
 # represents a node. While the Yaml data description can be used to describe
 # more complex structures the module will understand only the following types of

@@ -25,12 +25,12 @@ use_ok('AppState::Ext::Documents');
 use_ok('AppState::Ext::Meta_Constants');
 use_ok('AppState::Ext::Status');
 
-use_ok('AppState::NodeTree::Node');
-use_ok('AppState::NodeTree::NodeAttr');
-use_ok('AppState::NodeTree::NodeDOM');
-use_ok('AppState::NodeTree::NodeGlobal');
-use_ok('AppState::NodeTree::NodeRoot');
-use_ok('AppState::NodeTree::NodeText');
+use_ok('AppState::Plugins::Feature::NodeTree::Node');
+use_ok('AppState::Plugins::Feature::NodeTree::NodeAttr');
+use_ok('AppState::Plugins::Feature::NodeTree::NodeDOM');
+use_ok('AppState::Plugins::Feature::NodeTree::NodeGlobal');
+use_ok('AppState::Plugins::Feature::NodeTree::NodeRoot');
+use_ok('AppState::Plugins::Feature::NodeTree::NodeText');
 
 
 done_testing();
