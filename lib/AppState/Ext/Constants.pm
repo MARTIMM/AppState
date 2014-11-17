@@ -210,7 +210,7 @@ sub log_init
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
 
-  if( ref $log eq 'AppState::Plugins::Feature::Log' )
+  if( ref $log eq 'AppState::Plugins::Log' )
   {
     # Only add a tag when packagae doesn't have any
     #
@@ -220,7 +220,7 @@ sub log_init
   else
   {
     $app->add_subscriber
-    ( 'AppState::Plugins::Feature::Log'
+    ( 'AppState::Plugins::Log'
     , sub
       { my( $observed, $event, %parameters) = @_;
         my $log = $parameters{object};
@@ -250,7 +250,7 @@ sub _log
   my $log = $app->check_plugin('Log');
 
   $sts = $log->write_log( $messages, $error_code, $call_level + 1)
-    if ref $log eq 'AppState::Plugins::Feature::Log';
+    if ref $log eq 'AppState::Plugins::Log';
 
   return $sts;
 }
@@ -270,7 +270,7 @@ sub log
   my $log = $app->check_plugin('Log');
 
   $sts = $log->wlog( $error_code, $msg_values, $call_level + 1)
-    if ref $log eq 'AppState::Plugins::Feature::Log';
+    if ref $log eq 'AppState::Plugins::Log';
 
   return $sts;
 }

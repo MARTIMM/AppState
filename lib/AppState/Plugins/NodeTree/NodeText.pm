@@ -1,14 +1,14 @@
-package AppState::NodeTree::NodeText;
+package AppState::Plugins::NodeTree::NodeText;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.0.1");
+use version; our $VERSION = '' . version->parse("v0.0.2");
 use 5.010001;
 
 use namespace::autoclean;
 
 use Moose;
-use AppState::NodeTree::Node;
-extends 'AppState::NodeTree::NodeRoot';
+use AppState::Plugins::NodeTree::Node;
+extends 'AppState::Plugins::NodeTree::NodeRoot';
 
 #-------------------------------------------------------------------------------
 has value =>

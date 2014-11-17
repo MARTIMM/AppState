@@ -10,7 +10,7 @@ require File::Path;
 # Loading AppState module
 #
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
+use AppState::Plugins::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 # Init

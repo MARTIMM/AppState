@@ -23,7 +23,7 @@ my $log = $app->get_app_object('Log');
 subtest 'Check object and defaults' =>
 sub
 {
-  my $log_modulename = 'AppState::Plugins::Feature::Log';
+  my $log_modulename = 'AppState::Plugins::Log';
   isa_ok( $log, $log_modulename);
   $log->add_tag($tagName);
 

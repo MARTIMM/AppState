@@ -1,17 +1,17 @@
-package AppState::NodeTree::Node;
+package AppState::Plugins::NodeTree::Node;
 
 use Modern::Perl;
-use version; our $VERSION = version->parse('v0.0.4');
+use version; our $VERSION = version->parse('v0.0.5');
 use 5.010001;
 
 use namespace::autoclean;
 
 use Moose;
 use Moose::Util::TypeConstraints;
-extends 'AppState::NodeTree::NodeRoot';
+extends 'AppState::Plugins::NodeTree::NodeRoot';
 
 require AppState;
-require AppState::NodeTree::NodeAttr;
+require AppState::Plugins::NodeTree::NodeAttr;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
@@ -26,16 +26,16 @@ has name =>
     , writer            => 'rename'
     );
 
-subtype 'AppState::NodeTree::Node::ValidNodeChildType'
+subtype 'AppState::Plugins::NodeTree::Node::ValidNodeChildType'
       => as 'Object'
-      => where { ref($_) =~ m/AppState::NodeTree::Node(Text)?/ }
+      => where { ref($_) =~ m/AppState::Plugins::NodeTree::Node(Text)?/ }
       => message { 'Child object is not of proper type' };
 
-has '+children' => (isa => 'ArrayRef[AppState::NodeTree::Node::ValidNodeChildType]');
+has '+children' => (isa => 'ArrayRef[AppState::Plugins::NodeTree::Node::ValidNodeChildType]');
 
 has attributes =>
     ( is                => 'rw'
-    , isa               => 'ArrayRef[AppState::NodeTree::NodeAttr]'
+    , isa               => 'ArrayRef[AppState::Plugins::NodeTree::NodeAttr]'
     , predicate         => 'has_attributes'
     , init_arg          => undef
     , default           => sub { return []; }
@@ -95,14 +95,14 @@ sub insert_above_node
   # the node address from that parent.
   #
   $node->parent->_remove_child($node)
-    if ref $node->parent eq 'AppState::NodeTree::Node';
+    if ref $node->parent eq 'AppState::Plugins::NodeTree::Node';
 
   # Set the new parent of the node by replacing the old child node address.
   # Can not do remove and then add because the order of the child list
   # will change.
   #
   $self->parent->_replace_child( $self, $node)
-    if ref $self->parent eq 'AppState::NodeTree::Node';
+    if ref $self->parent eq 'AppState::Plugins::NodeTree::Node';
 
   # Set the parent of self node to the new node.
   #
@@ -126,7 +126,7 @@ sub insert_before_node
     # remove the node address from that parent.
     #
     $node->parent->_remove_child($node)
-      if ref $node->parent eq 'AppState::NodeTree::Node';
+      if ref $node->parent eq 'AppState::Plugins::NodeTree::Node';
 
     $node->parent($self->parent);
     $self->parent->splice_children( $index, 0, $node);
@@ -154,7 +154,7 @@ sub insert_after_node
     # remove the node address from that parent.
     #
     $node->parent->_remove_child($node)
-      if ref $node->parent eq 'AppState::NodeTree::Node';
+      if ref $node->parent eq 'AppState::Plugins::NodeTree::Node';
 
     $node->parent($self->parent);
     $self->parent->splice_children( $index + 1, 0, $node);
@@ -241,7 +241,7 @@ sub add_attribute
   foreach my $an (keys %attrs)
   {
     my $av = $attrs{$an};
-    my $node = AppState::NodeTree::NodeAttr->new( name => $an, value => $av);
+    my $node = AppState::Plugins::NodeTree::NodeAttr->new( name => $an, value => $av);
     $self->push_attribute($node);
   }
 }
@@ -282,7 +282,7 @@ __END__
 
 =head1 NAME
 
-AppState::NodeTree::Node - Node in the NodeTree
+AppState::Plugins::NodeTree::Node - Node in the NodeTree
 
 =head1 SYNOPSIS
 

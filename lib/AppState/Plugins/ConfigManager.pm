@@ -1,4 +1,4 @@
-package AppState::Plugins::Feature::ConfigManager;
+package AppState::Plugins::ConfigManager;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse("v0.9.6");
@@ -305,7 +305,7 @@ __END__
 
 =head1 NAME
 
-AppState::Plugins::Feature::ConfigManager - Plugin to manage configuration files
+AppState::Plugins::ConfigManager - Plugin to manage configuration files
 
 =head1 SYNOPSIS
 
@@ -433,7 +433,7 @@ documentation below only the code C_CFG_CONFIGDIR will be mentioned.
 =head2 Storage types
 
 The types of storage will be dictated by the available plugins which
-L<AppState::Plugins::Feature::ConfigManager> delivers. A list of pluginnames is returned by the following
+L<AppState::Plugins::ConfigManager> delivers. A list of pluginnames is returned by the following
 lines;
 
   use AppState;

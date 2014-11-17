@@ -82,6 +82,7 @@ sub BUILD
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is successfull.
 #
 sub is_success
 {
@@ -90,6 +91,7 @@ sub is_success
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is a failure.
 #
 sub is_fail
 {
@@ -98,6 +100,7 @@ sub is_fail
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status should be forced.
 #
 sub is_forced
 {
@@ -106,6 +109,7 @@ sub is_forced
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is informational.
 #
 sub is_info
 {
@@ -114,6 +118,7 @@ sub is_info
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is a warning.
 #
 sub is_warning
 {
@@ -122,6 +127,7 @@ sub is_warning
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is an error.
 #
 sub is_error
 {
@@ -130,6 +136,7 @@ sub is_error
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is a trace message
 #
 sub is_trace
 {
@@ -138,6 +145,7 @@ sub is_trace
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is a debug message.
 #
 sub is_debug
 {
@@ -155,6 +163,7 @@ sub is_warn
 }
 
 #-------------------------------------------------------------------------------
+# Return true(0) when object status is a fatal message.
 #
 sub is_fatal
 {
@@ -163,16 +172,18 @@ sub is_fatal
 }
 
 #-------------------------------------------------------------------------------
+# Set error message.
 #
 sub set_message
 {
-  my( $self, @msgs) = @_;
-  $self->status->{message} = join( ' ', @msgs);
+  my( $self, $message) = @_;
+  $self->status->{message} = $message;
 
   return '';
 }
 
 #-------------------------------------------------------------------------------
+# Get error message
 #
 sub get_message
 {
@@ -180,16 +191,18 @@ sub get_message
 }
 
 #-------------------------------------------------------------------------------
+# Set the error code
 #
 sub set_error
 {
   my( $self, $error) = @_;
   $self->status->{error} = $error;
 
-  return '';
+  return $error;
 }
 
 #-------------------------------------------------------------------------------
+# Get the error code
 #
 sub get_error
 {
@@ -197,6 +210,7 @@ sub get_error
 }
 
 #-------------------------------------------------------------------------------
+# Get severity part.
 #
 sub get_severity
 {
@@ -205,6 +219,7 @@ sub get_severity
 }
 
 #-------------------------------------------------------------------------------
+# Get the event code part. Not very usefull now.
 #
 sub get_eventcode
 {
@@ -213,7 +228,7 @@ sub get_eventcode
 }
 
 #-------------------------------------------------------------------------------
-#
+# Get caller information from 
 sub set_caller_info
 {
   my( $self, $call_level) = @_;

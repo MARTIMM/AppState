@@ -1,4 +1,4 @@
-package AppState::Plugins::Feature::CommandLine;
+package AppState::Plugins::CommandLine;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.2.3');

@@ -5,10 +5,10 @@ use Test::Most;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
-use AppState::Plugins::Feature::NodeTree::NodeDOM;
-use AppState::Plugins::Feature::NodeTree::NodeAttr;
-use AppState::Plugins::Feature::NodeTree::NodeText;
+use AppState::Plugins::NodeTree::Node;
+use AppState::Plugins::NodeTree::NodeDOM;
+use AppState::Plugins::NodeTree::NodeAttr;
+use AppState::Plugins::NodeTree::NodeText;
 
 use Data::Dumper ();
 
@@ -28,8 +28,8 @@ $log->file_log_level($log->M_ERROR);
 #
 # D - R
 #
-my $dom = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
-my $root = AppState::Plugins::Feature::NodeTree::NodeRoot->new;
+my $dom = AppState::Plugins::NodeTree::NodeDOM->new;
+my $root = AppState::Plugins::NodeTree::NodeRoot->new;
 $dom->link_with_node($root);
 
 #-------------------------------------------------------------------------------
@@ -40,11 +40,11 @@ $dom->link_with_node($root);
 #       +- n0_1
 #       +- n0_2
 #
-my $n0_0 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_0');
+my $n0_0 = AppState::Plugins::NodeTree::Node->new(name => 'n0_0');
 $root->link_with_node($n0_0);
-my $n0_1 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_1');
+my $n0_1 = AppState::Plugins::NodeTree::Node->new(name => 'n0_1');
 $root->link_with_node($n0_1);
-my $n0_2 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_2');
+my $n0_2 = AppState::Plugins::NodeTree::Node->new(name => 'n0_2');
 $root->link_with_node($n0_2);
 
 #-------------------------------------------------------------------------------
@@ -57,19 +57,19 @@ $root->link_with_node($n0_2);
 #               +- 'text'
 #               +- n1_2
 #
-my $n1_0 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n1_0');
+my $n1_0 = AppState::Plugins::NodeTree::Node->new(name => 'n1_0');
 $n0_2->link_with_node($n1_0);
-my $n1_1 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n1_1');
+my $n1_1 = AppState::Plugins::NodeTree::Node->new(name => 'n1_1');
 $n0_2->link_with_node($n1_1);
-my $t1_0 = AppState::Plugins::Feature::NodeTree::NodeText->new(value => 'text 1 0');
+my $t1_0 = AppState::Plugins::NodeTree::NodeText->new(value => 'text 1 0');
 $n0_2->link_with_node($t1_0);
-my $n1_2 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n1_2');
+my $n1_2 = AppState::Plugins::NodeTree::Node->new(name => 'n1_2');
 $n0_2->link_with_node($n1_2);
 
 is( $n0_2->nbr_children, 4, 'n0_2 has 4 children');
 
 my $str = join( ' '
-              , map { ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeText'
+              , map { ref $_ eq 'AppState::Plugins::NodeTree::NodeText'
                         ? 'text'
                         : $_->name
                     }
@@ -87,18 +87,18 @@ is( $str, 'n1_0 n1_1 text n1_2', "Check all n0_2 kiddies");
 #                  +- 'text'
 #                  +- n1_2(A)
 #
-my @nds = ( AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'class', value => 'c1')
-          , AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'id', value => 1)
+my @nds = ( AppState::Plugins::NodeTree::NodeAttr->new( name => 'class', value => 'c1')
+          , AppState::Plugins::NodeTree::NodeAttr->new( name => 'id', value => 1)
           );
 $n0_1->link_with_node(@nds);
 
-@nds = ( AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'class', value => 'c2')
-       , AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'id', value => 2)
+@nds = ( AppState::Plugins::NodeTree::NodeAttr->new( name => 'class', value => 'c2')
+       , AppState::Plugins::NodeTree::NodeAttr->new( name => 'id', value => 2)
        );
 $n0_2->link_with_node(@nds);
 
-@nds = ( AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'class', value => 'c1')
-       , AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'id', value => 3)
+@nds = ( AppState::Plugins::NodeTree::NodeAttr->new( name => 'class', value => 'c1')
+       , AppState::Plugins::NodeTree::NodeAttr->new( name => 'id', value => 3)
        );
 $n1_2->link_with_node(@nds);
 
@@ -117,14 +117,14 @@ $n0_0->set_local_data( d1 => 'v1a', d3 => 'v3');
 #                  +- 'text'
 #                  +- n1_2(A)
 #
-@nds = ( AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_2')
-       , AppState::Plugins::Feature::NodeTree::NodeText->new(value => 'text 1 0')
-       , AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_2')
+@nds = ( AppState::Plugins::NodeTree::Node->new(name => 'n0_2')
+       , AppState::Plugins::NodeTree::NodeText->new(value => 'text 1 0')
+       , AppState::Plugins::NodeTree::Node->new(name => 'n0_2')
        );
 $n0_1->link_with_node(@nds);
 
-@nds = ( AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'class', value => 'c2')
-       , AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'id', value => 4)
+@nds = ( AppState::Plugins::NodeTree::NodeAttr->new( name => 'class', value => 'c2')
+       , AppState::Plugins::NodeTree::NodeAttr->new( name => 'id', value => 4)
        );
 ($n0_1->get_children)[0]->link_with_node(@nds);
 
@@ -226,7 +226,7 @@ sub doSearchAndTest
 
   $node->search_nodes($searchCfg);
   my $str = join( ' '
-                , map { ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeDOM'
+                , map { ref $_ eq 'AppState::Plugins::NodeTree::NodeDOM'
                         ? 'D'
                         : $_->name
                       } $node->get_found_nodes

@@ -3,7 +3,7 @@
 # http://www.perl.com/pub/2002/09/11/log4perl.html
 # http://www.netlinxinc.com/netlinx-blog/52-perl/126-eight-loglog4perl-recipes.html
 #
-package AppState::Plugins::Feature::Log;
+package AppState::Plugins::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
@@ -139,7 +139,7 @@ has nbr_log_files =>
 has _log_tag =>
     ( is                => 'ro'
     , isa               => 'HashRef'
-    , default           => sub{ return {'AppState::Plugins::Feature::Log' => '=LG'}; }
+    , default           => sub{ return {'AppState::Plugins::Log' => '=LG'}; }
     , init_arg          => undef
     , traits            => ['Hash']
     , handles           =>
@@ -156,7 +156,7 @@ has _log_tag =>
 # in BUILD.
 #
 my $_test_levels = sub {return 0;};
-subtype 'AppState::Plugins::Feature::Log::Types::Log_level'
+subtype 'AppState::Plugins::Log::Types::Log_level'
     => as 'Int'
     => where { $_test_levels->($_); }
     => message { "The store type '$_' is not correct" };
@@ -361,7 +361,7 @@ sub BUILD
   my($self) = @_;
 
   # Overwrite the sub at _test_levels. It is used for testing the subtype
-  # 'AppState::Plugins::Feature::Log::Types::Log_level'. At that point we do
+  # 'AppState::Plugins::Log::Types::Log_level'. At that point we do
   # not know the constant values to test against.
   #
   $_test_levels = sub
@@ -919,8 +919,8 @@ sub _log_message
   # This logger does not need change of layout patterns like the file logger
   # because date and time is not printed.
   #
-  $logger_name = '' . $self->ROOT_EMAIL . "::$log_attr->{package}";
-  Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
+#  $logger_name = '' . $self->ROOT_EMAIL . "::$log_attr->{package}";
+#  Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
 #say STDERR "L: $logger_name, $l4p_fnc_name";
 }
 

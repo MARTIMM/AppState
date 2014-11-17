@@ -5,7 +5,7 @@ use Test::Most;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
+use AppState::Plugins::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -22,8 +22,8 @@ $app->log_init('705');
 
 #-------------------------------------------------------------------------------
 #
-my $nt = AppState::Plugins::Feature::NodeTree::Node->new;
-isa_ok( $nt, 'AppState::Plugins::Feature::NodeTree::Node');
+my $nt = AppState::Plugins::NodeTree::Node->new;
+isa_ok( $nt, 'AppState::Plugins::NodeTree::Node');
 
 #-------------------------------------------------------------------------------
 # Drop the instance and remove directories

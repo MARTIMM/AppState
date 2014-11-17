@@ -183,13 +183,13 @@ has documents =>
 
 has _plugin_manager =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::PluginManager'
+    , isa               => 'AppState::Plugins::PluginManager'
     , init_arg          => undef
     , default           =>
       sub
       {
         my( $self) = @_;
-        my $pm = AppState::Plugins::Feature::PluginManager->new;
+        my $pm = AppState::Plugins::PluginManager->new;
 
         # Prepare search of feature plugins
         #

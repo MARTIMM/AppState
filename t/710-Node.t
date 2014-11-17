@@ -6,10 +6,10 @@ use Test::File::Content;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
-use AppState::Plugins::Feature::NodeTree::NodeRoot;
-use AppState::Plugins::Feature::NodeTree::NodeAttr;
-use AppState::Plugins::Feature::NodeTree::NodeDOM;
+use AppState::Plugins::NodeTree::Node;
+use AppState::Plugins::NodeTree::NodeRoot;
+use AppState::Plugins::NodeTree::NodeAttr;
+use AppState::Plugins::NodeTree::NodeDOM;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -27,12 +27,12 @@ $app->log_init('710');
 #-------------------------------------------------------------------------------
 # Linking up normal node with dom node
 #
-my $dom = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
-isa_ok( $dom, 'AppState::Plugins::Feature::NodeTree::NodeDOM');
+my $dom = AppState::Plugins::NodeTree::NodeDOM->new;
+isa_ok( $dom, 'AppState::Plugins::NodeTree::NodeDOM');
 is( $dom->parent, undef, 'No parent defined 1');
 is( $dom->has_parent, '', 'No parent defined 2');
 
-my $n = AppState::Plugins::Feature::NodeTree::Node->new(name => 'root');
+my $n = AppState::Plugins::NodeTree::Node->new(name => 'root');
 
 # Failure!
 $dom->link_with_node($n);
@@ -54,8 +54,8 @@ exit(0);
 #-------------------------------------------------------------------------------
 # Linking up root node with dom node
 #
-my $rn = AppState::Plugins::Feature::NodeTree::NodeRoot->new;
-isa_ok( $rn, 'AppState::Plugins::Feature::NodeTree::NodeRoot');
+my $rn = AppState::Plugins::NodeTree::NodeRoot->new;
+isa_ok( $rn, 'AppState::Plugins::NodeTree::NodeRoot');
 is( $rn->parent, undef, 'No parent defined 1');
 is( $rn->has_parent, '', 'No parent defined 2');
 
@@ -70,8 +70,8 @@ is( $rn->parent, $dom, 'Parent of rn is dom');
 #-------------------------------------------------------------------------------
 # Attributes, object tests
 #
-my $attr = AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'class', value => 'c10');
-isa_ok( $attr, 'AppState::Plugins::Feature::NodeTree::NodeAttr');
+my $attr = AppState::Plugins::NodeTree::NodeAttr->new( name => 'class', value => 'c10');
+isa_ok( $attr, 'AppState::Plugins::NodeTree::NodeAttr');
 is( $attr->name, 'class', 'Attribute name = class');
 is( $attr->value, 'c10', 'Attribute value = c10');
 is( $attr->parent, undef, 'No parent defined 1');
@@ -80,13 +80,13 @@ is( $attr->has_parent, '', 'No parent defined 2');
 #-------------------------------------------------------------------------------
 # Attributes, linkup
 #
-my $n0_1 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_1');
+my $n0_1 = AppState::Plugins::NodeTree::Node->new(name => 'n0_1');
 is( $n0_1->name, 'n0_1', 'Name set to n0_1');
 
 $n0_1->add_attribute( id => 'i10');
 is( $n0_1->get_attribute('id'), 'i10', 'Attr id = i10');
 
-my $n0_2 = AppState::Plugins::Feature::NodeTree::Node->new(name => 'n0_2');
+my $n0_2 = AppState::Plugins::NodeTree::Node->new(name => 'n0_2');
 $n0_2->push_attribute($attr);
 is( $n0_2->get_attribute('class'), 'c10', 'Attr class = c10');
 
@@ -104,7 +104,7 @@ content_like( qr/710.*\.log$/
 #-------------------------------------------------------------------------------
 # Can use `link_with_node with same result as add/push attribute
 #
-$attr = AppState::Plugins::Feature::NodeTree::NodeAttr->new( name => 'font', value => 'courier');
+$attr = AppState::Plugins::NodeTree::NodeAttr->new( name => 'font', value => 'courier');
 
 # Failure!
 $dom->link_with_node($attr);
@@ -121,8 +121,8 @@ is( $n0_1->nbr_attributes, 3, 'Nbr attrs n0_1 = 3');
 #-------------------------------------------------------------------------------
 # Text node, object tests
 #
-my $text = AppState::Plugins::Feature::NodeTree::NodeText->new(value => 'Some text line');
-isa_ok( $text, 'AppState::Plugins::Feature::NodeTree::NodeText');
+my $text = AppState::Plugins::NodeTree::NodeText->new(value => 'Some text line');
+isa_ok( $text, 'AppState::Plugins::NodeTree::NodeText');
 is( $text->value, 'Some text line', 'Text = Some text line');
 is( $text->parent, undef, 'No parent defined 1');
 is( $text->has_parent, '', 'No parent defined 2');
@@ -130,7 +130,7 @@ is( $text->has_parent, '', 'No parent defined 2');
 #-------------------------------------------------------------------------------
 # Linkup text node with node. same result as add/push attribute
 #
-my $tn = AppState::Plugins::Feature::NodeTree::NodeText->new(value => 'Some line');
+my $tn = AppState::Plugins::NodeTree::NodeText->new(value => 'Some line');
 
 # Failure!
 $dom->link_with_node($attr);
@@ -145,7 +145,7 @@ $n0_1->link_with_node($tn);
 is( $n0_1->nbr_children, 1, 'Dom has 1 child');
 
 @chs = $n0_1->get_children;
-isa_ok( $chs[0], 'AppState::Plugins::Feature::NodeTree::NodeText');
+isa_ok( $chs[0], 'AppState::Plugins::NodeTree::NodeText');
 is( $chs[0]->value, 'Some line', 'Check text value');
 
 #-------------------------------------------------------------------------------

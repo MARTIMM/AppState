@@ -1,6 +1,6 @@
 # Package used as a global storage between the several node objects
 #
-package AppState::Plugins::Feature::NodeTree::NodeGlobal;
+package AppState::Plugins::NodeTree::NodeGlobal;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.0.3');

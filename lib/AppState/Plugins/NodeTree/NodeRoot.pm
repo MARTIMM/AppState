@@ -1,4 +1,4 @@
-package AppState::Plugins::Feature::NodeTree::NodeRoot;
+package AppState::Plugins::NodeTree::NodeRoot;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.0.2");
@@ -8,22 +8,22 @@ use namespace::autoclean;
 
 use Moose;
 use Moose::Util::TypeConstraints;
-extends 'AppState::Plugins::Feature::NodeTree::NodeDOM';
+extends 'AppState::Plugins::NodeTree::NodeDOM';
 
 require AppState;
 
 #-------------------------------------------------------------------------------
-subtype 'AppState::Plugins::Feature::NodeTree::NodeRoot::ValidParentType'
+subtype 'AppState::Plugins::NodeTree::NodeRoot::ValidParentType'
       => as 'Object'
-      => where { ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeDOM'
-                 or ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeRoot'
-                 or ref $_ eq 'AppState::Plugins::Feature::NodeTree::Node'
+      => where { ref $_ eq 'AppState::Plugins::NodeTree::NodeDOM'
+                 or ref $_ eq 'AppState::Plugins::NodeTree::NodeRoot'
+                 or ref $_ eq 'AppState::Plugins::NodeTree::Node'
                }
       => message { 'Parent object is not of proper type' };
 
 has parent =>
     ( is                => 'rw'
-    , isa               => 'AppState::Plugins::Feature::NodeTree::NodeRoot::ValidParentType'
+    , isa               => 'AppState::Plugins::NodeTree::NodeRoot::ValidParentType'
     , predicate         => 'has_parent'
     , clearer           => 'reset_parent'
     , init_arg          => undef
@@ -32,7 +32,7 @@ has parent =>
 
 has children =>
     ( is                => 'rw'
-    , isa               => 'ArrayRef[AppState::Plugins::Feature::NodeTree::Node]'
+    , isa               => 'ArrayRef[AppState::Plugins::NodeTree::Node]'
     , predicate         => 'hasChildren'
     , init_arg          => undef
     , default           => sub { return []; }
@@ -257,22 +257,22 @@ sub xpath_cmp
   my $rstr = ref $other;
 
 #say "XP cmp: ", $self, ' <-> ', $other;
-#  if( $rstr =~ m/AppState::Plugins::Feature::NodeTree::Node(Text)?/ )
-#  if( $rstr =~ m/AppState::Plugins::Feature::NodeTree::Node(DOM)?/ )
+#  if( $rstr =~ m/AppState::Plugins::NodeTree::Node(Text)?/ )
+#  if( $rstr =~ m/AppState::Plugins::NodeTree::Node(DOM)?/ )
 #  {
-    if( $rstr =~ m/AppState::Plugins::Feature::NodeTree::Node(Root|Text)?$/ )
+    if( $rstr =~ m/AppState::Plugins::NodeTree::Node(Root|Text)?$/ )
     {
 #say "CMP Self = ", ref $self;
       return $self->xpath_element_cmp($other);
     }
 
-#    elsif( $rstr eq 'AppState::Plugins::Feature::NodeTree::NodeAttr' )
+#    elsif( $rstr eq 'AppState::Plugins::NodeTree::NodeAttr' )
 #    {
 #say "Attribute node";
 #      return 1;
 #    }
 
-    elsif( $rstr eq 'AppState::Plugins::Feature::NodeTree::NodeDOM' )
+    elsif( $rstr eq 'AppState::Plugins::NodeTree::NodeDOM' )
     {
 #say "Document node";
       return 1;
@@ -383,7 +383,7 @@ sub xpath_get_attributes
 {
   my($self) = @_;
 
-  return ref $self eq 'AppState::Plugins::Feature::NodeTree::Node' ? $self->get_attributes : ();
+  return ref $self eq 'AppState::Plugins::NodeTree::Node' ? $self->get_attributes : ();
 }
 
 #-------------------------------------------------------------------------------
@@ -393,7 +393,7 @@ sub xpath_string_value
   my($self) = @_;
 
   my @string_children = grep
-                       {ref $_ eq 'AppState::Plugins::Feature::NodeTree::NodeText'}
+                       {ref $_ eq 'AppState::Plugins::NodeTree::NodeText'}
                        $self->get_children;
   my $str = join( ' ', map {$_->value} @string_children);
 
@@ -422,23 +422,23 @@ __END__
 
 =head1 NAME
 
-  AppState::Plugins::Feature::NodeTree::NodeRoot - Root of a node tree.
+  AppState::Plugins::NodeTree::NodeRoot - Root of a node tree.
 
 =head1 SYNOPSIS
 
-  use AppState::Plugins::Feature::NodeTree::NodeRoot;
+  use AppState::Plugins::NodeTree::NodeRoot;
 
-  my $root = AppState::Plugins::Feature::NodeTree::NodeRoot->new(name => 'root');
+  my $root = AppState::Plugins::NodeTree::NodeRoot->new(name => 'root');
 
 =head1 DESCRIPTION
 
-This module extends L<AppState::Plugins::Feature::NodeTree::Node> and adds nothing. When placed
+This module extends L<AppState::Plugins::NodeTree::Node> and adds nothing. When placed
 at the top of a tree one can get the classname using ref to check on the type
 of node when traversing the tree.
 
 =head1 METHODS
 
-See L<AppState::Plugins::Feature::NodeTree::Node>
+See L<AppState::Plugins::NodeTree::Node>
 
 =head1 BUGS
 

@@ -38,7 +38,7 @@ sub
 {
   # Set code and status
   #
-  $sts->set_message( 'test', 'of');
+  $sts->set_message( 'test of');
   $sts->set_error($sts->M_F_ERROR | 24);
 
   # Test them

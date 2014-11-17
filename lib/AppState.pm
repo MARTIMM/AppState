@@ -11,7 +11,7 @@ require File::Basename;
 require File::HomeDir;
 require File::Path;
 
-use AppState::Plugins::Feature::PluginManager;
+use AppState::Plugins::PluginManager;
 use AppState::Ext::Meta_Constants;
 
 use Moose;
@@ -94,9 +94,9 @@ has use_temp_dir =>
 
 has _plugin_manager =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::PluginManager'
+    , isa               => 'AppState::Plugins::PluginManager'
     , init_arg          => undef
-    , default           => sub { AppState::Plugins::Feature::PluginManager->new; }
+    , default           => sub { AppState::Plugins::PluginManager->new; }
     , handles           => [qw( list_plugin_names check_plugin has_object
                                 get_object cleanup_plugin add_plugin get_plugin
                                 get_plugin_names plugin_exists nbr_plugins
@@ -204,7 +204,7 @@ if(0)
 
       $pm->set_plugin
            ( { base => $path
-             , modules => ['AppState/Plugins/Feature/Log']
+             , modules => ['AppState/Plugins/Log']
              , api_test => [qw()]
              }
            );
@@ -232,7 +232,7 @@ if(0)
     $pm->search_plugins
          ( { base => $path
            , max_depth => 4
-           , search_regex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
+           , search_regex => qr@/AppState/Plugins/[A-Z][\w]+.pm$@
            , api_test => [qw()]
            }
          );

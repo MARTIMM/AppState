@@ -83,7 +83,7 @@ An example of the logfile is shown here;
        980 IS =LG 0448 LOGSTARTED - Logging started. Log level set to 'ERROR'. Starting new log
        980 IS =LG 0164 LLVLCHANGED - Log level changed from 'ERROR' into 'TRACE'
        981 Is =LG 1027 TAGADDED - Tag 'MXT' added for module 'main'
-       000 Is =LG 1027 TAGADDED - Tag '=CL' added for module 'AppState::Plugins::Feature::CommandLine'
+       000 Is =LG 1027 TAGADDED - Tag '=CL' added for module 'AppState::Plugins::CommandLine'
        000 Is =PM 0395 PLGCREATED - Object CommandLine created
   14:09:07 Is =CL 0092 OPTCHANGED - Option processing changed: bundling
        003 Is =CL 0245 OPTPROCESSED - Options processed
@@ -92,8 +92,8 @@ An example of the logfile is shown here;
 
 The top legend can be hidden by using write_start_message(0). Besides tags for
 the log module(=LG), there are also the entries from the
-AppState::Plugins::Feature::PluginManager (=PM) and the
-AppState::Plugins::Feature::CommandLine(=CL) modules shown in the above log. By
+AppState::Plugins::PluginManager (=PM) and the
+AppState::Plugins::CommandLine(=CL) modules shown in the above log. By
 the way, wrapping was turned off here.
 
 When the status of the error is higher than warning a stack dump is also shown.
@@ -385,7 +385,7 @@ Return the hash reference of the module tags table. Readonly. The method
 add_tag() will use _set_log_tag() to modify the hash. The keys in the hash are
 the names of the modules and their values are the 3 letter tag used in the log
 output. The first entry is that of the log module;
-C<'AppState::Plugins::Feature::Log' => '=LG'>
+C<'AppState::Plugins::Log' => '=LG'>
 
 =head2 _set_log_tag( $module => $tag, ...)
 

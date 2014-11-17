@@ -471,7 +471,7 @@ sub
   $log->add_subscriber( $tagName, $subscriber);
 
   $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
-  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( ref $source, 'AppState::Plugins::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_warning, 'is warning');
   ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
@@ -497,13 +497,13 @@ sub
   $log->add_subscriber( $tagName, $subscriber);
 
   $log->log($self->C_ERR_1);
-  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( ref $source, 'AppState::Plugins::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_error, 'is error');
   ok( $status->get_eventcode, "Check eventcode == " . $status->get_eventcode);
 
   $self->log( $self->C_ERR_2, [ 10, 11]);
-  is( ref $source, 'AppState::Plugins::Feature::Log', 'Check source of notify');
+  is( ref $source, 'AppState::Plugins::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
   ok( $status->is_error, 'is error');
   ok( $status->get_eventcode, 'Check eventcode == ' . $status->get_eventcode);

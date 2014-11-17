@@ -1,4 +1,4 @@
-package AppState::Plugins::Feature::PluginManager;
+package AppState::Plugins::PluginManager;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.1.8");

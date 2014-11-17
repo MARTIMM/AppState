@@ -4,7 +4,7 @@ use Modern::Perl;
 use Test::Most;
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::NodeDOM;
+use AppState::Plugins::NodeTree::NodeDOM;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
@@ -21,10 +21,10 @@ $log->file_log_level($log->M_ERROR);
 $app->log_init('701');
 
 #-------------------------------------------------------------------------------
-my $nt0 = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
-isa_ok( $nt0, 'AppState::Plugins::Feature::NodeTree::NodeDOM');
+my $nt0 = AppState::Plugins::NodeTree::NodeDOM->new;
+isa_ok( $nt0, 'AppState::Plugins::NodeTree::NodeDOM');
 
-my $nt1 = AppState::Plugins::Feature::NodeTree::NodeDOM->new;
+my $nt1 = AppState::Plugins::NodeTree::NodeDOM->new;
 $nt0->link_with_node($nt1);
 ok( $log->get_last_error == $nt0->C_NDM_NODENOTROOT, "Link went wrong");
 

@@ -5,14 +5,14 @@ use Modern::Perl;
 use Test::Most;
 use Moose;
 
-use AppState::Plugins::Feature::PluginManager;
+use AppState::Plugins::PluginManager;
 require match::simple;
 
 #-------------------------------------------------------------------------------
 # Make object
 #
-my $pm = AppState::Plugins::Feature::PluginManager->new;
-isa_ok( $pm, 'AppState::Plugins::Feature::PluginManager');
+my $pm = AppState::Plugins::PluginManager->new;
+isa_ok( $pm, 'AppState::Plugins::PluginManager');
 
 #-------------------------------------------------------------------------------
 subtest 'Test some constants' =>
@@ -29,7 +29,7 @@ sub
 {
   $pm->search_plugins( { base => 'lib'
                        , max_depth => 4
-                       , search_regex => qr@/AppState/Plugins/Feature/[A-Z][\w]+.pm$@
+                       , search_regex => qr@/AppState/Plugins/[A-Z][\w]+.pm$@
                        , api_test => [ qw(cleanup initialize)]
                        }
                      );

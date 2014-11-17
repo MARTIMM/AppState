@@ -30,7 +30,7 @@ $log->add_tag('390');
 $log->write_log( "Tests of default config object", $log->M_INFO);
 
 my $cfm = $app->get_app_object('ConfigManager');
-isa_ok( $cfm, 'AppState::Plugins::Feature::ConfigManager'
+isa_ok( $cfm, 'AppState::Plugins::ConfigManager'
       , 'Check config object type');
 
 $cfm->request_file('configManager');

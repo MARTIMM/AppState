@@ -1,4 +1,4 @@
-package AppState::Plugins::Feature::NodeTree::NodeDOM;
+package AppState::Plugins::NodeTree::NodeDOM;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.0.4');
@@ -9,7 +9,7 @@ use namespace::autoclean;
 use Moose;
 extends qw(AppState::Ext::Constants);
 
-require AppState::Plugins::Feature::NodeTree::NodeGlobal;
+require AppState::Plugins::NodeTree::NodeGlobal;
 require Tree::XPathEngine;
 use AppState::Ext::Meta_Constants;
 
@@ -19,7 +19,7 @@ use AppState::Ext::Meta_Constants;
 def_sts( 'C_NDM_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
 def_sts( 'C_NDM_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
 def_sts( 'C_NDM_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
-                                      . 'AppState::Plugins::Feature::NodeTree::Node. Node ref = %s');
+                                      . 'AppState::Plugins::NodeTree::Node. Node ref = %s');
 
 def_sts( 'C_NDM_CMP_NAME', 'M_CODE', 'Search comparing name of node');
 def_sts( 'C_NDM_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
@@ -28,7 +28,7 @@ def_sts( 'C_NDM_CMP_DATA', 'M_CODE', 'Search comparing data of node');
 #-------------------------------------------------------------------------------
 has child =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::NodeTree::NodeRoot'
+    , isa               => 'AppState::Plugins::NodeTree::NodeRoot'
     , writer            => 'set_child'
     , predicate         => 'has_child'
     , init_arg          => undef
@@ -36,11 +36,11 @@ has child =>
 
 has shared_data =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::NodeTree::NodeGlobal'
+    , isa               => 'AppState::Plugins::NodeTree::NodeGlobal'
     , init_arg          => undef
     , default           =>
       sub
-      { return AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
+      { return AppState::Plugins::NodeTree::NodeGlobal->instance;
       }
     , handles           => [ qw( nbr_found_nodes get_found_node get_found_nodes
 
@@ -108,9 +108,9 @@ sub link_with_node
 
   foreach my $node (@nodes)
   {
-    if( ref $self eq 'AppState::Plugins::Feature::NodeTree::NodeDOM' )
+    if( ref $self eq 'AppState::Plugins::NodeTree::NodeDOM' )
     {
-      if( ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeRoot' )
+      if( ref $node eq 'AppState::Plugins::NodeTree::NodeRoot' )
       {
         $self->set_child($node);
         $node->parent($self);
@@ -122,9 +122,9 @@ sub link_with_node
       }
     }
 
-    elsif( ref $self eq 'AppState::Plugins::Feature::NodeTree::NodeRoot' )
+    elsif( ref $self eq 'AppState::Plugins::NodeTree::NodeRoot' )
     {
-      if( ref $node eq 'AppState::Plugins::Feature::NodeTree::Node' )
+      if( ref $node eq 'AppState::Plugins::NodeTree::Node' )
       {
         $self->push_child($node);
         $node->parent($self);
@@ -136,17 +136,17 @@ sub link_with_node
       }
     }
 
-    elsif( ref $self eq 'AppState::Plugins::Feature::NodeTree::Node' )
+    elsif( ref $self eq 'AppState::Plugins::NodeTree::Node' )
     {
-      if( ref $node eq 'AppState::Plugins::Feature::NodeTree::Node'
-       or ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeText'
+      if( ref $node eq 'AppState::Plugins::NodeTree::Node'
+       or ref $node eq 'AppState::Plugins::NodeTree::NodeText'
         )
       {
         $self->push_child($node);
         $node->parent($self);
       }
 
-      elsif(ref $node eq 'AppState::Plugins::Feature::NodeTree::NodeAttr' )
+      elsif(ref $node eq 'AppState::Plugins::NodeTree::NodeAttr' )
       {
         # When pushing the attribute, the attribute name can already be
         # used. The function will return the modified attribute address in
@@ -210,7 +210,7 @@ sub _search_name
 
   # NodeDOM, NodeRoot and NodeText have no name to check on
   #
-  if( ref($self) eq 'AppState::Plugins::Feature::NodeTree::Node' )
+  if( ref($self) eq 'AppState::Plugins::NodeTree::Node' )
   {
     if( ref $str eq 'Regexp' )
     {
@@ -227,7 +227,7 @@ sub _search_name
   #
   foreach my $child ($self->get_children)
   {
-    next if ref $child eq 'AppState::Plugins::Feature::NodeTree::NodeText';
+    next if ref $child eq 'AppState::Plugins::NodeTree::NodeText';
 
     # Some searches only require one node to return. getOneItem is used
     # to stop the search when a node is found.
@@ -243,7 +243,7 @@ sub _search_attr
 {
   my( $self, $str, $searchCfg) = @_;
 
-  if( ref($self) eq 'AppState::Plugins::Feature::NodeTree::Node' )
+  if( ref($self) eq 'AppState::Plugins::NodeTree::Node' )
   {
     my $attrval = $self->get_attribute($searchCfg->{attrname});
     $attrval //= '';
@@ -263,7 +263,7 @@ sub _search_attr
   #
   foreach my $child ($self->get_children)
   {
-    next if ref($child) eq 'AppState::Plugins::Feature::NodeTree::NodeText';
+    next if ref($child) eq 'AppState::Plugins::NodeTree::NodeText';
 
     # Some searches only require one node to return. getOneItem is used
     # to stop the search when a node is found.
@@ -279,7 +279,7 @@ sub _search_data
 {
   my( $self, $str, $searchCfg) = @_;
 
-  if( ref($self) eq 'AppState::Plugins::Feature::NodeTree::Node' )
+  if( ref($self) eq 'AppState::Plugins::NodeTree::Node' )
   {
     my $dataval = $self->get_local_data($searchCfg->{dataname});
     $dataval //= '';
@@ -298,7 +298,7 @@ sub _search_data
   #
   foreach my $child ($self->get_children)
   {
-    next if ref($child) eq 'AppState::Plugins::Feature::NodeTree::NodeText';
+    next if ref($child) eq 'AppState::Plugins::NodeTree::NodeText';
 
     # Some searches only require one node to return. getOneItem is used
     # to stop the search when a node is found.

@@ -5,7 +5,7 @@ use Test::Most;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::NodeGlobal;
+use AppState::Plugins::NodeTree::NodeGlobal;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -24,8 +24,8 @@ my $ng;
 subtest 'Create global node' =>
 sub
 {
-  $ng = AppState::Plugins::Feature::NodeTree::NodeGlobal->new;
-  isa_ok( $ng, 'AppState::Plugins::Feature::NodeTree::NodeGlobal');
+  $ng = AppState::Plugins::NodeTree::NodeGlobal->new;
+  isa_ok( $ng, 'AppState::Plugins::NodeTree::NodeGlobal');
 
   $ng->set_global_data( a => 5, b => 2, c => undef);
   is( $ng->nbr_global_data, 3, '3 data items');
@@ -38,8 +38,8 @@ my $ng2;
 subtest 'Create second global node' =>
 sub
 {
-  $ng2 = AppState::Plugins::Feature::NodeTree::NodeGlobal->new;
-  isa_ok( $ng2, 'AppState::Plugins::Feature::NodeTree::NodeGlobal');
+  $ng2 = AppState::Plugins::NodeTree::NodeGlobal->new;
+  isa_ok( $ng2, 'AppState::Plugins::NodeTree::NodeGlobal');
   my $dk = join( ' ', sort $ng2->get_global_data_keys);
   is( $dk, 'a b c', "data item keys = '$dk'");
 };

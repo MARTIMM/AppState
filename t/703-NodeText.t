@@ -2,7 +2,7 @@
 #
 use Modern::Perl;
 use Test::Most;
-use AppState::Plugins::Feature::NodeTree::NodeText;
+use AppState::Plugins::NodeTree::NodeText;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -17,8 +17,8 @@ $log->file_log_level($log->M_ERROR);
 $app->log_init('701');
 
 #-------------------------------------------------------------------------------
-my $nt = AppState::Plugins::Feature::NodeTree::NodeText->new;
-isa_ok( $nt, 'AppState::Plugins::Feature::NodeTree::NodeText');
+my $nt = AppState::Plugins::NodeTree::NodeText->new;
+isa_ok( $nt, 'AppState::Plugins::NodeTree::NodeText');
 
 #-------------------------------------------------------------------------------
 # Drop the instance and remove directories

@@ -5,11 +5,11 @@ use Test::Most;
 
 use_ok('AppState');
 
-use_ok('AppState::Plugins::Feature::CommandLine');
-use_ok('AppState::Plugins::Feature::ConfigManager');
-use_ok('AppState::Plugins::Feature::Log');
-use_ok('AppState::Plugins::Feature::NodeTree');
-use_ok('AppState::Plugins::Feature::PluginManager');
+use_ok('AppState::Plugins::CommandLine');
+use_ok('AppState::Plugins::ConfigManager');
+use_ok('AppState::Plugins::Log');
+use_ok('AppState::Plugins::NodeTree');
+use_ok('AppState::Plugins::PluginManager');
 
 use_ok('AppState::Plugins::ConfigDriver::DataDumper');
 use_ok('AppState::Plugins::ConfigDriver::FreezeThaw');
@@ -25,12 +25,12 @@ use_ok('AppState::Ext::Documents');
 use_ok('AppState::Ext::Meta_Constants');
 use_ok('AppState::Ext::Status');
 
-use_ok('AppState::Plugins::Feature::NodeTree::Node');
-use_ok('AppState::Plugins::Feature::NodeTree::NodeAttr');
-use_ok('AppState::Plugins::Feature::NodeTree::NodeDOM');
-use_ok('AppState::Plugins::Feature::NodeTree::NodeGlobal');
-use_ok('AppState::Plugins::Feature::NodeTree::NodeRoot');
-use_ok('AppState::Plugins::Feature::NodeTree::NodeText');
+use_ok('AppState::Plugins::NodeTree::Node');
+use_ok('AppState::Plugins::NodeTree::NodeAttr');
+use_ok('AppState::Plugins::NodeTree::NodeDOM');
+use_ok('AppState::Plugins::NodeTree::NodeGlobal');
+use_ok('AppState::Plugins::NodeTree::NodeRoot');
+use_ok('AppState::Plugins::NodeTree::NodeText');
 
 
 done_testing();

@@ -1,13 +1,13 @@
-package AppState::NodeTree::NodeAttr;
+package AppState::Plugins::NodeTree::NodeAttr;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.0.1");
+use version; our $VERSION = '' . version->parse("v0.0.2");
 use 5.010001;
 
 use namespace::autoclean;
 
 use Moose;
-use AppState::NodeTree::Node;
+use AppState::Plugins::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 has name =>
@@ -22,7 +22,7 @@ has value =>
 
 has parent =>
     ( is                => 'rw'
-    , isa               => 'AppState::NodeTree::Node'
+    , isa               => 'AppState::Plugins::NodeTree::Node'
     , predicate         => 'has_parent'
     , clearer           => 'reset_parent'
     );
