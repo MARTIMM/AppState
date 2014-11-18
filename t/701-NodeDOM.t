@@ -5,7 +5,7 @@ use Test::Most;
 
 use AppState;
 use AppState::Plugins::NodeTree::NodeDOM;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Init

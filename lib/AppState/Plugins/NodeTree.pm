@@ -8,14 +8,14 @@ use namespace::autoclean;
 
 use Moose;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 require AppState;
 require AppState::Plugins::NodeTree::Node;
 require AppState::Plugins::NodeTree::NodeDOM;
 require AppState::Plugins::NodeTree::NodeText;
 require AppState::Plugins::NodeTree::NodeAttr;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes
@@ -667,9 +667,9 @@ AppState::Plugins::NodeTree - Create a tree of nodes from a specific data struct
 =head1 SYNOPSIS
 
 use AppState;
-use AppState::Ext::Constants;
+use AppState::Plugins::Log::Constants;
 
-my $m = AppState::Ext::Constants->new;
+my $m = AppState::Plugins::Log::Constants->new;
 
 my $as = AppState->instance(config_dir => 't0');
 my $nt = $as->get_app_object('NodeTree');

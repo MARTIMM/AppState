@@ -12,12 +12,12 @@ require File::HomeDir;
 require File::Path;
 
 use AppState::Plugins::PluginManager;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 use Moose;
 use MooseX::NonMoose;
 
-extends qw( Class::Singleton AppState::Ext::Constants);
+extends qw( Class::Singleton AppState::Plugins::Log::Constants);
 
 
 #-------------------------------------------------------------------------------

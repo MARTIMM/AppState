@@ -8,9 +8,9 @@ use 5.010001;
 use namespace::autoclean;
 
 use Moose;
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
-use AppState::Ext::Meta_Constants ('def_sts');
+use AppState::Plugins::Log::Meta_Constants ('def_sts');
 use Types::Standard qw(Dict Optional Int Str);
 
 #-------------------------------------------------------------------------------

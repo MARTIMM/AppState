@@ -9,7 +9,7 @@ use namespace::autoclean;
 use Moose;
 use Moose::Util::TypeConstraints;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 require Storable;
 require match::simple;
@@ -17,7 +17,7 @@ require match::simple;
 use AppState;
 use AppState::Ext::Documents;
 
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.

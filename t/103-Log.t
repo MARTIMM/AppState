@@ -4,10 +4,10 @@ package Foo
   use Modern::Perl;
   use Test::Most;
   use Moose;
-  extends 'AppState::Ext::Constants';
+  extends 'AppState::Plugins::Log::Constants';
 
   use AppState;
-  use AppState::Ext::Meta_Constants;
+  use AppState::Plugins::Log::Meta_Constants;
 
   my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
   my $count = 1;
@@ -87,10 +87,10 @@ package Foo::Bar
   use Modern::Perl;
   use Test::Most;
   use Moose;
-  extends 'AppState::Ext::Constants';
+  extends 'AppState::Plugins::Log::Constants';
 
   use AppState;
-  use AppState::Ext::Meta_Constants;
+  use AppState::Plugins::Log::Meta_Constants;
 
   my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
   my $count = 1;
@@ -173,10 +173,10 @@ use Test::File::Content;
 use File::Path();
 
 use Moose;
-extends 'AppState::Ext::Constants';
+extends 'AppState::Plugins::Log::Constants';
 
 use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Make a few status messages in main package

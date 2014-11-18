@@ -1,4 +1,4 @@
-package AppState::Ext::Meta_Constants;
+package AppState::Plugins::Log::Meta_Constants;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.0.2');
@@ -9,8 +9,8 @@ require Scalar::Util;
 use Moose;
 use Moose::Exporter;
 
-use AppState::Ext::Constants;
-state $_aes = AppState::Ext::Constants->new;
+use AppState::Plugins::Log::Constants;
+state $_aes = AppState::Plugins::Log::Constants->new;
 
 #-------------------------------------------------------------------------------
 # Make a Moose constant in the callers namespace. It is a combination of a

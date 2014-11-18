@@ -20,9 +20,9 @@ use_ok('AppState::Plugins::ConfigDriver::Yaml');
 
 use_ok('AppState::Ext::ConfigFile');
 use_ok('AppState::Ext::ConfigIO');
-use_ok('AppState::Ext::Constants');
+use_ok('AppState::Plugins::Log::Constants');
 use_ok('AppState::Ext::Documents');
-use_ok('AppState::Ext::Meta_Constants');
+use_ok('AppState::Plugins::Log::Meta_Constants');
 use_ok('AppState::Ext::Status');
 
 use_ok('AppState::Plugins::NodeTree::Node');

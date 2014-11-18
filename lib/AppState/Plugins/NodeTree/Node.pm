@@ -12,7 +12,7 @@ extends 'AppState::Plugins::NodeTree::NodeRoot';
 
 require AppState;
 require AppState::Plugins::NodeTree::NodeAttr;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

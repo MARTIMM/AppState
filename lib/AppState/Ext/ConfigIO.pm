@@ -9,11 +9,11 @@ use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
 use Moose;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
 require Encode;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes. Make handle in ConfigFile.

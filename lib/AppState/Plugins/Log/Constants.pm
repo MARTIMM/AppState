@@ -1,4 +1,4 @@
-package AppState::Ext::Constants;
+package AppState::Plugins::Log::Constants;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.2.8');

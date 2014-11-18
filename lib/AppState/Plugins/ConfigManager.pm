@@ -7,11 +7,11 @@ use 5.010001;
 use namespace::autoclean;
 
 use Moose;
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
 use AppState::Ext::ConfigFile;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes
@@ -421,7 +421,7 @@ like set_kvalue, get_kvalue etcetera.
 =head2 Constants
 
 Use of codes as arguments to several methods are defined in
-L<AppState::Ext::Constants>. In the examples below the following is assumed;
+L<AppState::Plugins::Log::Constants>. In the examples below the following is assumed;
 
   use AppState::Constants;
   my $m = AppState::Constants->new;

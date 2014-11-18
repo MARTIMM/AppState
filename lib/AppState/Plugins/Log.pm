@@ -14,7 +14,7 @@ use namespace::autoclean;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::NonMoose;
-extends qw( Class::Publisher AppState::Ext::Constants);
+extends qw( Class::Publisher AppState::Plugins::Log::Constants);
 
 use DateTime;
 require File::Basename;
@@ -24,7 +24,7 @@ use Log::Log4perl;
 use Log::Log4perl::Layout;
 use Log::Log4perl::Level;
 use AppState::Ext::Status;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 require Scalar::Util;
 require match::simple;
 

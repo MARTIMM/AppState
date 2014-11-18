@@ -9,10 +9,10 @@ no autovivification qw(fetch exists delete);
 
 use Moose;
 use Moose::Util::TypeConstraints;
-extends 'AppState::Ext::Constants';
+extends 'AppState::Plugins::Log::Constants';
 
 use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.

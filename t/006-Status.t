@@ -6,10 +6,10 @@ use Test::Most;
 use AppState::Ext::Status;
 
 use Moose;
-extends 'AppState::Ext::Constants';
+extends 'AppState::Plugins::Log::Constants';
 
 #use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 #

@@ -8,7 +8,7 @@ use 5.010001;
 use namespace::autoclean;
 
 use Moose;
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
 use File::Basename ();
@@ -18,7 +18,7 @@ Getopt::Long::Configure(qw(bundling_override auto_abbrev no_getopt_compat));
 use Text::Wrap ('$columns');
 local $columns = 80;
 
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

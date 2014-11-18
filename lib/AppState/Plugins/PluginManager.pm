@@ -10,13 +10,13 @@ use Modern::Perl;
 use Moose;
 use MooseX::NonMoose;
 
-extends qw( Class::Publisher AppState::Ext::Constants);
+extends qw( Class::Publisher AppState::Plugins::Log::Constants);
 
 use AppState;
 
 require File::Find::Rule;
 require Cwd;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

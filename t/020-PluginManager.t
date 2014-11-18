@@ -1,4 +1,4 @@
-# Testing module AppState::Ext::Constants
+# Testing module AppState::Plugins::Log::Constants
 #
 use Modern::Perl;
 

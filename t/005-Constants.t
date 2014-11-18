@@ -1,13 +1,13 @@
-# Testing module AppState::Ext::Constants
+# Testing module AppState::Plugins::Log::Constants
 #
 use Modern::Perl;
 
 use Test::Most;
 use Moose;
-extends 'AppState::Ext::Constants';
+extends 'AppState::Plugins::Log::Constants';
 
 use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 def_sts( 'CONST_1', 'M_WARNING', 'Constant warning');
