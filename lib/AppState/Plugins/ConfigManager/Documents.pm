@@ -1,4 +1,4 @@
-package AppState::Ext::Documents;
+package AppState::Plugins::ConfigManager::Documents;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.0.4');
@@ -811,7 +811,7 @@ __END__
 
 =head1 NAME
 
-AppState::Ext::Documents - Module to control documents for AppState::Config
+AppState::Plugins::ConfigManager::Documents - Module to control documents for AppState::Config
 
 =head1 SYNOPSIS
 

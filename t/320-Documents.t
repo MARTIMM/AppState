@@ -6,7 +6,7 @@ use Test::Deep;
 require File::Path;
 
 use AppState;
-use AppState::Ext::Documents;
+use AppState::Plugins::ConfigManager::Documents;
 #-------------------------------------------------------------------------------
 # Init
 #
@@ -22,8 +22,8 @@ $log->file_log_level($app->M_TRACE);
 $log->add_tag('320');
 
 #-------------------------------------------------------------------------------
-my $d = AppState::Ext::Documents->new;
-isa_ok( $d, 'AppState::Ext::Documents');
+my $d = AppState::Plugins::ConfigManager::Documents->new;
+isa_ok( $d, 'AppState::Plugins::ConfigManager::Documents');
 
 subtest empty_document =>
 sub

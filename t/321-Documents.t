@@ -8,7 +8,7 @@ require File::Path;
 require Data::Dumper;
 
 use AppState;
-use AppState::Ext::Documents;
+use AppState::Plugins::ConfigManager::Documents;
 #-------------------------------------------------------------------------------
 # Init
 #
@@ -23,7 +23,7 @@ $log->file_log_level( { level => $app->M_INFO, package => 'root'});
 $log->add_tag('320');
 
 #-------------------------------------------------------------------------------
-my $d = AppState::Ext::Documents->new;
+my $d = AppState::Plugins::ConfigManager::Documents->new;
 
 $d->add_documents({});
 $d->select_document(0);

@@ -10,7 +10,7 @@ use Moose;
 extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
-use AppState::Ext::ConfigFile;
+use AppState::Plugins::ConfigManager::ConfigFile;
 use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ def_sts( 'C_CFM_CFGSELDEFAULT' , 'M_INFO', 'Current config set to %s');
 def_sts( 'C_CFM_CFGFLREMOVED'  , 'M_INFO', 'Config %s removed');
 
 #-------------------------------------------------------------------------------
-# Config objects is a hash which is used to find an AppState::Ext::ConfigFile
+# Config objects is a hash which is used to find an AppState::Plugins::ConfigManager::ConfigFile
 # object. There is always one object used as a default. The purpose of that
 # object is to keep track of where a storage is to be found and what type of
 # storage is used. The following fields are needed but can be set later;
@@ -57,7 +57,7 @@ has current_config_object_name =>
 
 has _current_config_object =>
     ( is                => 'ro'
-    , isa               => 'AppState::Ext::ConfigFile'
+    , isa               => 'AppState::Plugins::ConfigManager::ConfigFile'
     , writer            => '_set_current_config_object'
     , init_arg          => undef
     , handles           =>
@@ -129,7 +129,7 @@ sub plugin_initialize
   #
   if( $self->nbr_config_objects == 0 )
   {
-    my $cff = AppState::Ext::ConfigFile->new;
+    my $cff = AppState::Plugins::ConfigManager::ConfigFile->new;
     $cff->store_type('Yaml');
 
     $cff->location($cff->C_CFF_CONFIGDIR);
@@ -187,7 +187,7 @@ sub add_config_object
   else
   {
     $self->log( $self->C_CFM_CFGADDED, [$config_object_name]);
-    my $config_object = AppState::Ext::ConfigFile->new(%$config_struct);
+    my $config_object = AppState::Plugins::ConfigManager::ConfigFile->new(%$config_struct);
     $self->_set_config_object( $config_object_name, $config_object);
     $self->_set_current_config_object_name($config_object_name);
     $self->_set_current_config_object($config_object);

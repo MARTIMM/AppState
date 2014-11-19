@@ -18,10 +18,10 @@ use_ok('AppState::Plugins::ConfigDriver::Memcached');
 use_ok('AppState::Plugins::ConfigDriver::Storable');
 use_ok('AppState::Plugins::ConfigDriver::Yaml');
 
-use_ok('AppState::Ext::ConfigFile');
-use_ok('AppState::Ext::ConfigIO');
+use_ok('AppState::Plugins::ConfigManager::ConfigFile');
+use_ok('AppState::Plugins::ConfigManager::ConfigIO');
 use_ok('AppState::Plugins::Log::Constants');
-use_ok('AppState::Ext::Documents');
+use_ok('AppState::Plugins::ConfigManager::Documents');
 use_ok('AppState::Plugins::Log::Meta_Constants');
 use_ok('AppState::Plugins::Log::Status');
 

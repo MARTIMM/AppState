@@ -6,7 +6,7 @@ require File::Path;
 
 #-------------------------------------------------------------------------------
 use Moose;
-extends qw(AppState::Ext::ConfigIO);
+extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 use AppState;
 use AppState::Plugins::ConfigDriver::Yaml;

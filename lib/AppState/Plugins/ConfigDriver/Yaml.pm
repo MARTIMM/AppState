@@ -8,7 +8,7 @@ use namespace::autoclean;
 
 use Moose;
 
-extends qw(AppState::Ext::ConfigIO);
+extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 require YAML;
 use Text::Tabs ();

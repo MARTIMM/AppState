@@ -12,7 +12,7 @@ require Digest::SHA;
 require Storable;
 require Encode;
 
-extends qw(AppState::Ext::ConfigIO);
+extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 #-------------------------------------------------------------------------------
 #

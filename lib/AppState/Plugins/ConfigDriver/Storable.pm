@@ -9,7 +9,7 @@ use namespace::autoclean;
 use Moose;
 require Storable;
 
-extends qw(AppState::Ext::ConfigIO);
+extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 #-------------------------------------------------------------------------------
 #

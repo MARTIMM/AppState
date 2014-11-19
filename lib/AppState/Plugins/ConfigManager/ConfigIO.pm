@@ -1,4 +1,4 @@
-package AppState::Ext::ConfigIO;
+package AppState::Plugins::ConfigManager::ConfigIO;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse('v0.1.5');

@@ -1,4 +1,4 @@
-# Testing module AppState::Ext::ConfigFile
+# Testing module AppState::Plugins::ConfigManager::ConfigFile
 #
 use Modern::Perl;
 use Test::More;
@@ -6,7 +6,7 @@ require File::Path;
 require Cwd;
 
 use AppState;
-use AppState::Ext::ConfigFile;
+use AppState::Plugins::ConfigManager::ConfigFile;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -26,11 +26,11 @@ $log->write_log( "Create tempfile $config_dir/Temp/abc.tmp", 1|$log->M_INFO);
 system( "touch $config_dir/Temp/abc.tmp");
 
 #-------------------------------------------------------------------------------
-BEGIN { use_ok('AppState::Ext::ConfigFile') };
+BEGIN { use_ok('AppState::Plugins::ConfigManager::ConfigFile') };
 
 $log->write_log( "Test new()", 1|$log->M_INFO);
-my $cf = AppState::Ext::ConfigFile->new;
-is( ref $cf, 'AppState::Ext::ConfigFile', "Test new()");
+my $cf = AppState::Plugins::ConfigManager::ConfigFile->new;
+is( ref $cf, 'AppState::Plugins::ConfigManager::ConfigFile', "Test new()");
 
 done_testing();
 $as->cleanup;

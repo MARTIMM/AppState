@@ -1,4 +1,4 @@
-package AppState::Ext::ConfigFile;
+package AppState::Plugins::ConfigManager::ConfigFile;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.0.3");
@@ -15,7 +15,7 @@ require Storable;
 require match::simple;
 
 use AppState;
-use AppState::Ext::Documents;
+use AppState::Plugins::ConfigManager::Documents;
 
 use AppState::Plugins::Log::Meta_Constants;
 
@@ -65,7 +65,7 @@ has _storeTypes =>
 
 # Subtype to be used to test store_type against.
 #
-subtype 'AppState::Ext::ConfigFile::Types::Storage'
+subtype 'AppState::Plugins::ConfigManager::ConfigFile::Types::Storage'
     => as 'Str'
     => where { $_ =~ m/$__store_types__/ }
     => message { "The store type '$_' is not correct" };
@@ -75,7 +75,7 @@ subtype 'AppState::Ext::ConfigFile::Types::Storage'
 #
 has store_type =>
     ( is                => 'rw'
-    , isa               => 'AppState::Ext::ConfigFile::Types::Storage'
+    , isa               => 'AppState::Plugins::ConfigManager::ConfigFile::Types::Storage'
 #    , default          => 'Yaml'
 #    , lazy             => 1
     , trigger           =>
@@ -112,7 +112,7 @@ has _store_type_object =>
 # dualvars are used.
 #
 my $_test_location = sub {return 0;};
-subtype 'AppState::Ext::ConfigFile::Types::Location'
+subtype 'AppState::Plugins::ConfigManager::ConfigFile::Types::Location'
     => as 'Any'
     => where {$_test_location->($_);}
     => message {'The location code is not correct'};
@@ -121,7 +121,7 @@ subtype 'AppState::Ext::ConfigFile::Types::Location'
 #
 has location =>
     ( is                => 'rw'
-    , isa               => 'AppState::Ext::ConfigFile::Types::Location'
+    , isa               => 'AppState::Plugins::ConfigManager::ConfigFile::Types::Location'
     , lazy              => 1
     , default           => sub {return $_[0]->C_CFF_CONFIGDIR; }
     , trigger           =>
@@ -160,8 +160,8 @@ has request_file =>
 #
 has documents =>
     ( is                => 'ro'
-    , isa               => 'AppState::Ext::Documents'
-    , default           => sub { return AppState::Ext::Documents->new; }
+    , isa               => 'AppState::Plugins::ConfigManager::Documents'
+    , default           => sub { return AppState::Plugins::ConfigManager::Documents->new; }
     , init_arg          => undef
     , handles           =>
       [ qw( get_documents set_documents get_current_document select_document
@@ -223,7 +223,7 @@ sub BUILD
 #  if( $self->meta->is_mutable )
 #  {
     # Overwrite the sub at _test_location. It is used for testing the subtype
-    # 'AppState::Ext::ConfigFile::Types::Location'. At that point we do not
+    # 'AppState::Plugins::ConfigManager::ConfigFile::Types::Location'. At that point we do not
     # know the constant values to test against.
     #
     $_test_location =
@@ -452,7 +452,7 @@ __END__
 
 =head1 NAME
 
-AppState::Ext::ConfigFile - Module to control files for AppState::Config
+AppState::Plugins::ConfigManager::ConfigFile - Module to control files for AppState::Config
 
 =head1 SYNOPSIS
 
