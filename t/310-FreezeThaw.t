@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::FreezeThaw;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::FreezeThaw;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -22,7 +22,7 @@ $log->add_tag('310');
 #-------------------------------------------------------------------------------
 # Setup config using Yaml type
 #
-my $cf = AppState::Plugins::ConfigDriver::FreezeThaw->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::FreezeThaw->new;
 
 is( $cf->file_ext, 'fth', 'Check extension');
 

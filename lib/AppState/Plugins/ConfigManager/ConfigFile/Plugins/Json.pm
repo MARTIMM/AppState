@@ -1,4 +1,4 @@
-package AppState::Plugins::ConfigDriver::Json;
+package AppState::Plugins::ConfigManager::ConfigFile::Plugins::Json;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.1.3");

@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::DataDumper;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::DataDumper;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -22,7 +22,7 @@ $log->add_tag('308');
 #-------------------------------------------------------------------------------
 # Setup config using DataDumper type
 #
-my $cf = AppState::Plugins::ConfigDriver::DataDumper->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::DataDumper->new;
 $cf->options( { Indent => 1, Purity => 1, Deparse => 1});
 
 is( $cf->file_ext, 'dd', 'Check extension');

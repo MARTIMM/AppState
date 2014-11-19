@@ -9,7 +9,7 @@ use Moose;
 extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 use AppState;
-use AppState::Plugins::ConfigDriver::Yaml;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::Yaml;
 
 #-------------------------------------------------------------------------------
 # Init

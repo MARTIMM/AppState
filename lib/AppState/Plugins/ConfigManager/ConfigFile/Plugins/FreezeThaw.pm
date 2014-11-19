@@ -1,4 +1,4 @@
-package AppState::Plugins::ConfigDriver::FreezeThaw;
+package AppState::Plugins::ConfigManager::ConfigFile::Plugins::FreezeThaw;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.1.4");

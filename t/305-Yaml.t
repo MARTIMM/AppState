@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::Yaml;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::Yaml;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -24,7 +24,7 @@ $log->add_tag('305');
 #-------------------------------------------------------------------------------
 # Setup config using Yaml type
 #
-my $cf = AppState::Plugins::ConfigDriver::Yaml->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::Yaml->new;
 $cf->options( { Indent => 1, SortKeys => 1, UseBlock => 0
               , AnchorPrefix => 'x', UseVersion => 1
               , DumpCode => 1, LoadCode => 1, UseCode => 1

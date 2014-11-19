@@ -1,4 +1,4 @@
-package AppState::Plugins::ConfigDriver::Yaml;
+package AppState::Plugins::ConfigManager::ConfigFile::Plugins::Yaml;
 
 use Modern::Perl;
 use version; our $VERSION = version->parse("v0.2.6");

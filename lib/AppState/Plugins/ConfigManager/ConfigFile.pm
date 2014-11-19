@@ -199,11 +199,15 @@ has _plugin_manager =>
         # Search for any modules
         #
         $pm->search_plugins( { base => $path
-                             , max_depth => 4
-                             , search_regex => qr@/AppState/Plugins/ConfigDriver/[A-Z][\w]+.pm$@
+                             , max_depth => 6
+                             , search_regex => qr@/AppState/Plugins/ConfigManager/ConfigFile/Plugins/[A-Z][\w]+.pm$@
                              , api_test => [ qw()]
                              }
                            );
+
+#say "File config plugins: ";
+#$pm->list_plugin_names;
+#say "Keys: ", join( ', ', $pm->get_plugin_names);
 
         $pm->initialize;
         $self->_set_store_types(join '|', $pm->get_plugin_names);

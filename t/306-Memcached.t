@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::Memcached;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::Memcached;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -27,7 +27,7 @@ $log->add_tag('306');
 #-------------------------------------------------------------------------------
 # Setup config using Memcached type
 #
-my $cf = AppState::Plugins::ConfigDriver::Memcached->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::Memcached->new;
 $cf->options( { Deparse => 1, Eval => 1});
 $cf->control( { servers => [qw( localhost:11211)]
               , debug => 0

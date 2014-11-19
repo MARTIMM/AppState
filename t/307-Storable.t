@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::Storable;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::Storable;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -23,7 +23,7 @@ $log->add_tag('307');
 #-------------------------------------------------------------------------------
 # Setup config using Storable type
 #
-my $cf = AppState::Plugins::ConfigDriver::Storable->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::Storable->new;
 $cf->options( { Deparse => 1, Eval => 1});
 $cf->control( { useNFreeze => 1});
 

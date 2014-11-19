@@ -231,12 +231,12 @@ if(0)
     #
     $pm->search_plugins
          ( { base => $path
-           , max_depth => 4
+           , max_depth => 3
            , search_regex => qr@/AppState/Plugins/[A-Z][\w]+.pm$@
            , api_test => [qw()]
            }
          );
-#say "Plugins: ";
+#say "AppState Plugins: ";
 #$pm->list_plugin_names;
 #say "Keys: ", join( ', ', $pm->get_plugin_names);
 

@@ -1,4 +1,4 @@
-package AppState::Plugins::ConfigDriver::DataDumper;
+package AppState::Plugins::ConfigManager::ConfigFile::Plugins::DataDumper;
 
 use Modern::Perl;
 use version; our $VERSION = '' . version->parse("v0.2.6");

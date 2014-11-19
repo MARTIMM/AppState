@@ -5,7 +5,7 @@ use Test::More;
 require File::Path;
 
 use AppState;
-use AppState::Plugins::ConfigDriver::Json;
+use AppState::Plugins::ConfigManager::ConfigFile::Plugins::Json;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -22,7 +22,7 @@ $log->add_tag('309');
 #-------------------------------------------------------------------------------
 # Setup config using Yaml type
 #
-my $cf = AppState::Plugins::ConfigDriver::Json->new;
+my $cf = AppState::Plugins::ConfigManager::ConfigFile::Plugins::Json->new;
 $cf->options( { utf8 => 1, pretty => 1
               }
             );

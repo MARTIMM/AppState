@@ -1,26 +1,104 @@
-package AppState::Plugins::ConfigDriver::Storable;
+package AppState::Plugins::ConfigManager::ConfigFile::Plugins::Memcached;
 
 use Modern::Perl;
-use version; our $VERSION = '' . version->parse("v0.1.4");
+use version; our $VERSION = '' . version->parse("v0.1.8");
 use 5.010001;
 
 use namespace::autoclean;
 
 use Moose;
+require Cache::Memcached;
+require Digest::SHA;
 require Storable;
+require Encode;
 
 extends qw(AppState::Plugins::ConfigManager::ConfigIO);
 
 #-------------------------------------------------------------------------------
 #
-has '+file_ext' => ( default => 'stb');
+has '+file_ext' => ( default => 'memcached');
+
+# When the config file is set, calculate a key from this value.
+#
+after '_configFile' => sub
+{
+  my( $self) = @_;
+  $self->_sha1ConfigFile(Digest::SHA::sha1_hex($self->config_file));
+};
+
+# Key to be used to store the documents on the memcached server
+#
+has sha1ConfigFile =>
+    ( is                => 'ro'
+    , isa               => 'Str'
+    , init_arg          => undef
+    , writer            => '_sha1ConfigFile'
+    );
 
 #-------------------------------------------------------------------------------
 sub BUILD
 {
   my($self) = @_;
-  $self->log_init('==S');
+  $self->log_init('==M');
 }
+
+#-------------------------------------------------------------------------------
+#
+sub _selectMemcachedOptions
+{
+  my($self) = @_;
+
+  my $c = {};
+  $c->{servers} = $self->get_control('servers');
+  $c->{compress_threshold} = $self->get_control('compress_threshold');
+  $c->{no_rehash} = $self->get_control('no_rehash');
+  $c->{readonly} = $self->get_control('readonly');
+  $c->{namespace} = $self->get_control('namespace');
+  $c->{connect_timeout} = $self->get_control('connect_timeout');
+  $c->{select_timeout} = $self->get_control('select_timeout');
+  $c->{debug} = $self->get_control('debug');
+
+  return $c;
+}
+
+#-------------------------------------------------------------------------------
+# Get text from server
+#
+override read_text_from_config_file =>
+sub
+{
+  my($self) = @_;
+
+  my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
+  $memd->enable_compress(1);
+  my $data = $memd->get($self->sha1ConfigFile);
+  if( defined $data )
+  {
+    $self->_config_text(Encode::decode( 'UTF-8', $data));
+  }
+
+  else
+  {
+    $self->log( $self->C_CIO_CFGNOTREAD, [$self->sha1ConfigFile]);
+  }
+};
+
+#-------------------------------------------------------------------------------
+# Save text to server
+#
+override write_text_to_config_file =>
+sub
+{
+  my($self) = @_;
+
+  my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
+  $memd->enable_compress(1);
+  my $sts = $memd->set( $self->sha1ConfigFile
+                      , (Encode::encode( 'UTF-8', $self->_config_text))
+                      );
+  $self->log( $self->C_CIO_CFGNOTWRITTEN, [$self->sha1ConfigFile, $sts])
+   unless $sts;
+};
 
 #-------------------------------------------------------------------------------
 # Serialize to text
@@ -30,23 +108,25 @@ sub serialize
   my( $self, $documents) = @_;
   my( $script, $result);
 
+  $script = '';
+  my $freezeCmd = $self->control->{useNFreeze} ? 'nfreeze' : 'freeze';
+
   # Get all options and set them locally
   #
   $script .= "local \$Storable::$_ = '" . $self->options->{$_} . "';\n"
     for (keys %{$self->options});
 
-  # Get a control option for network save actions and dump data into result
+  # Dump data into result
   #
-  my $freezeCmd = $self->control->{useNFreeze} ? 'nfreeze' : 'freeze';
   $script .= "\$result = Storable::$freezeCmd(\$documents)";
 
   # Evaluate and check for errors.
   #
-  eval($script);
+  eval $script;
   if( my $err = $@ )
   {
     $self->log( $self->C_CIO_SERIALIZEFAIL
-              , [ 'Storable', $self->config_file, $err]
+              , [ 'Memcached', $self->config_file, $err]
               );
   }
 
@@ -59,7 +139,6 @@ sub serialize
 sub deserialize
 {
   my( $self, $text) = @_;
-
   my( $script, $result);
 
   $script = '';
@@ -72,19 +151,42 @@ sub deserialize
 
   # Load storable text and convert into result
   #
+  $script .= "\$text //= '';\n";
   $script .= "\$result = \$text eq '' ? undef : Storable::thaw(\$text)";
 
   # Evaluate and check for errors.
   #
-  eval($script);
+  eval $script;
   if( my $err = $@ )
   {
     $self->log( $self->C_CIO_DESERIALFAIL
-              , [ 'Storable', $self->config_file, $err]
+              , [ 'Memcached', $self->config_file, $err]
               );
   }
 
   return $result;
+}
+
+#-------------------------------------------------------------------------------
+# Delete documents
+#
+sub delete
+{
+  my($self) = @_;
+  my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
+  $memd->delete($self->sha1ConfigFile);
+}
+
+#-------------------------------------------------------------------------------
+# Statistics info
+#
+sub stats
+{
+  my( $self, $items) = @_;
+  my $memd = Cache::Memcached->new($self->_selectMemcachedOptions);
+  my $hr = $memd->stats($items);
+  $self->log($self->C_CIO_NOSERVER) unless keys %$hr;
+  return $hr;
 }
 
 #-------------------------------------------------------------------------------
@@ -99,28 +201,27 @@ __END__
 
 =head1 NAME
 
-AppState::Config::Storable - Storage plugin using Storable
+AppState::Config::Memcached - Storage plugin using Cache::Memcached
 
 =head1 SYNOPSIS
 
 use AppState;
 
 my $cfg = AppState->instance->get_app_object('Config');
-$cfg->store_type('Storable');
+$cfg->store_type('Yaml');
 $cfg->load;
 
 # Do something with the data ...
 
-$cfg->save({Indent => 1});
+$cfg->save({indent => 2});
 
 
 =head1 DESCRIPTION
 
 This module is a storage plugin module used by the
 L<AppState::Config::ConfigFile> module which is in turm used
-byL<AppState::Config>. This module is based on the Storable module written by
-Abhijit Menon-Sen. The save() and load() procedures defined in
-L<AppState::Config::ConfigIO>.
+byL<AppState::Config>. This module is based on the YAML module of Matt S Trout. The
+save() and load() procedures defined in L<AppState::Config::ConfigIO>.
 
 =head1 METHODS
 
@@ -134,9 +235,6 @@ Turn given documents into Yaml formatted text. $options is a hash reference.
 
 Turn given Yaml text into documents. The result returned is an array reference.
 $options is a hash reference.
-
-=item * clone()
-
 
 =back
 
