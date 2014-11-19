@@ -154,7 +154,7 @@ is( $cfm->get_kvalue( '/pi/abc', '/path/to/something/else', $rootDoc->[0])
   );
 $cfm->drop_kvalue( '/pi/abc', '/path/to/something/else', $rootDoc->[0]);
 my $v = $cfm->get_kvalue( '/pi/abc', '/path/to/something/else', $rootDoc->[0]);
-is( ref $v, 'AppState::Ext::Status', "Error returned");
+is( ref $v, 'AppState::Plugins::Log::Status', "Error returned");
 ok( $v->get_error == $cfm->C_DOC_NOVALUE, "No value found");
 
 $cfm->push_value( '/pi/ghi', [qw(b d jh e r t)], $rootDoc->[0]);

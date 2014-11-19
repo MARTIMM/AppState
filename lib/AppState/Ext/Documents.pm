@@ -269,7 +269,7 @@ sub get_keys
 
   my $keys = [];
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   $keys = [keys %{$$hashref}];
   $self->log( $self->C_LOG_TRACE, ["get_keys from '$path'"]);
@@ -283,7 +283,7 @@ sub get_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $value;
   if( defined $$hashref )
@@ -314,7 +314,7 @@ sub get_kvalue
   $key //= '';
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $value;
   if( defined $$hashref )
@@ -349,7 +349,7 @@ sub set_value
   my( $self, $path, $value, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, $value);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
   $self->log( $self->C_LOG_TRACE
             , [ "set_value, $path, '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
@@ -373,7 +373,7 @@ sub set_kvalue
   # Generate a reference. Check for errors first before using.
   #
   my $hashref = $self->_path2hashref( $path, $startRef, $value, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
   $self->log( $self->C_LOG_TRACE
             , [ "set_kvalue, '$path', '$key', '$value' "
               . (ref $startRef eq 'HASH' ? 'with hook' : '')
@@ -393,7 +393,7 @@ sub drop_value
   my( $vpath, $spath) = $path =~ m@(.*)/?([^/]+)$@;
 
   my $hashref = $self->_path2hashref( $vpath, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $value;
   if( defined ${$hashref}->{$spath} )
@@ -423,7 +423,7 @@ sub drop_kvalue
   return $self->log($self->C_DOC_NOKEY) unless defined $key;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $value;
   if( ref $$hashref eq 'HASH' )
@@ -451,7 +451,7 @@ sub get_item_value
   my( $self, $path, $idx, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $v;
   if( ref $hashref and ref $$hashref eq 'ARRAY' )
@@ -484,7 +484,7 @@ sub get_item_kvalue
   my( $self, $path, $key, $idx, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   my $v;
   if( ref $$hashref eq 'ARRAY' )
@@ -512,7 +512,7 @@ sub pop_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' )
   {
@@ -537,7 +537,7 @@ sub pop_kvalue
   my( $self, $path, $key, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref  eq 'ARRAY' )
   {
@@ -563,7 +563,7 @@ sub push_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' and ref $values eq 'ARRAY' )
   {
@@ -590,7 +590,7 @@ sub push_kvalue
   my( $self, $path, $key, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' and ref $values eq 'ARRAY' )
   {
@@ -617,7 +617,7 @@ sub shift_value
   my( $self, $path, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' )
   {
@@ -642,7 +642,7 @@ sub shift_kvalue
   my( $self, $path, $key, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' )
   {
@@ -667,7 +667,7 @@ sub unshift_value
   my( $self, $path, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' )
   {
@@ -694,7 +694,7 @@ sub unshift_kvalue
   my( $self, $path, $key, $values, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' )
   {
@@ -723,7 +723,7 @@ sub splice_value
   my( $self, $path, $spliceArgs, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
   {
@@ -765,7 +765,7 @@ sub splice_kvalue
   my( $self, $path, $key, $spliceArgs, $startRef) = @_;
 
   my $hashref = $self->_path2hashref( $path, $startRef, undef, $key);
-  return $hashref if ref $hashref eq 'AppState::Ext::Status';
+  return $hashref if ref $hashref eq 'AppState::Plugins::Log::Status';
 
   if( ref $$hashref eq 'ARRAY' and ref $spliceArgs eq 'ARRAY' )
   {

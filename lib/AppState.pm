@@ -236,7 +236,7 @@ if(0)
            , api_test => [qw()]
            }
          );
-#say "Features: ";
+#say "Plugins: ";
 #$pm->list_plugin_names;
 #say "Keys: ", join( ', ', $pm->get_plugin_names);
 

@@ -23,7 +23,7 @@ use AppState;
 use Log::Log4perl;
 use Log::Log4perl::Layout;
 use Log::Log4perl::Level;
-use AppState::Ext::Status;
+use AppState::Plugins::Log::Status;
 use AppState::Plugins::Log::Meta_Constants;
 require Scalar::Util;
 require match::simple;
@@ -336,8 +336,8 @@ has _previousMsgEq =>
 
 has _lastError =>
     ( is                => 'rw'
-    , isa               => 'Maybe[AppState::Ext::Status]'
-    , default           => sub { AppState::Ext::Status->new; }
+    , isa               => 'Maybe[AppState::Plugins::Log::Status]'
+    , default           => sub { AppState::Plugins::Log::Status->new; }
     , init_arg          => undef
     , handles           =>
       { clear_last_error        => 'clear_error'
@@ -1108,7 +1108,7 @@ sub write_log
 
   # Make the status object to be returned later.
   #
-  my $status = AppState::Ext::Status->new;
+  my $status = AppState::Plugins::Log::Status->new;
   $status->set_status( { error     => 0 + $error    # if dualvar add 0 to get int
                        , message   => '' . $message # if dualvar concat '' to get str
                        , line      => $l

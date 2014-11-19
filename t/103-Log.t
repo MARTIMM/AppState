@@ -436,7 +436,7 @@ sub
 {
   my $lineNbr = __LINE__;
   my $eobj = $log->write_log( 'Tracing this time', 0x2A9 | $app->M_F_TRACE);
-  isa_ok( $eobj, 'AppState::Ext::Status');
+  isa_ok( $eobj, 'AppState::Plugins::Log::Status');
 if(0)
 {
   ok( $eobj->is_success == 1, 'Is success');

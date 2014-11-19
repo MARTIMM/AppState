@@ -23,7 +23,7 @@ use_ok('AppState::Ext::ConfigIO');
 use_ok('AppState::Plugins::Log::Constants');
 use_ok('AppState::Ext::Documents');
 use_ok('AppState::Plugins::Log::Meta_Constants');
-use_ok('AppState::Ext::Status');
+use_ok('AppState::Plugins::Log::Status');
 
 use_ok('AppState::Plugins::NodeTree::Node');
 use_ok('AppState::Plugins::NodeTree::NodeAttr');

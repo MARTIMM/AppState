@@ -1,4 +1,4 @@
-package AppState::Ext::Status;
+package AppState::Plugins::Log::Status;
 
 use Modern::Perl;
 

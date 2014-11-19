@@ -41,7 +41,7 @@ subtest getx_value =>
 sub
 {
   my $v = $d->get_value('/a/b/c/d');
-  is( ref $v, 'AppState::Ext::Status', 'return status for errors');
+  is( ref $v, 'AppState::Plugins::Log::Status', 'return status for errors');
   ok( $v->get_error == $d->C_DOC_NOVALUE, 'value at /a/b/c/d not defined');
   ok( !exists $doc->{a}, 'a does not exist');
 
@@ -96,7 +96,7 @@ sub
   ok( exists $doc->{a}{b}{c}, '/a/b/c still exist');
 
   $v = $d->drop_value('/a/b/c/d');
-  is( ref $v, 'AppState::Ext::Status', 'not possible to remove /a/b/c/d again');
+  is( ref $v, 'AppState::Plugins::Log::Status', 'not possible to remove /a/b/c/d again');
   ok( $v->get_error == $d->C_DOC_KEYNOTEXIST, 'key d not existent');
 
   $v = $d->drop_value('a');

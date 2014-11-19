@@ -306,7 +306,7 @@ creating the dualvar status values. The module AppState::Plugins::Log::Constants
 set of predefined codes defined.
 
 The function returns undef or when error is processed due to log level and what
-have you, it returns a status object of type AppState::Ext::Status. In many
+have you, it returns a status object of type AppState::Plugins::Log::Status. In many
 cases it might be stored in the Log module and can be queried later.
 
 An example use is shown below. There are two status messages, one trace status
@@ -493,7 +493,7 @@ no log will be done.
 
 =head2 _lastError($status_object)
 
-Status object (AppState::Ext::Status) is saved here so the log object can be
+Status object (AppState::Plugins::Log::Status) is saved here so the log object can be
 queried for its values. See also clear_last_error, is_last_success,
 is_last_fail, is_last_forced, get_last_message, get_last_error,
 get_last_severity, get_last_eventcode, get_sender_line_no, get_sender_file,

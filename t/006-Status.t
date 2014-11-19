@@ -1,9 +1,9 @@
-# Testing module AppState::Ext::Status
+# Testing module AppState::Plugins::Log::Status
 #
 use Modern::Perl;
 
 use Test::Most;
-use AppState::Ext::Status;
+use AppState::Plugins::Log::Status;
 
 use Moose;
 extends 'AppState::Plugins::Log::Constants';
@@ -13,8 +13,8 @@ use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 #
-my $sts = AppState::Ext::Status->new;
-isa_ok( $sts, 'AppState::Ext::Status');
+my $sts = AppState::Plugins::Log::Status->new;
+isa_ok( $sts, 'AppState::Plugins::Log::Status');
 
 #-------------------------------------------------------------------------------
 subtest 'Test empty status' =>
@@ -76,7 +76,7 @@ sub
   ok( !$sts->is_error, 'is not an error');
   is( $sts->get_message, 'State object initialized ok', 'init message');
   like( $sts->get_file, qr/Status\.pm/, 'Status.pm');
-  is( $sts->get_package, 'AppState::Ext::Status', 'Status package');
+  is( $sts->get_package, 'AppState::Plugins::Log::Status', 'Status package');
 
 #  is( $sts->get_line('line'), 352, 'Line 352');
 # There is a line number but changes everytime when maintaining Status.pm
@@ -130,7 +130,7 @@ sub
   #
   my $s = $sts->set_status( { message => 'test 3'});
 
-  is( ref $s, 'AppState::Ext::Status', 'Should be set_status error');
+  is( ref $s, 'AppState::Plugins::Log::Status', 'Should be set_status error');
   ok( $s->is_error, 'is an error');
   is( $s->get_message, 'UNKNKEY - Unknown/insufficient status information', 'error message');
 };
