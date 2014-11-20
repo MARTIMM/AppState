@@ -331,6 +331,20 @@ sub xpath
 #say "\nSearch start at: ", $self->can('name') ? $self->name : 'R';
 #say "Path: ", $path;
 
+  # Absolute pathnames are starting from the root. This tree is build like a
+  # DOM-Root-Top_nodes where the root node has a name 'R'. So officially an
+  # absolute path should start with /R. It cannot find anything if ommitted.
+  # As a convenience the /R is prefixed to the path when not there.
+  #
+  if( $path =~ m@^/@                    # Starts with a /
+#  and $path !~ m@^//@                   # No deeper level searches
+  and $path ne '/'                      # This searches for the DOM node
+  and $path =~ m@^/(?!R\b)@             # /R already there
+    )
+  {
+    $path = "/R$path";
+  }
+
   # Clear previous found nodes, then search them using xpath and save
   # the nodes in the global nodes data store. Any other node can retrieve
   # the results.
