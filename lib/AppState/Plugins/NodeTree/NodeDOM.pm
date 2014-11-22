@@ -79,6 +79,27 @@ has _xpath_regexpr =>
       }
     );
 
+# Storage of objects in a node. Must be done by the users of the node, not by
+# the NodeTree module. A good point is when the NodeTree builds the tree it will
+# call the method process() of the created perl module. It can then decide to
+# store the object in any node it likes (read 'created thus far').
+#
+has _perl_objects =>
+    ( is                => 'ro'
+    , isa               => 'HashRef'
+    , init_arg          => undef
+    , default           => sub { return {}; }
+    , traits            => ['Hash']
+    , handles           =>
+      { get_object      => 'get'
+      , set_object      => 'set'
+      , nbr_objects     => 'count'
+      , get_object_keys => 'keys'
+      , clear_objects   => 'clear'
+      , clear_objects   => 'clear'
+      }
+    );
+
 #-------------------------------------------------------------------------------
 #
 sub BUILD

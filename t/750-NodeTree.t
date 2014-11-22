@@ -136,6 +136,10 @@ is( $child->name, 'R', "Below is a root node");
 
 &doXPathAndTest( $dom, '/R', 'R');
 &doXPathAndTest( $dom, '/R/n0_1', 'n0_1');
+
+&doXPathAndTest( $dom, '/n0_1', 'n0_1');        # Find without /R on front
+&doXPathAndTest( $dom, '/n0_2/n1_2', 'n1_2');
+
 &doXPathAndTest( $dom, '//n0_1', 'n0_1');
 &doXPathAndTest( $dom, '//n0_2', 'n0_2 n0_2 n0_2');
 
@@ -166,6 +170,12 @@ is( $nds[0]->get_attribute('class'), 'c1', 'Class value = c1');
 &doXPathAndTest( $nds[0], qw(../*[@class='c1']), 'n1_2');
 
 &doXPathAndTest( $dom, qw(//n0_1[@id=1]), 'n0_1');
+
+# Find without /R on front
+#
+&doXPathAndTest( $dom, '/n0_1', 'n0_1'); 
+&doXPathAndTest( $dom, '/n0_2/n1_2', 'n1_2');
+&doXPathAndTest( $dom, '/n0_2/n1_2[attribute::class]', 'n1_2');
 
 #$dom->xpath_debug(1);
 &doXPathAndTest( $dom, "//*[string()='text 1 0']", 'n0_1 n0_2');

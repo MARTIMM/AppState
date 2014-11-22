@@ -496,8 +496,10 @@ EOPCD
 
   else
   {
-    $self->log( $self->C_NT_MISSMETHODS, [ ' new, process', $modName]);
+    return $self->log( $self->C_NT_MISSMETHODS, [ ' new, process', $modName]);
   }
+
+  return $mobj;
 }
 
 
@@ -547,7 +549,8 @@ sub traverse
       #
       while( my $node = $self->_get_bf1_node )
       {
-        &$nh($node);
+        $self->_check_run_node_object_methods( $node, '-');
+        $nh->($node);
       }
     }
 
@@ -581,8 +584,9 @@ sub _traverseDF1
 {
   my( $self, $node) = @_;
 
+  $self->_check_run_node_object_methods( $node, 'up');
   my $nh = $self->node_handler_up;
-  &$nh($node);
+  $nh->($node);
 
   foreach my $child ($node->get_children)
   {
@@ -600,18 +604,21 @@ sub _traverseDF2
 
   if( $node->nbr_children )
   {
-    &{$self->node_handler_up}($node) if $self->has_handler_up;
+    $self->_check_run_node_object_methods( $node, 'up');
+    $self->node_handler_up->($node) if $self->has_handler_up;
     foreach my $child ($node->get_children)
     {
       $self->_traverseDF2($child);
     }
 
-    &{$self->node_handler_down}($node) if $self->has_handler_down;
+    $self->_check_run_node_object_methods( $node, 'down');
+    $self->node_handler_down->($node) if $self->has_handler_down;
   }
 
   else
   {
-    &{$self->node_handler_end}($node) if $self->has_handler_end;
+    $self->_check_run_node_object_methods( $node, 'end');
+    $self->node_handler_end->($node) if $self->has_handler_end;
   }
 }
 
@@ -646,10 +653,46 @@ sub _traverseBF2
 
   while( $n = shift @nodesBF)
   {
-    &$nh($n);
+    $self->_check_run_node_object_methods( $n, '-');
+    $nh->($n);
+    
     push @nodesBF, $n->get_children;
   }
 }
+
+#-------------------------------------------------------------------------------
+# Call handlers on objects found in a node. Traverse_type is one of up, down,
+# end or -.
+#
+sub _check_run_node_object_methods
+{
+  my( $self, $node, $traverse_type) = @_;
+
+  foreach my $object_key ($node->get_object_keys)
+  {
+    my $object = $node->get_object($object_key);
+    if( $traverse_type eq 'up' )
+    {
+      $object->handler_up($node) if $object->can('handler_up');
+    }
+
+    elsif( $traverse_type eq 'down' )
+    {
+      $object->handler_down($node) if $object->can('handler_down');
+    }
+
+    elsif( $traverse_type eq 'end' )
+    {
+      $object->handler_end($node) if $object->can('handler_end');
+    }
+
+    elsif( $traverse_type eq '-' )
+    {
+      $object->handler($node) if $object->can('handler');
+    }
+  }
+}
+
 #-------------------------------------------------------------------------------
 __PACKAGE__->meta->make_immutable;
 1;
