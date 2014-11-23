@@ -19,21 +19,22 @@ sub new
 
 sub handler_up
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
+#say "C1 U $object_key";
   my $htext = $node->get_global_data('handler_text') . 'C1UP';
   $node->set_global_data(handler_text => $htext);
 }
 
 sub handler_end
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
   my $htext = $node->get_global_data('handler_text') . 'C1END';
   $node->set_global_data(handler_text => $htext);
 }
 
 sub handler
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
   my $htext = $node->get_global_data('handler_text') . 'C1-';
   $node->set_global_data(handler_text => $htext);
 }
@@ -51,21 +52,22 @@ sub new
 
 sub handler_up
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
+#say "C2 U $object_key";
   my $htext = $node->get_global_data('handler_text') . 'C2UP';
   $node->set_global_data(handler_text => $htext);
 }
 
 sub handler_down
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
   my $htext = $node->get_global_data('handler_text') . 'C2DOWN';
   $node->set_global_data(handler_text => $htext);
 }
 
 sub handler
 {
-  my( $self, $node) = @_;
+  my( $self, $node, $object_key) = @_;
   my $htext = $node->get_global_data('handler_text') . 'C2-';
   $node->set_global_data(handler_text => $htext);
 }

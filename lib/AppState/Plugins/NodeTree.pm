@@ -673,22 +673,22 @@ sub _check_run_node_object_methods
     my $object = $node->get_object($object_key);
     if( $traverse_type eq 'up' )
     {
-      $object->handler_up($node) if $object->can('handler_up');
+      $object->handler_up( $node, $object_key) if $object->can('handler_up');
     }
 
     elsif( $traverse_type eq 'down' )
     {
-      $object->handler_down($node) if $object->can('handler_down');
+      $object->handler_down( $node, $object_key) if $object->can('handler_down');
     }
 
     elsif( $traverse_type eq 'end' )
     {
-      $object->handler_end($node) if $object->can('handler_end');
+      $object->handler_end( $node, $object_key) if $object->can('handler_end');
     }
 
     elsif( $traverse_type eq '-' )
     {
-      $object->handler($node) if $object->can('handler');
+      $object->handler( $node, $object_key) if $object->can('handler');
     }
   }
 }
