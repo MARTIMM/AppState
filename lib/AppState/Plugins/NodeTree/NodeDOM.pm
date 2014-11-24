@@ -115,6 +115,7 @@ sub nbr_children        { return $_[0]->has_child ? 1 : 0; }
 sub get_children        { return $_[0]->has_child ? ($_[0]->child) : (); }
 sub get_child           { return $_[0]->has_child ? $_[0]->child : undef; }
 sub push_child          { $_[0]->link_with_node($_[1]); }
+sub name                { return 'D'; }
 
 #-------------------------------------------------------------------------------
 # Bind this node as a parent to the given node as a child.

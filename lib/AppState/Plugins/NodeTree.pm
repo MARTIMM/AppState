@@ -605,18 +605,21 @@ sub _traverseDF2
   if( $node->nbr_children )
   {
     $self->_check_run_node_object_methods( $node, 'up');
+    $self->log( $self->C_LOG_TRACE, ['Node handler up on ' . $node->name]);
     $self->node_handler_up->($node) if $self->has_handler_up;
     foreach my $child ($node->get_children)
     {
       $self->_traverseDF2($child);
     }
 
+    $self->log( $self->C_LOG_TRACE, ['Node handler down on ' . $node->name]);
     $self->_check_run_node_object_methods( $node, 'down');
     $self->node_handler_down->($node) if $self->has_handler_down;
   }
 
   else
   {
+    $self->log( $self->C_LOG_TRACE, ['Node handler end on ' . $node->name]);
     $self->_check_run_node_object_methods( $node, 'end');
     $self->node_handler_end->($node) if $self->has_handler_end;
   }
@@ -673,22 +676,38 @@ sub _check_run_node_object_methods
     my $object = $node->get_object($object_key);
     if( $traverse_type eq 'up' )
     {
-      $object->handler_up( $node, $object_key) if $object->can('handler_up');
+      if( $object->can('handler_up') )
+      {
+        $self->log( $self->C_LOG_TRACE, ['Object handler up on ' . $node->name]);
+        $object->handler_up( $node, $object_key);
+      }
     }
 
     elsif( $traverse_type eq 'down' )
     {
-      $object->handler_down( $node, $object_key) if $object->can('handler_down');
+      if( $object->can('handler_down') )
+      {
+        $self->log( $self->C_LOG_TRACE, ['Object handler down on ' . $node->name]);
+        $object->handler_down( $node, $object_key);
+      }
     }
 
     elsif( $traverse_type eq 'end' )
     {
-      $object->handler_end( $node, $object_key) if $object->can('handler_end');
+      if( $object->can('handler_end') )
+      {
+        $self->log( $self->C_LOG_TRACE, ['Object handler end on ' . $node->name]);
+        $object->handler_end( $node, $object_key);
+      }
     }
 
     elsif( $traverse_type eq '-' )
     {
-      $object->handler( $node, $object_key) if $object->can('handler');
+      if( $object->can('handler') )
+      {
+        $self->log( $self->C_LOG_TRACE, ['Object handler on ' . $node->name]);
+        $object->handler( $node, $object_key);
+      }
     }
   }
 }

@@ -17,7 +17,8 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_NDE_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
+def_sts( 'W_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
+def_sts( 'D_ADDATTR', 'M_DEBUG', 'Add attribute %s, value %s');
 
 #-------------------------------------------------------------------------------
 has name =>
@@ -241,6 +242,7 @@ sub add_attribute
   foreach my $an (keys %attrs)
   {
     my $av = $attrs{$an};
+    $self->log( $self->D_ADDATTR, [ $an, $av]);
     my $node = AppState::Plugins::NodeTree::NodeAttr->new( name => $an, value => $av);
     $self->push_attribute($node);
   }
@@ -258,7 +260,7 @@ sub push_attribute
 #say "PA 1: ", $attrNode1->name, " == ", $attrNode2->name;
     if( $attrNode1->name eq $attrNode2->name )
     {
-      $self->log( $self->C_NDE_ATTROVERWR, [$attrNode1->name]);
+      $self->log( $self->W_ATTROVERWR, [$attrNode1->name]);
       $attrNode2->value($attrNode1->value);
       $found = $attrNode2;
       last;
