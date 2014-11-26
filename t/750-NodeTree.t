@@ -86,20 +86,20 @@ is( $child->name, 'R', "Below is a root node");
 # if all works the same.
 #
 &doSearchAndTest( 'CMP_NAME *', $dom
-                , { type => $dom->C_NDM_CMP_NAME
+                , { type => $dom->C_CMP_NAME
                   , strings => [qw( n1_0 not-existent-node n0_1)]
                   }
                 , 'n1_0 n0_1'
                 );
 &doSearchAndTest( 'CMP_NAME 1', $dom
-                , { type => $dom->C_NDM_CMP_NAME
+                , { type => $dom->C_CMP_NAME
                   , getOneItem => 1
                   , strings => [qw( n1_0 not-existent-node n0_1)]
                   }
                 , 'n1_0'
                 );
 &doSearchAndTest( 'CMP_NAME R', $dom
-                , { type => $dom->C_NDM_CMP_NAME
+                , { type => $dom->C_CMP_NAME
                   , strings => [qr/n0_\d/]
                   }
                 , 'n0_0 n0_1 n0_2 n0_2 n0_2'
@@ -107,14 +107,14 @@ is( $child->name, 'R', "Below is a root node");
 
 
 &doSearchAndTest( 'CMP_ATTR *', $dom
-                , { type => $dom->C_NDM_CMP_ATTR
+                , { type => $dom->C_CMP_ATTR
                   , strings => [qw( c1 c3)]
                   , attrname => 'class'
                   }
                 , 'n0_1 n1_2'
                 );
 &doSearchAndTest( 'CMP_ATTR 1', $dom
-                , { type => $dom->C_NDM_CMP_ATTR
+                , { type => $dom->C_CMP_ATTR
                   , strings => [qw( c1 c3)]
                   , attrname => 'class'
                   , getOneItem => 1
@@ -122,7 +122,7 @@ is( $child->name, 'R', "Below is a root node");
                 , 'n0_1'
                 );
 &doSearchAndTest( 'CMP_ATTR R', $dom
-                , { type => $dom->C_NDM_CMP_ATTR
+                , { type => $dom->C_CMP_ATTR
                   , strings => [qr/c\d/]
                   , attrname => 'class'
                   }

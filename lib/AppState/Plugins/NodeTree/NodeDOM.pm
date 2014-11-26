@@ -16,14 +16,14 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_NDM_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
-def_sts( 'C_NDM_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
-def_sts( 'C_NDM_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
+def_sts( 'E_NODENOTROOT',  'M_ERROR', 'Node not of proper type. Must be a root node. Type = %s');
+def_sts( 'E_NODENOTNODE',  'M_ERROR', 'Node not of proper type. Type = %s');
+def_sts( 'E_NODENOTNTA',   'M_ERROR', 'Child node not of proper type, This node is '
                                       . 'AppState::Plugins::NodeTree::Node. Node ref = %s');
 
-def_sts( 'C_NDM_CMP_NAME', 'M_CODE', 'Search comparing name of node');
-def_sts( 'C_NDM_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
-def_sts( 'C_NDM_CMP_DATA', 'M_CODE', 'Search comparing data of node');
+def_sts( 'C_CMP_NAME', 'M_CODE', 'Search comparing name of node');
+def_sts( 'C_CMP_ATTR', 'M_CODE', 'Search comparing attribute of node');
+def_sts( 'C_CMP_DATA', 'M_CODE', 'Search comparing data of node');
 
 #-------------------------------------------------------------------------------
 has child =>
@@ -140,7 +140,7 @@ sub link_with_node
 
       else
       {
-        $self->log( $self->C_NDM_NODENOTROOT, [ref $node]);
+        $self->log( $self->E_NODENOTROOT, [ref $node]);
       }
     }
 
@@ -154,7 +154,7 @@ sub link_with_node
 
       else
       {
-        $self->log( $self->C_NDM_NODENOTNODE, [ref $node]);
+        $self->log( $self->E_NODENOTNODE, [ref $node]);
       }
     }
 
@@ -180,7 +180,7 @@ sub link_with_node
 
       else
       {
-        $self->log( $self->C_NDM_NODENOTNTA, [ref $node]);
+        $self->log( $self->E_NODENOTNTA, [ref $node]);
       }
     }
   }
@@ -197,7 +197,7 @@ sub search_nodes
 
   $self->shared_data->_clear_found_nodes;
 
-  if( $type == $self->C_NDM_CMP_NAME )
+  if( $type == $self->C_CMP_NAME )
   {
     foreach my $string (@$strings)
     {
@@ -205,7 +205,7 @@ sub search_nodes
     }
   }
 
-  elsif( $type == $self->C_NDM_CMP_ATTR )
+  elsif( $type == $self->C_CMP_ATTR )
   {
     $searchCfg->{attrname} //= '';
     foreach my $string (@$strings)
@@ -214,7 +214,7 @@ sub search_nodes
     }
   }
 
-  elsif( $type == $self->C_NDM_CMP_DATA )
+  elsif( $type == $self->C_CMP_DATA )
   {
     $searchCfg->{dataname} //= '';
     foreach my $string (@$strings)

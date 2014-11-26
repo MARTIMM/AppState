@@ -26,17 +26,17 @@ isa_ok( $nt0, 'AppState::Plugins::NodeTree::NodeDOM');
 
 my $nt1 = AppState::Plugins::NodeTree::NodeDOM->new;
 $nt0->link_with_node($nt1);
-ok( $log->get_last_error == $nt0->C_NDM_NODENOTROOT, "Link went wrong");
+ok( $log->get_last_error == $nt0->E_NODENOTROOT, "Link went wrong");
 
 
-$nt0->search_nodes( { type => $nt0->C_NDM_CMP_NAME
+$nt0->search_nodes( { type => $nt0->C_CMP_NAME
                     , strings => [ 'a']
                     }
                   );
 
 is( $nt0->nbr_found_nodes, 0, 'Searching for a name shouldn\'t give any results');
 
-$nt0->search_nodes( { type => $nt0->C_NDM_CMP_ATTR
+$nt0->search_nodes( { type => $nt0->C_CMP_ATTR
                     , strings => [ 'a']
                     }
                   );
@@ -44,7 +44,7 @@ $nt0->search_nodes( { type => $nt0->C_NDM_CMP_ATTR
 is( $nt0->nbr_found_nodes, 0, 'Searching for attributes shouldn\'t give any results');
 
 
-$nt0->search_nodes( { type => $nt0->C_NDM_CMP_DATA
+$nt0->search_nodes( { type => $nt0->C_CMP_DATA
                     , strings => [ 'a']
                     }
                   );

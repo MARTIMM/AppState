@@ -132,20 +132,20 @@ $n0_1->link_with_node(@nds);
 # Search for nodes, attributes and data items
 #
 &doSearchAndTest( 'CMP_NAME *', $dom
-                , { type => $n0_1->C_NDM_CMP_NAME
+                , { type => $n0_1->C_CMP_NAME
                   , strings => [qw( n1_0 not-existent-node n0_1)]
                   }
                 , 'n1_0 n0_1'
                 );
 &doSearchAndTest( 'CMP_NAME 1', $dom
-                , { type => $n0_1->C_NDM_CMP_NAME
+                , { type => $n0_1->C_CMP_NAME
                   , getOneItem => 1
                   , strings => [qw( n1_0 not-existent-node n0_1)]
                   }
                 , 'n1_0'
                 );
 &doSearchAndTest( 'CMP_NAME R', $dom
-                , { type => $n0_1->C_NDM_CMP_NAME
+                , { type => $n0_1->C_CMP_NAME
                   , strings => [qr/n0_\d/]
                   }
                 , 'n0_0 n0_1 n0_2 n0_2 n0_2'
@@ -154,7 +154,7 @@ $n0_1->link_with_node(@nds);
 
 
 &doSearchAndTest( 'CMP_ATTR *', $dom
-                , { type => $n0_1->C_NDM_CMP_ATTR
+                , { type => $n0_1->C_CMP_ATTR
                   , strings => [qw( c1 c3)]
                   , attrname => 'class'
                   }
@@ -162,7 +162,7 @@ $n0_1->link_with_node(@nds);
                 );
 
 &doSearchAndTest( 'CMP_ATTR 1', $dom
-                , { type => $n0_1->C_NDM_CMP_ATTR
+                , { type => $n0_1->C_CMP_ATTR
                   , strings => [qw( c1 c3)]
                   , attrname => 'class'
                   , getOneItem => 1
@@ -171,7 +171,7 @@ $n0_1->link_with_node(@nds);
                 );
 
 &doSearchAndTest( 'CMP_ATTR R', $dom
-                , { type => $n0_1->C_NDM_CMP_ATTR
+                , { type => $n0_1->C_CMP_ATTR
                   , strings => [qr/c\d/]
                   , attrname => 'class'
                   }
@@ -181,7 +181,7 @@ $n0_1->link_with_node(@nds);
 
 
 &doSearchAndTest( 'CMP_DATA *', $dom
-                , { type => $n0_1->C_NDM_CMP_DATA
+                , { type => $n0_1->C_CMP_DATA
                   , strings => [qw( v1 v1a)]
                   , dataname => 'd1'
                   }
@@ -189,7 +189,7 @@ $n0_1->link_with_node(@nds);
                 );
 
 &doSearchAndTest( 'CMP_DATA 1', $dom
-                , { type => $n0_1->C_NDM_CMP_DATA
+                , { type => $n0_1->C_CMP_DATA
                   , strings => [qw( v1 v1a)]
                   , dataname => 'd1'
                   , getOneItem => 1
@@ -198,7 +198,7 @@ $n0_1->link_with_node(@nds);
                 );
 
 &doSearchAndTest( 'CMP_DATA R', $dom
-                , { type => $n0_1->C_NDM_CMP_DATA
+                , { type => $n0_1->C_CMP_DATA
                   , strings => [qr/v\d/]
                   , dataname => 'd1'
                   }
