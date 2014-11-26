@@ -1,0 +1,25 @@
+AppState                Application State
+
+basic
+cornerstone             *
+elemental
+essential               *
+foundation
+fundament               *
+original
+primary
+rudiment
+underlying              *
+vital                   *
+
+basis
+core                    *
+essence
+heart
+kernel
+marrow                  *
+quintessence
+root
+
+
+

@@ -2,35 +2,41 @@ Doc/AppState.mm
 Doc/AppState.zargo
 Doc/NodeTree.zargo
 
-lib/AppState/Ext/ConfigFile.pm
-lib/AppState/Ext/ConfigIO.pm
-lib/AppState/Ext/Constants.pm
-lib/AppState/Ext/Documents.pm
-
-lib/AppState/NodeTree/Node.pm
-lib/AppState/NodeTree/NodeAttr.pm
-lib/AppState/NodeTree/NodeDOM.pm
-lib/AppState/NodeTree/NodeGlobal.pm
-lib/AppState/NodeTree/NodeRoot.pm
-lib/AppState/NodeTree/NodeText.pm
-
-lib/AppState/Plugins/ConfigDriver/DataDumper.pm
-lib/AppState/Plugins/ConfigDriver/FreezeThaw.pm
-lib/AppState/Plugins/ConfigDriver/Json.pm
-lib/AppState/Plugins/ConfigDriver/Memcached.pm
-lib/AppState/Plugins/ConfigDriver/Storable.pm
-lib/AppState/Plugins/ConfigDriver/Yaml.pm
-
-lib/AppState/Plugins/Feature/CommandLine.pm
-lib/AppState/Plugins/Feature/ConfigManager.pm
-lib/AppState/Plugins/Feature/Log.pm
-lib/AppState/Plugins/Feature/NodeTree.pm
-lib/AppState/Plugins/Feature/PluginManager.pm
-#lib/AppState/Plugins/Feature/Process.pm
-
-#lib/AppState/Plugins/Process/MsgQueue.pm
-
 lib/AppState.pm
+
+lib/AppState/Plugins/CommandLine.pm
+
+lib/AppState/Plugins/ConfigManager.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/DataDumper.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/FreezeThaw.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/Json.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/Memcached.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/Storable.pm
+lib/AppState/Plugins/ConfigManager/ConfigFile/Plugins/Yaml.pm
+lib/AppState/Plugins/ConfigManager/ConfigIO.pm
+lib/AppState/Plugins/ConfigManager/Documents.pm
+
+lib/AppState/Plugins/Log.pm
+lib/AppState/Plugins/Log/Constants.pm
+lib/AppState/Plugins/Log/Meta_Constants.pm
+lib/AppState/Plugins/Log/Status.pm
+
+lib/AppState/Plugins/NodeTree.pm
+lib/AppState/Plugins/NodeTree/Node.pm
+lib/AppState/Plugins/NodeTree/NodeAttr.pm
+lib/AppState/Plugins/NodeTree/NodeDOM.pm
+lib/AppState/Plugins/NodeTree/NodeGlobal.pm
+lib/AppState/Plugins/NodeTree/NodeRoot.pm
+lib/AppState/Plugins/NodeTree/NodeText.pm
+
+lib/AppState/Plugins/PluginManager.pm
+
+
+
+
+#lib/AppState/Plugins/Feature/Process.pm
+#lib/AppState/Plugins/Process/MsgQueue.pm
 
 ################################################################################
 # Testing stuff
@@ -55,6 +61,7 @@ t/100-Log.t
 t/101-Log.t
 t/102-Log.t
 t/103-Log.t
+t/104-Log.t
 
 # 300-399 Storage
 #

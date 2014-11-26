@@ -1,96 +1,55 @@
-- Renaming log to _log in modules ( CommandLine, PluginManager)
-- Replace or extend AppState::PluginManager with Module::Pluggable
-  - Won't do.
+- New todo
+x Implemented
+* Rejected
+
+! Important
+? Dunno
+--------------------------------------------------------------------------------
+- AppState plugins interface
+  - plugin_initialize
+  - plugin_cleanup
+
+- Apstate singleton change from Class::Singleton to MooseX::Singleton
+
+- Change of error code into a form like <severity code letter>_<code name>
+  instead of <type letter>_<module tag>_<code name>.
+  x AppState::Plugins::NodeTree::NodeDOM
+
+- Log.pm
+  - Log4perl will not file split when larger than some size, bug?
+  - Turning on/off several ways of log output (stderr, file, email).
+  - Wrap messages has problems with '=' on last unbreakable word.
+
+- Merge Constants.pm and Meta_Constants.pm
+
+x Moved Modules from AppState/Ext, AppState/NodeTree and 
+  AppState/Plugins/Configdriver to the proper places.
+
+* Replace or extend AppState::PluginManager with Module::Pluggable
+  Won't do this because.
     1) plugins are all instanciated, not one particularly.
     2) plugins are search again when use'd (controllable though)
     3) plugins are not remembered. Each call to plugins() gives new addresses
 
+x Store !perl/xxxxx objects in a node. Can be done by the caller at process()
+  time when NodeTree builds the tree (use $node->set_object(key => $self)).
+  Later when traversing the tree a test can be done on a node to see if there
+  are objects stored. When there are, a method in the object can be called.
+  Depending on the type of traversal these can be;
+  C_NT_DEPTHFIRST1:
+    handler_up()
 
-Thinking about AppState plugins interface
------------------------------------------
+  C_NT_DEPTHFIRST2:
+    handler_up()
+    handler_down()
+    handler_end()
 
-AppState::CommandLine
----------------------
-Moose generated methods
-  options
-  usage
-  appStateObj
+  C_NT_BREADTHFIRST1:
+    handler()
 
-Method functions
-  BUILD
-  _log				plugin check
-  cleanup			plugin check
-  configGetoptLong
-  describeUsage
+  C_NT_BREADTHFIRST2:
+    handler()
 
+x Xpath method modify for absolute path adding /R on front when missing
 
-
-AppState::Config
-----------------
-Moose generated methods
-  configObjects
-    _setConfigObject
-    getConfigObject
-    nbrConfigObjects
-    hasConfigObject
-    getConfigObjectNames
-    _dropConfigObject
-
-  currentConfigObjectName
-    _selectConfigObjectName
-
-  currentConfigObject
-    getDocuments		From AppState::Ext::Documents
-    setDocuments
-    currentDocument
-    selectDocument
-    nbrDocuments
-    addDocuments
-    getDocument
-    setDocument
-
-    getKeys
-    getValue
-    setValue
-    dropValue
-    getKValue
-    setKValue
-    dropKValue
-    popValue
-    pushValue
-    shiftValue
-    unshiftValue
-
-    storeType			From AppState::Ext::ConfigFile 
-    location
-    requestFile
-    documents			Type AppState::Ext::Documents
-
-    configFile
-    load
-    save
-    clone
-    cloneDocument
-    init
-    delete
-
-Method functions
-  BUILD
-  _log
-  cleanup
-  selectConfigObject
-  addConfigObject
-  modifyConfigObject
-  dropConfigObject
-  removeConfigObject
-
-
-
-  
-  
-  
-  
-  
-  
-  
 
