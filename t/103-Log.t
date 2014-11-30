@@ -33,9 +33,9 @@ package Foo
     subtest 't0, Foo logger names' =>
     sub
     {
-      is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::Foo', 'Stderr logger name = A::Stderr::Foo');
-      is( $log->get_logger_name($log->ROOT_FILE), 'A::File::Foo', 'File logger name = A::File::Foo');
-      is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::Foo', 'Email logger name = A::Email::Foo');
+      is( $log->get_logger_name($log->C_ROOTSTDERR), 'A::Stderr::Foo', 'Stderr logger name = A::Stderr::Foo');
+      is( $log->get_logger_name($log->C_ROOTFILE), 'A::File::Foo', 'File logger name = A::File::Foo');
+      is( $log->get_logger_name($log->C_ROOTEMAIL), 'A::Email::Foo', 'Email logger name = A::Email::Foo');
     };
   }
 
@@ -116,9 +116,9 @@ package Foo::Bar
     subtest 't0, Foo::Bar logger names' =>
     sub
     {
-      is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::Foo::Bar', 'Stderr logger name = A::Stderr::Foo::Bar');
-      is( $log->get_logger_name($log->ROOT_FILE), 'A::File::Foo::Bar', 'File logger name = A::File::Foo::Bar');
-      is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::Foo::Bar', 'Email logger name = A::Email::Foo::Bar');
+      is( $log->get_logger_name($log->C_ROOTSTDERR), 'A::Stderr::Foo::Bar', 'Stderr logger name = A::Stderr::Foo::Bar');
+      is( $log->get_logger_name($log->C_ROOTFILE), 'A::File::Foo::Bar', 'File logger name = A::File::Foo::Bar');
+      is( $log->get_logger_name($log->C_ROOTEMAIL), 'A::Email::Foo::Bar', 'Email logger name = A::Email::Foo::Bar');
     };
   }
 
@@ -226,7 +226,7 @@ my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
 $log->do_append_log(0);
 $log->do_flush_log(1);
-$log->start_logging;
+$log->start_file_logging;
 $log->add_tag($tagName);
 
 #-------------------------------------------------------------------------------
@@ -235,9 +235,9 @@ $log->add_tag($tagName);
 subtest 'Test logger names' =>
 sub
 {
-  is( $log->get_logger_name($log->ROOT_STDERR), 'A::Stderr::main', 'Stderr logger name = A::Stderr::main');
-  is( $log->get_logger_name($log->ROOT_FILE), 'A::File::main', 'File logger name = A::File::main');
-  is( $log->get_logger_name($log->ROOT_EMAIL), 'A::Email::main', 'Email logger name = A::mail::main');
+  is( $log->get_logger_name($log->C_ROOTSTDERR), 'A::Stderr::main', 'Stderr logger name = A::Stderr::main');
+  is( $log->get_logger_name($log->C_ROOTFILE), 'A::File::main', 'File logger name = A::File::main');
+  is( $log->get_logger_name($log->C_ROOTEMAIL), 'A::Email::main', 'Email logger name = A::mail::main');
 
   # Test logger names in Foo and Foo::Bar
   #
@@ -337,19 +337,20 @@ sub
   # Trace level wil log all to file but turning of logging will inhibit
   #
   $log->file_log_level($log->M_TRACE);
-  $log->stop_logging;
+  $log->stop_file_logging;
   $log->wlog( $log->C_LOG_TRACE, ['Finish log']);
   &cunlike("Ts 103 \\d+ TRACE - Finish log");
 
   # Start again and log
   #
-  $log->start_logging;
+  $log->start_file_logging;
   $log->wlog( $log->C_LOG_DEBUG, ['Start log again']);
   &clike("Ds 103 \\d+ DEBUG - Start log again");
 };
 
 #-------------------------------------------------------------------------------
 $app->cleanup;
+
 File::Path::remove_tree($config_dir);
 done_testing();
 exit(0);
@@ -534,7 +535,7 @@ sub
 
   # Start logging
   #
-  $log->start_logging;
+  $log->start_file_logging;
 #  is( $log->isLogFileOpen, 1, 'Logfile should be open');
   is( -w 't/Log/log.t.log', 1, 'Test creation of logfile, is writable');
   is( -r 't/Log/log.t.log', 1, 'Logfile is readable');
@@ -633,7 +634,7 @@ foreach my $count1 (1..2)
 subtest 'finish logging' =>
 sub
 {
-  $log->stop_logging;
+  $log->stop_file_logging;
 };
 
 #-------------------------------------------------------------------------------

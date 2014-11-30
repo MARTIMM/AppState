@@ -31,7 +31,7 @@ my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
 $log->do_append_log(0);
 $log->do_flush_log(1);
-$log->start_logging;
+$log->start_file_logging;
 $log->add_tag($tagName);
 
 #-------------------------------------------------------------------------------
@@ -232,7 +232,7 @@ sub
 
   # Start logging
   #
-  $log->start_logging;
+  $log->start_file_logging;
 #  is( $log->isLogFileOpen, 1, 'Logfile should be open');
   is( -w 't/Log/log.t.log', 1, 'Test creation of logfile, is writable');
   is( -r 't/Log/log.t.log', 1, 'Logfile is readable');
@@ -331,7 +331,7 @@ foreach my $count1 (1..2)
 subtest 'finish logging' =>
 sub
 {
-  $log->stop_logging;
+  $log->stop_file_logging;
 };
 
 #-------------------------------------------------------------------------------

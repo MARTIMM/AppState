@@ -18,7 +18,7 @@ $as->initialize( config_dir => 't/Memcached'
 $as->check_directories;
 
 my $log = $as->get_app_object('Log');
-$log->start_logging;
+$log->start_file_logging;
 $log->file_log_level($as->M_TRACE);
 $log->add_tag('306');
 

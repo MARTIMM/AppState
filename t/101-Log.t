@@ -44,9 +44,12 @@ my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
 $log->do_append_log(0);
 $log->do_flush_log(1);
-$log->start_logging;
-#$log->stderr_log_level($self->M_TRACE);
-$log->file_log_level($self->M_TRACE);
+$log->start_file_logging;
+$log->file_log_level({level => $self->M_TRACE, package => 'root'});
+
+#$log->start_stderr_logging;
+#$log->stderr_log_level({level => $self->M_INFO, package => 'root'});
+
 $log->add_tag($tagName);
 is( $log->get_log_tag(ref $self), '101', 'Log tag is 101');
 
@@ -82,6 +85,15 @@ done_testing();
 exit(0);
 
 __END__
+
+
+
+
+
+
+
+
+
 
 #-------------------------------------------------------------------------------
 # Info and warnings are not sent to the log unless forced.
@@ -215,7 +227,7 @@ sub
 
   # Start logging
   #
-  $log->start_logging;
+  $log->start_file_logging;
 #  is( $log->isLogFileOpen, 1, 'Logfile should be open');
   is( -w 't/Log/log.t.log', 1, 'Test creation of logfile, is writable');
   is( -r 't/Log/log.t.log', 1, 'Logfile is readable');
@@ -314,7 +326,7 @@ foreach my $count1 (1..2)
 #subtest 'finish logging' =>
 #sub
 #{
-  $log->stop_logging;
+  $log->stop_file_logging;
 #  is( $log->isLogFileOpen, '', 'Logfile should be closed again');
 #};
 

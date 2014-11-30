@@ -16,9 +16,11 @@ x Implemented
   x AppState::Plugins::NodeTree::NodeDOM
 
 - Log.pm
-  - Log4perl will not file split when larger than some size, bug?
-  - Turning on/off several ways of log output (stderr, file, email).
+  - Log4perl will not split logfile when larger than some size, bug?
+  x Turning on/off several types of log output (stderr, file, email).
   - Wrap messages has problems with '=' on last unbreakable word.
+
+- Memcached tests with better skip clause
 
 - Merge Constants.pm and Meta_Constants.pm
 

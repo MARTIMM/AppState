@@ -239,7 +239,7 @@ sub log_init
 # Only write to the log file when there is already a log object created by
 # the user. There may be only 2 arguments.
 #
-sub _log
+sub XXX_log
 {
   my( $self, $messages, $error_code, $call_level) = @_;
 
@@ -266,11 +266,12 @@ sub log
   $call_level //= 0;
   my $sts = 0;
 
+  # It is possible that the log module is not yet instantiated. When $log = 1
+  # the module exists but there is no object (yet)
+  #
   my $app = AppState->instance;
   my $log = $app->check_plugin('Log');
-
-  $sts = $log->wlog( $error_code, $msg_values, $call_level + 1)
-    if ref $log eq 'AppState::Plugins::Log';
+  $sts = $log->wlog( $error_code, $msg_values, $call_level + 1) if ref $log;
 
   return $sts;
 }

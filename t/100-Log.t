@@ -27,9 +27,9 @@ sub
   isa_ok( $log, $log_modulename);
   $log->add_tag($tagName);
 
-  is( $log->ROOT_FILE, 'A::File', 'Check root file loggername');
-  is( $log->ROOT_STDERR, 'A::Stderr', 'Check root stderr loggername');
-  is( $log->ROOT_EMAIL, 'A::Email', 'Check root email loggername');
+  is( $log->C_ROOTFILE, 'A::File', 'Check root file loggername');
+  is( $log->C_ROOTSTDERR, 'A::Stderr', 'Check root stderr loggername');
+  is( $log->C_ROOTEMAIL, 'A::Email', 'Check root email loggername');
 
   ok( $log->do_append_log == 1, 'Append to log turned on');
   ok( $log->do_flush_log == 0, 'Flushing turned off');
@@ -63,8 +63,11 @@ sub
   ok( $log->die_on_fatal, 'Die on error on');
 
   ok( $log->write_start_message, 'Show start message on');
-  
-  ok( !$log->_logger_initialized, 'Logger not initialized');
+
+#  ok( !$log->_logger_initialized, 'Logger not initialized');
+  ok( !$log->_defined_logging('file'), 'File logging not defined');
+  ok( !$log->_defined_logging('stderr'), 'Stderr logging not defined');
+  ok( !$log->_defined_logging('email'), 'Email logging not defined');
 };
 
 #-------------------------------------------------------------------------------
@@ -112,16 +115,35 @@ sub
   #
   $log->do_flush_log(1);
 
-  $log->start_logging;
-  ok( $log->_is_logging, 'Logging is started');
+  $log->start_file_logging;
+  ok( $log->_defined_logging('file'), 'File logging defined');
+  ok( $log->_get_logging('file'), 'File logging is started');
 
-  $log->stop_logging;
-  ok( !$log->_is_logging, 'Logging stopped again');
+  $log->stop_file_logging;
+  ok( $log->_defined_logging('file'), 'File logging still defined');
+  ok( !$log->_get_logging('file'), 'File logging stopped again');
   
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
   
-  ok( $log->_logger_initialized, 'Logger is initialized');
+#  ok( $log->_logger_initialized, 'Logger is initialized');
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
+
+  $log->stderr_log_level({level => $log->M_FATAL, package => 'root'});
+  $log->start_stderr_logging;
+  ok( $log->_defined_logging('stderr'), 'Stderr logging defined');
+  ok( $log->_get_logging('stderr'), 'Stderr logging is started');
+
+  $log->stop_stderr_logging;
+  ok( $log->_defined_logging('stderr'), 'Stderr logging still defined');
+  ok( !$log->_get_logging('stderr'), 'Stderr logging stopped again');
+
+  $log->start_email_logging;
+  ok( $log->_defined_logging('email'), 'Email logging defined');
+  ok( $log->_get_logging('email'), 'Email logging is started');
+
+  $log->stop_email_logging;
+  ok( $log->_defined_logging('email'), 'Email logging still defined');
+  ok( !$log->_get_logging('email'), 'Email logging stopped again');
 };
 
 #-------------------------------------------------------------------------------

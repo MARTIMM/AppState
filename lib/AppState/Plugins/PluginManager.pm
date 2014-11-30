@@ -90,7 +90,6 @@ sub cleanup
 
   foreach my $pluginName (ref $list eq 'ARRAY' ? @$list : $self->get_plugin_names)
   {
-#say "PM: $pluginName";
     # Get object. If there is one, call cleanup() if there followed by
     # the destruction of the object.
     #
@@ -280,8 +279,8 @@ sub check_plugin
 
   return undef unless $self->plugin_defined($name);
   my $plObj = $self->get_plugin($name)->{object};
-  return 1 unless ref $plObj;
-  return $plObj;
+#  return 1 unless ref $plObj;
+  return $plObj // 1;
 
 # -old-
 #  return undef unless exists $self->plugged_objects->{$name};

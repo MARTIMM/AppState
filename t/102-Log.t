@@ -42,7 +42,7 @@ $log->die_on_fatal(0);
 
 $log->do_append_log(0);
 $log->do_flush_log(1);
-$log->start_logging;
+$log->start_file_logging;
 #$log->stderr_log_level($self->M_TRACE);
 $log->file_log_level($self->M_TRACE);
 $log->add_tag($tagName);

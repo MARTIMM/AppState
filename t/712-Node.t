@@ -21,7 +21,7 @@ $as->check_directories;
 
 my $log = $as->get_app_object('Log');
 $log->do_append_log(0);
-$log->start_logging;
+$log->start_file_logging;
 $log->file_log_level($log->M_TRACE);
 
 #-------------------------------------------------------------------------------

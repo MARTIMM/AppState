@@ -12,7 +12,7 @@ $app->initialize( config_dir => 't/NodeAttr');
 $app->check_directories;
 
 my $log = $app->get_app_object('Log');
-$log->start_logging;
+$log->start_file_logging;
 $log->file_log_level($log->M_ERROR);
 $app->log_init('701');
 
