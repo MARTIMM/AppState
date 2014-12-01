@@ -428,7 +428,7 @@ sub BUILD
            );
   };
 
-  # Add three methods to modify logger levels using _set_log_level().
+  # Add three methods to modify logger levels using _getset_log_level().
   # Where in the call to &$level_sub ( shift @_, qw( C_ROOTFILE File), @_)
   # shift @_ is the log object ($self), C_ROOTFILE is the logger prefix in this
   # case $log->C_ROOTFILE and the rest of the arguments come with @_ which will
@@ -438,19 +438,19 @@ sub BUILD
   $meta->make_mutable;
   $meta->add_method
          ( file_log_level => sub
-           { return &_set_log_level( shift @_, 'C_ROOTFILE', @_)
+           { return &_getset_log_level( shift @_, 'C_ROOTFILE', @_);
            }
          );
 
   $meta->add_method
          ( stderr_log_level => sub
-           { return &_set_log_level( shift @_, 'C_ROOTSTDERR', @_)
+           { return &_getset_log_level( shift @_, 'C_ROOTSTDERR', @_);
            }
          );
 
   $meta->add_method
          ( email_log_level => sub
-           { return &_set_log_level( shift @_, 'C_ROOTEMAIL', @_)
+           { return &_getset_log_level( shift @_, 'C_ROOTEMAIL', @_);
            }
          );
 
@@ -519,7 +519,7 @@ sub plugin_cleanup
 # defined by $logger_prefix. The calls will set a level for any logger created
 # by adding the adjusted package name to the $logger_prefix.
 #
-sub _set_log_level
+sub _getset_log_level
 {
   my( $self, $logger_prefix, $level) = @_;
   my( $package, $f, $l, $logger_name);
@@ -585,6 +585,8 @@ sub _set_log_level
   # Save level for this package
   #
   $self->_set_log_lvl($logger_name => $level);
+say "getset $logger_name => $level";
+
 
   # Set level for appropriate logger
   #

@@ -112,7 +112,7 @@ sub
   ok( !$log->_get_logging('file'), 'File logging stopped again');
   
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
-  
+
 #  ok( $log->_logger_initialized, 'Logger is initialized');
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
 

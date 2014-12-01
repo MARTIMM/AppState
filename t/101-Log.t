@@ -30,11 +30,7 @@ isa_ok( $self, 'main');
 #
 my $config_dir = 't/Log';
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                , check_directories => 1
-                );
+$app->initialize( config_dir => $config_dir, check_directories => 1);
 
 #-------------------------------------------------------------------------------
 # Get log object
