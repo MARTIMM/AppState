@@ -7,32 +7,37 @@ investicate the usefullness.
 
 INTRODUCTION
 
-Inventing the wheel again..... Its purpose is to group a lot of programs
-nessessities into one set of modules. In the CPAN are modules for accessing
-configuration parameters, write log files and so on. All using different class
-names and some having more options, others less. Now, I wanted this all under
-one hood named AppState or Application state. Some things can be solved using
-existing modules using an adapter pattern others needed to be created anew.
+The purpose of this set of modules is to group a lot of programs necessities
+into one set of modules. In the CPAN are modules for accessing configuration
+parameters, writing log files and so on. All using different class names and
+some having more options, others less. Now, I wanted this all under one hood
+named AppState or Application state.
+
+The AppState object is a singleton which uses the plugin manager to provide
+other objects to the user. Such objects are Log, CommandLine and ConfigManager.
 
 Modules
   AppState
     Portal to other modules using plugins
-  
-  AppState::Plugins::Feature::ConfigManager
-    Configuration handling        
 
-  AppState::Plugins::Feature::Log
-    Logging
-    Log levels are bit masks each for specific catagories. Keep
-    first 16 bits reserved for AppState. Cannot be checked however.
+  Plugins:
+    ConfigManager
+      Configuration handling using several types of storage.
 
-  AppState::Plugins::Feature::Process
-    Daemon, fork, process tables etc
+    CommandLine
+      Commandline options and arguments.
 
-  AppState::Plugins::Feature::CommandLine
-    Options and arguments, CGI
+    Log
+      Logging using Log::Log4perl. The extra thing is when messages have a
+      higher severity then info, a status object is returned. Log levels are bit
+      masks each for specific catagories. Keep first 16 bits reserved for
+      AppState. Cannot be checked however.
 
+    NodeTree
+      Module to convert a specific perl data structure into a tree of objects.
 
+    PluginManager
+      A plugin manager which AppState also uses.
 
 
 INSTALLATION
@@ -45,12 +50,12 @@ To install this module type the following:
    Build install
 
 DEPENDENCIES
-
+   Many modules ....
 
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2013 by Marcel Timmerman
+Copyright (C) 2013 - 2014 by Marcel Timmerman
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.14.3 or,
