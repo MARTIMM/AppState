@@ -89,14 +89,6 @@ has log_file =>
       }
     );
 
-# File size
-#
-has log_file_size =>
-    ( is                => 'rw'
-    , isa               => 'Int'
-    , default           => 10485760
-    );
-
 # Number of logfiles
 #
 has nbr_log_files =>
