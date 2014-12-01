@@ -31,7 +31,6 @@ sub
   is( $log->C_ROOTSTDERR, 'A::Stderr', 'Check root stderr loggername');
   is( $log->C_ROOTEMAIL, 'A::Email', 'Check root email loggername');
 
-  ok( $log->do_flush_log == 0, 'Flushing turned off');
   is( $log->log_file, '100-Log.log', 'Logfile is 100-Log.log');
   is( $log->log_file_size, 10485760, 'Logfile size 10485760');
   is( $log->nbr_log_files, 5, 'Maximum number of logfiles is 5');
@@ -106,9 +105,7 @@ sub
 {
   # Flush to check file contents
   #
-  $log->do_flush_log(1);
-
-  $log->start_file_logging({ mode => 'append'});
+  $log->start_file_logging({ mode => 'append', autoflush => 1});
   ok( $log->_defined_logging('file'), 'File logging defined');
   ok( $log->_get_logging('file'), 'File logging is started');
 

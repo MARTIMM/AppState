@@ -113,12 +113,6 @@ at a fatal level and die after that event.
 
 =head1 METHODS
 
-=head2 do_flush_log($bool)
-
-Method to set 'flushing to log'. Can be changed before the logfile is opened.
-After the log is opened, it has no meaning. Without argument it returns the
-current setting. The default is 0.
-
 =head2 log_file($filename)
 
 Method to set logfile name. Can be changed before the logfile is opened.

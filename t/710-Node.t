@@ -18,8 +18,7 @@ my $app = AppState->instance;
 $app->initialize( config_dir => 't/Node', check_directories => 1);
 
 my $log = $app->get_app_object('Log');
-$log->do_flush_log(1);
-$log->start_file_logging;
+$log->start_file_logging({autoflush => 1});
 $log->file_log_level($log->M_ERROR);
 #$log->stderr_log_level($log->M_TRACE);
 $app->log_init('710');

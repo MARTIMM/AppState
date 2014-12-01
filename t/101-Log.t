@@ -42,8 +42,7 @@ $app->initialize( config_dir => $config_dir
 my $tagName = '101';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->do_flush_log(1);
-$log->start_file_logging;
+$log->start_file_logging({autoflush => 1});
 $log->file_log_level({level => $self->M_TRACE, package => 'root'});
 
 #$log->start_stderr_logging;
@@ -210,8 +209,6 @@ subtest 'log settings' =>
 sub
 {
   #$log->die_on_error(1);
-
-  $log->do_flush_log(1);
   $log->file_log_level($log->M_INFO);
   $log->write_start_message(0);
 

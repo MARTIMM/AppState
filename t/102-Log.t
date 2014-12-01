@@ -39,9 +39,7 @@ $app->initialize( config_dir => $config_dir
 my $tagName = '102';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-
-$log->do_flush_log(1);
-$log->start_file_logging;
+$log->start_file_logging({autoflush => 1});
 #$log->stderr_log_level($self->M_TRACE);
 $log->file_log_level($self->M_TRACE);
 $log->add_tag($tagName);

@@ -67,22 +67,6 @@ def_sts( 'C_ROOTFILE',   'M_CODE', 'A::File');
 def_sts( 'C_ROOTEMAIL',  'M_CODE', 'A::Email');
 
 #-------------------------------------------------------------------------------
-#
-has do_flush_log =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 0
-    , trigger           =>
-      sub
-      {
-        my( $self, $n, $o) = @_;
-
-        $o //= 0;
-        return if $n == $o;
-        $self->wlog($self->C_LOG_LOGALRINIT) if $self->_defined_logging('file');
-      }
-    );
-
 # File name of logfile in the config directory
 #
 has log_file =>

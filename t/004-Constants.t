@@ -45,8 +45,7 @@ $app->initialize(config_dir => 't/Constants', check_directories => 1);
 
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->do_flush_log(1);
-$log->start_file_logging;
+$log->start_file_logging({autoflush => 1});
 $log->file_log_level($app->M_TRACE);
 
 #-------------------------------------------------------------------------------

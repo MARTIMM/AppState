@@ -23,7 +23,7 @@ x Implemented
     should be set higher.
   x Remove do_append_log(). It is possible to set it with
     start_file_logging({mode => 'append'}). (or 'write').
-  - Remove do_flush_log(). It is possible to set it with
+  x Remove do_flush_log(). It is possible to set it with
     start_file_logging({autoflush => 1}). (or 0).
   - Remove log_file_size(). It is possible to set it with
     start_file_logging({size => ###}).

@@ -224,8 +224,7 @@ $self->bar(Foo::Bar->new);
 my $tagName = '103';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->do_flush_log(1);
-$log->start_file_logging;
+$log->start_file_logging({autoflush => 1});
 $log->add_tag($tagName);
 
 #-------------------------------------------------------------------------------
@@ -519,7 +518,6 @@ sub
 {
   #$log->die_on_error(1);
 
-  $log->do_flush_log(1);
   $log->file_log_level($log->M_INFO);
   $log->write_start_message(0);
 
