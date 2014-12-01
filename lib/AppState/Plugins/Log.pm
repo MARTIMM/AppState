@@ -89,14 +89,6 @@ has log_file =>
       }
     );
 
-# Number of logfiles
-#
-has nbr_log_files =>
-    ( is                => 'rw'
-    , isa               => 'Int'
-    , default           => 5
-    );
-
 # Tag shown in the log to show which module has written a message. Can be
 # added or changed with add_tag. Modules not found in this list are shown as
 # '---'. This module has added 'LOG' as default.

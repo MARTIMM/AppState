@@ -32,7 +32,6 @@ sub
   is( $log->C_ROOTEMAIL, 'A::Email', 'Check root email loggername');
 
   is( $log->log_file, '100-Log.log', 'Logfile is 100-Log.log');
-  is( $log->nbr_log_files, 5, 'Maximum number of logfiles is 5');
 
   # _log_tag checks
   #

@@ -121,11 +121,6 @@ current setting. The default will be the basename of the program with '.log'
 extention and is located in directory Appstate->instance->config_dir(). See
 L<AppState>.
 
-=head2 nbr_log_files($max_nbr_logfiles) When 0 or less than 0 or when
-appending was turned off this value will not be used.
-
-Set the maximum number of logfiles. 
-
 =head2 nbr_log_tags()
 
 The number of tags set by using method add_tag().
