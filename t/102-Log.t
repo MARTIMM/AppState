@@ -40,7 +40,6 @@ my $tagName = '102';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
 
-$log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_file_logging;
 #$log->stderr_log_level($self->M_TRACE);

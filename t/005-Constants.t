@@ -35,7 +35,6 @@ $as->check_directories;
 
 my $log = $as->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->do_append_log(0);
 $log->start_file_logging;
 $log->do_flush_log(1);
 $log->file_log_level($as->M_TRACE);

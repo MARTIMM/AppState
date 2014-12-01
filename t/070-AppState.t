@@ -90,8 +90,6 @@ ok( -d "$cdir/Temp", "Test temp directory $cdir/Temp");
 
 #-------------------------------------------------------------------------------
 my $log = $app->get_app_object('Log');
-
-$log->do_append_log(0);
 $log->start_file_logging;
 $log->file_log_level($log->M_TRACE);
 my $tagName = '010';

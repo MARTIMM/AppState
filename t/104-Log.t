@@ -29,7 +29,6 @@ $app->initialize( config_dir => $config_dir, check_directories => 1);
 my $tagName = '104';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->do_append_log(0);
 $log->do_flush_log(1);
 $log->start_file_logging;
 $log->add_tag($tagName);
@@ -216,7 +215,6 @@ subtest 'log settings' =>
 sub
 {
   #$log->die_on_error(1);
-  $log->do_append_log(0);
 
   $log->do_flush_log(1);
   $log->file_log_level($log->M_INFO);

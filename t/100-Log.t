@@ -31,7 +31,6 @@ sub
   is( $log->C_ROOTSTDERR, 'A::Stderr', 'Check root stderr loggername');
   is( $log->C_ROOTEMAIL, 'A::Email', 'Check root email loggername');
 
-  ok( $log->do_append_log == 1, 'Append to log turned on');
   ok( $log->do_flush_log == 0, 'Flushing turned off');
   is( $log->log_file, '100-Log.log', 'Logfile is 100-Log.log');
   is( $log->log_file_size, 10485760, 'Logfile size 10485760');
@@ -78,12 +77,10 @@ sub
   #
   $log->die_on_fatal(0);
 
-  # We want to log all.
+  # We want to log all from main.
   #
   $log->file_log_level($log->M_TRACE);
 
-  # Don't show stack dumps now
-  #
   my $sts = $log->log($log->C_LOG_LOGINIT);
   ok( !defined $sts, 'Informational messages will not return status objects');
 
@@ -107,15 +104,11 @@ sub
 subtest 'Checks after starting' =>
 sub
 {
-  # Start a new logfile
-  #
-  $log->do_append_log(0);
-  
   # Flush to check file contents
   #
   $log->do_flush_log(1);
 
-  $log->start_file_logging;
+  $log->start_file_logging({ mode => 'append'});
   ok( $log->_defined_logging('file'), 'File logging defined');
   ok( $log->_get_logging('file'), 'File logging is started');
 
@@ -128,7 +121,7 @@ sub
 #  ok( $log->_logger_initialized, 'Logger is initialized');
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
 
-  $log->stderr_log_level({level => $log->M_FATAL, package => 'root'});
+#  $log->stderr_log_level({level => $log->M_FATAL, package => 'root'});
   $log->start_stderr_logging;
   ok( $log->_defined_logging('stderr'), 'Stderr logging defined');
   ok( $log->_get_logging('stderr'), 'Stderr logging is started');
@@ -149,6 +142,6 @@ sub
 #-------------------------------------------------------------------------------
 done_testing();
 $app->cleanup;
-File::Path::remove_tree($config_dir);
+#File::Path::remove_tree($config_dir);
 exit(0);
 

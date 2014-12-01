@@ -42,14 +42,14 @@ use Types::Standard qw(Dict Optional Int Str);
 # Error codes
 #
 def_sts( 'C_LOG_LOGINIT',     'M_TRACE', 'Logger initialized');
-def_sts( 'I_FILELOGSTARTED',  'M_INFO', "File logging started. File log level set to '%s'. %s");
+def_sts( 'I_FILELOGSTARTED',  'M_INFO', "File logging started. File log level set to '%s'");
 def_sts( 'I_FILELOGSTOPPED',  'M_INFO', 'File logging stopped');
 def_sts( 'I_STDERRLOGSTARTED','M_INFO', "Stderr logging started. Stderr log level set to '%s'");
 def_sts( 'I_STDERRLOGSTOPPED','M_INFO', 'Stderr logging stopped');
 def_sts( 'I_EMAILLOGSTARTED', 'M_INFO', "Email logging started. Email log level set to '%s'");
 def_sts( 'I_EMAILLOGSTOPPED', 'M_INFO', 'Email logging stopped');
-def_sts( 'C_LOG_LOGSTARTED',  'M_INFO', "Logging started. File log level set to '%s' and stderr log level set to '%s'. %s");
-def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
+#def_sts( 'C_LOG_LOGSTARTED',  'M_INFO', "Logging started. File log level set to '%s' and stderr log level set to '%s'. %s");
+#def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
 def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
 def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "Package '%s' already has a tag '%s'");
 def_sts( 'C_LOG_LOGGERLVL',   'M_TRACE', '%s log level changed to %s');
@@ -67,24 +67,7 @@ def_sts( 'C_ROOTFILE',   'M_CODE', 'A::File');
 def_sts( 'C_ROOTEMAIL',  'M_CODE', 'A::Email');
 
 #-------------------------------------------------------------------------------
-# Switch to append to an existing log or to start a fresh one
 #
-has do_append_log =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 1
-    , traits            => ['Bool']
-    , trigger           =>
-      sub
-      {
-        my( $self, $n, $o) = @_;
-
-        $o //= 0;
-        return if $n == $o;
-        $self->wlog($self->C_LOG_LOGALRINIT) if $self->_defined_logging('file');
-      }
-    );
-
 has do_flush_log =>
     ( is                => 'rw'
     , isa               => 'Bool'
@@ -679,10 +662,6 @@ sub XXstart_logging
   $self->wlog( $self->C_LOG_LOGSTARTED
              , [ $level_str
                , $stderr_level_str
-               , ( $self->do_append_log
-                   ? "Appending to old log"
-                   : "Starting new log"
-                 )
                ]
              );
 }
@@ -712,7 +691,7 @@ sub start_file_logging
 
   if( !$self->_defined_logging('file') )
   {
-    $self->init_file_logger($file_log_control // {});
+    $self->_init_file_logger($file_log_control // {});
   }
 
   $self->_set_logging(file => 1);
@@ -722,10 +701,6 @@ sub start_file_logging
   my $level_str = $self->_get_log_level_name($self->file_log_level);
   $self->wlog( $self->I_FILELOGSTARTED
              , [ $level_str
-               , ( $self->do_append_log
-                   ? "Appending to old log"
-                   : "Starting new log"
-                 )
                ]
              );
 }
@@ -806,7 +781,7 @@ sub _make_logger_objects
   my($self) = @_;
 
   #$self->_create_file_root_logger;
-  $self->init_file_logger({});
+  $self->_init_file_logger({});
   $self->_create_stderr_root_logger;
   $self->_create_email_root_logger;
 
@@ -821,7 +796,7 @@ sub _make_logger_objects
 # The attributes name, syswrite are overwritten. filename is set if not
 # provided.
 #
-sub init_file_logger
+sub _init_file_logger
 {
   my( $self, $logger_attr) = @_;
 
@@ -841,47 +816,11 @@ sub init_file_logger
   # provide the path to the file.
   #
   $logger_attr->{filename} //= $config_dir . '/' . $self->log_file;
-  $logger_attr->{mode} //= $self->do_append_log ? 'append' : 'write';
-  $logger_attr->{autoflush} //= $self->do_flush_log ? 1 : 0;
+  $logger_attr->{mode} //= 'write';     # Default is new log
+  $logger_attr->{autoflush} //= 0;      # Default no automatic flushing
   $logger_attr->{size} //= 0;
   $logger_attr->{max} //= 0;
 
-  my $dispatch_name = 'Log::Dispatch::File';
-  $dispatch_name = 'Log::Dispatch::FileRotate'
-    if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
-
-  $self->_create_file_root_logger( $dispatch_name, $logger_attr);
-}
-
-#-------------------------------------------------------------------------------
-# Provide attributes for the ScreenColoredLevels appenders
-# The attributes name is overwritten.
-#
-sub init_stderr_logger
-{
-  my( $self, $logger_attr) = @_;
-
-  # When not defined, set to empty hash
-  #
-  $logger_attr //= {};
-
-  my $config_dir = AppState->instance->config_dir;
-
-  # Always overide
-  #
-  $logger_attr->{name} = '' . $self->C_ROOTFILE;
-  $logger_attr->{syswrite} = 1;
-
-  # The filename will be in the config directory and taken from the
-  # moose attributes by default. If set in the hash the caller must
-  # provide the path to the file.
-  #
-  $logger_attr->{filename} //= $config_dir . '/' . $self->log_file;
-  $logger_attr->{mode} //= $self->do_append_log ? 'append' : 'write';
-  $logger_attr->{autoflush} //= $self->do_flush_log ? 1 : 0;
-  $logger_attr->{size} //= 0;
-  $logger_attr->{max} //= 0;
-  
   my $dispatch_name = 'Log::Dispatch::File';
   $dispatch_name = 'Log::Dispatch::FileRotate'
     if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
@@ -920,30 +859,10 @@ sub _create_file_root_logger
   $layout = Log::Log4perl::Layout::PatternLayout->new('     %d{SSS} %p{1}%m{chomp}%n');
   $self->_set_layout('log.millisec' => $layout);
 
-
   # Create root logger for file logging
   #
 #  my $logger_file = Log::Log4perl->get_logger('' . $self->C_ROOTFILE);
   my $logger_file = Log::Log4perl->get_logger($appender_attr->{name});
-
-#  my $appender_attr =
-#     { name           => '' . $self->C_ROOTFILE
-#     , filename       => $log_file
-#     , syswrite       => 1
-#     , mode           => $self->do_append_log ? 'append' : 'write'
-#     , autoflush      => $self->do_flush_log ? 1 : 0
-#     };
-
-#  my $dispatch_name = 'Log::Dispatch::File';
-#  if( $self->do_append_log
-#  and $self->log_file_size > 0
-#  and $self->nbr_log_files > 0
-#    )
-#  {
-#    $dispatch_name = 'Log::Dispatch::FileRotate';
-#    $appender_attr->{size} = $self->log_file_size;
-#    $appender_attr->{max} = $self->nbr_log_files;
-#  }
 
   my $appender_file = Log::Log4perl::Appender->new
                       ( $dispatch_name
@@ -958,6 +877,29 @@ sub _create_file_root_logger
   # start_file_logging() should turn it on
   #
   #$logger_file->level('OFF');
+}
+
+#-------------------------------------------------------------------------------
+# Provide attributes for the ScreenColoredLevels appenders
+# The attributes name is overwritten.
+#
+sub _init_stderr_logger
+{
+  my( $self, $logger_attr) = @_;
+
+  # When not defined, set to empty hash
+  #
+  $logger_attr //= {};
+
+  my $config_dir = AppState->instance->config_dir;
+
+  # Always overide
+  #
+  $logger_attr->{name} = '' . $self->C_ROOTSTDERR;
+
+  my $dispatch_name = 'Log::Log4perl::Appender::ScreenColoredLevels';
+
+  $self->_create_stderr_root_logger( $dispatch_name, $logger_attr);
 }
 
 #-------------------------------------------------------------------------------
@@ -982,9 +924,14 @@ sub _create_stderr_root_logger
 
   $appender->layout($layout);
   $logger->add_appender($appender);
-#  $logger->level($self->_get_log_level_name($self->stderr_log_level));
-#say STDERR 'STDERR: ', $self->stderr_log_level, ' == ', $self->_get_log_level_name($self->stderr_log_level);
+  $logger->level($self->_get_log_level_name($self->stderr_log_level));
 #  $logger->level('TRACE');
+  $self->wlog( $self->C_LOG_TRACE
+             , [ $self->stderr_log_level
+               . ' == '
+               . $self->_get_log_level_name($self->stderr_log_level)
+               ]
+             );
 }
 
 #-------------------------------------------------------------------------------
@@ -1010,6 +957,7 @@ sub _create_email_root_logger
                  , buffered      => 1
                  );
 
+  $logger->level($self->_get_log_level_name($self->email_log_level));
   $appender->layout($layout);
   $logger->add_appender($appender);
 }

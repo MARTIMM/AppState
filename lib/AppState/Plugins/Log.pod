@@ -42,9 +42,7 @@ the Log module. The module used to write log entries is Log::Log4perl.
 
 There are three root loggers. These are for logging to file, email and for
 stderr output. Their catagories are 'A_File', 'A_Email' and 'A_Stderr'  defined
-by constants $log->ROOT_FILE and $log->ROOT_STDERR resp. The
-logger to write to the logfile can be controlled by do_append_log(),
-do_flush_log(), log_file(), log_file_size() and nbr_log_files().
+by constants $log->ROOT_FILE and $log->ROOT_STDERR resp.
 
 To prevent log messages which get too long because of long module names, 3
 letter tags are used for each module and can be set using add_tag(). The default
@@ -115,12 +113,6 @@ at a fatal level and die after that event.
 
 =head1 METHODS
 
-=head2 do_append_log($bool)
-
-Method to set 'append to log'. Can be changed before the logfile is opened.
-After the log is opened, it has no meaning. Without argument it returns the
-current setting. The default is 1.
-
 =head2 do_flush_log($bool)
 
 Method to set 'flushing to log'. Can be changed before the logfile is opened.
@@ -134,12 +126,6 @@ After the log is opened, it has no meaning. Without argument it returns the
 current setting. The default will be the basename of the program with '.log'
 extention and is located in directory Appstate->instance->config_dir(). See
 L<AppState>.
-
-=head2 log_file_size($size)
-
-The maximum log file size is set by this method. When 0 or less than 0 it will
-not be used and will grow until the filesystem fills up. It will also not be
-used when appending was turned off.
 
 =head2 nbr_log_files($max_nbr_logfiles) When 0 or less than 0 or when
 appending was turned off this value will not be used.
@@ -283,14 +269,13 @@ Cleaning up the module by stopping log output and deleting subscribers.
 =head2 start_logging()
 
 Start the log. From this moment the write_log will write to the log depending
-on the log level and if message is forced to be written. Methods do_append_log()
-and do_flush_log() must be called for changes before calling this method.
+on the log level and if message is forced to be written.
 
 =head2 stop_logging()
 
 Stop writing to the log.
 
-=head2 init_file_logger($apender_attr)
+=head2 _init_file_logger($apender_attr)
 
 =head2 wlog( $error, $message_values, $call_level)
 
