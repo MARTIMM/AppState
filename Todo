@@ -19,8 +19,9 @@ x Implemented
   - Log4perl will not split logfile when larger than some size, bug?
   x Turning on/off several types of log output (stderr, file, email).
   - Wrap messages has problems with '=' on last unbreakable word.
-  - Is it necessary to have forced logging. If it is important then the severity
-    should be set higher.
+    Remove wrapping?
+  x Is it necessary to have forced logging. If message is important then the
+    severity should be set higher.
   x Remove do_append_log(). It is possible to set it with
     start_file_logging({mode => 'append'}). (or 'write').
   x Remove do_flush_log(). It is possible to set it with
@@ -29,6 +30,11 @@ x Implemented
     start_file_logging({size => ###}).
   x Remove nbr_log_files(). It is possible to set it with
     start_file_logging({max => ###}).
+  - Add ALL and OFF to the set of codes in Constants. This is to be used to
+    set the logging level together with the severity codes like M_ERROR. Then
+    the functions stop_*_logging() can be removed.
+  - Perhaps change the set of functions *_log_level() into
+    log_level( {file => log_level, package => some_package})
 
 - Memcached tests with better skip clause
 

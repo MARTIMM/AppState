@@ -98,16 +98,6 @@ sub is_fail
 
 #-------------------------------------------------------------------------------
 #
-sub is_forced
-{
-  my($error) = @_;
-
-  $error //= 0;
-  return !!($error & $_aes->M_FORCED);
-}
-
-#-------------------------------------------------------------------------------
-#
 sub is_info
 {
   my($error) = @_;
@@ -182,7 +172,7 @@ sub is_fatal
 #
 Moose::Exporter->setup_import_methods
     ( with_meta => [qw(def_sts)]
-    , as_is => [qw( cmp_levels is_success is_fail is_forced is_info
+    , as_is => [qw( cmp_levels is_success is_fail is_info
                     is_warning is_error is_trace is_debug is_warn is_fatal
                   )
                ]

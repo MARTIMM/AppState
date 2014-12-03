@@ -20,8 +20,8 @@ use AppState::Plugins::Log::Meta_Constants;
 #
 def_sts( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');
 def_sts( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');
-def_sts( 'C_CIO_CFGNOTREAD',    'M_F_WARNING', 'File %s not readable or not existent');
-def_sts( 'C_CIO_CFGNOTWRITTEN', 'M_F_WARNING', '%s: %s');
+def_sts( 'C_CIO_CFGNOTREAD',    'M_WARN', 'File %s not readable or not existent');
+def_sts( 'C_CIO_CFGNOTWRITTEN', 'M_WARN', '%s: %s');
 def_sts( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');
 def_sts( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');
 def_sts( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');

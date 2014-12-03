@@ -30,11 +30,11 @@ def_sts( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
 def_sts( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
 def_sts( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
 def_sts( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
-def_sts( 'C_PLG_APISTUB',      'M_F_WARNING', 'Called generated stub %s::%s()');
+def_sts( 'C_PLG_APISTUB',      'M_WARN', 'Called generated stub %s::%s()');
 def_sts( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');
 def_sts( 'C_PLG_FUNCSTUBFAIL', 'M_FATAL', 'Error evaluating function stub %s::%s. err: %s');
-def_sts( 'C_PLG_PLGEXISTS',    'M_F_ERROR', 'Plugin exists, not added');
-def_sts( 'C_PLG_NOPLGOBJ',     'M_F_ERROR', 'No plugin object');
+def_sts( 'C_PLG_PLGEXISTS',    'M_ERROR', 'Plugin exists, not added');
+def_sts( 'C_PLG_NOPLGOBJ',     'M_ERROR', 'No plugin object');
 
 # Object creation codes
 #

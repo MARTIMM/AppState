@@ -29,7 +29,6 @@ sub
   ok( !$sts->is_debug, 'is not a debug');
   ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not a fatal');
-  ok( !$sts->is_forced, 'is not a forced');
 };
 
 #-------------------------------------------------------------------------------
@@ -39,7 +38,7 @@ sub
   # Set code and status
   #
   $sts->set_message( 'test of');
-  $sts->set_error($sts->M_F_ERROR | 24);
+  $sts->set_error($sts->M_ERROR | 24);
 
   # Test them
   #
@@ -52,7 +51,6 @@ sub
   ok( !$sts->is_debug, 'is not a debug');
   ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not a fatal');
-  ok( $sts->is_forced, 'is forced');
 
   ok( $sts->get_eventcode == 24, 'event code is 24');
   is( $sts->get_message, 'test of', 'message still the same');
@@ -111,7 +109,6 @@ sub
   ok( $sts->is_debug, 'is a debug');
   ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not fatal');
-  ok( !$sts->is_forced, 'is not forced');
 
   ok( $sts->get_eventcode == 27, 'second event code is 24');
 
@@ -146,7 +143,7 @@ sub
 # line 53000 "test-file3.pm"
   my $s = $sts->set_status
                 ( { message => 'test 3'
-                  , error => $sts->M_F_TRACE | 28
+                  , error => $sts->M_TRACE | 28
                   , line => __LINE__                 # this is line 52003
                   , package => __PACKAGE__
                   }
@@ -165,7 +162,6 @@ sub
   ok( !$sts->is_debug, 'is not debug');
   ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not fatal');
-  ok( $sts->is_forced, 'is forced');
 
   ok( $sts->get_eventcode == 28, 'second event code is 28');
 
@@ -175,11 +171,10 @@ sub
   ok( $sts->get_line == 53003, 'Line 53003');
   is( $sts->get_package, 'main', 'Package main');
 
-
-  # Now call with call_level == 0
+  # Now call with call_level == 0               <=== Line 53032 !!!!
   #
   $s = $sts->set_status( { message => 'test 3'
-                         , error => $sts->M_F_TRACE | 28
+                         , error => $sts->M_TRACE | 28
                          }
                        , 0
                        );
@@ -187,7 +182,7 @@ sub
   is( ref $s, '', 'Should be no set_status error');
 
   like( $sts->get_file, qr/test-file3.pm/, 'File test-file3.pm');
-  is( $sts->get_line, 53034, 'Line 53034');
+  is( $sts->get_line, 53032, 'Line 53032');
   is( $sts->get_package, 'main', 'Package main');
 
 };

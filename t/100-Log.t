@@ -52,7 +52,6 @@ sub
   ok( defined $log->stderr_log_level, 'Standard error log level defined');
   is( $log->stderr_log_level, $log->M_FATAL, 'Standard log level set to fatal');
 
-  ok( !$log->_is_logging_forced, 'No errors of which were forced logging');
   ok( !$log->_is_logging, 'Logging not started yet');
 
   ok( !$log->die_on_error, 'Die on error off');
@@ -77,6 +76,7 @@ sub
   # We want to log all from main.
   #
   $log->file_log_level($log->M_TRACE);
+  $log->file_log_level({ level => $log->M_TRACE, package => 'root'});
 
   my $sts = $log->log($log->C_LOG_LOGINIT);
   ok( !defined $sts, 'Informational messages will not return status objects');
@@ -103,14 +103,19 @@ sub
 {
   # Flush to check file contents
   #
-  $log->start_file_logging({ mode => 'append', autoflush => 1});
+  $log->message_wrapping(0);
+  $log->write_start_message(0);
+  $log->start_file_logging({ mode => 'write', autoflush => 1});
   ok( $log->_defined_logging('file'), 'File logging defined');
   ok( $log->_get_logging('file'), 'File logging is started');
 
   $log->stop_file_logging;
   ok( $log->_defined_logging('file'), 'File logging still defined');
   ok( !$log->_get_logging('file'), 'File logging stopped again');
-  
+
+  $log->start_file_logging({ mode => 'write', autoflush => 1});
+  ok( $log->_get_logging('file'), 'File logging is started');
+
   ok( -e "$config_dir/100-Log.log", 'Logfile created');
 
 #  ok( $log->_logger_initialized, 'Logger is initialized');
@@ -133,6 +138,14 @@ sub
   ok( $log->_defined_logging('email'), 'Email logging still defined');
   ok( !$log->_get_logging('email'), 'Email logging stopped again');
 };
+
+#-------------------------------------------------------------------------------
+$log->stderr_log_level($log->M_TRACE);
+$log->wlog( $log->C_LOG_TRACE, ['Trace message']);
+$log->wlog( $log->C_LOG_DEBUG, ['Debug message']);
+$log->wlog( $log->C_LOG_INFO, ['Info message']);
+say 'Root stderr: ', $log->C_ROOTSTDERR;
+$log->expose_logger_levels($log->C_ROOTSTDERR . '::main');
 
 #-------------------------------------------------------------------------------
 done_testing();

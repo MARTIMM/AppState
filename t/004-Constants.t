@@ -106,25 +106,17 @@ sub
 
   $self->t_code( M_SUCCESS      => 0x10000000);
   $self->t_code( M_FAIL         => 0x20000000);
-  $self->t_code( M_FORCED       => 0x40000000);
   $self->t_code( M_CODE         => 0x80000000);
-
-  $self->t_code( M_INFO         => 0x11000000);
-  $self->t_code( M_WARNING      => 0x02000000);
-  $self->t_code( M_ERROR        => 0x24000000);
+#  $self->t_code( M_ON           => 0x80000000);
+#  $self->t_code( M_OFF          => 0x80000000);
 
   $self->t_code( M_TRACE        => 0x10100000);
   $self->t_code( M_DEBUG        => 0x10200000);
+  $self->t_code( M_INFO         => 0x11000000);
+  $self->t_code( M_WARNING      => 0x02000000);
+  $self->t_code( M_ERROR        => 0x24000000);
   $self->t_code( M_WARN         => 0x02000000);
   $self->t_code( M_FATAL        => 0x20400000);
-
-  $self->t_code( M_F_INFO       => 0x51000000);
-  $self->t_code( M_F_WARNING    => 0x42000000);
-  $self->t_code( M_F_ERROR      => 0x64000000);
-  $self->t_code( M_F_TRACE      => 0x50100000);
-  $self->t_code( M_F_DEBUG      => 0x50200000);
-  $self->t_code( M_F_WARN       => 0x42000000);
-  $self->t_code( M_F_FATAL      => 0x60400000);
 
 #  $self->t_code(  => 0x);
 };

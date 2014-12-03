@@ -28,7 +28,7 @@ def_sts( 'C_NT_ADDATTRTOPARENT' ,'M_INFO', 'Add attr %s=%s to parent=%s');
 def_sts( 'C_NT_PARSEERROR'      ,'M_FATAL', 'Parsing error found in module %s: %s');
 def_sts( 'C_NT_MODINIT'         ,'M_INFO', 'Object from module %s initialized properly');
 def_sts( 'C_NT_MISSMETHODS'     ,'M_FATAL', 'Missing methods [%s] in module %s');
-def_sts( 'C_NT_NOHANDLER'       ,'M_F_WARNING', 'No %s handler. No use to traverse tree1(%s)');
+def_sts( 'C_NT_NOHANDLER'       ,'M_WARNING', 'No %s handler. No use to traverse tree1(%s)');
 
 # Tree traversing codes
 #

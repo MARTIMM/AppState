@@ -102,11 +102,11 @@ sub is_fail
 #-------------------------------------------------------------------------------
 # Return true(0) when object status should be forced.
 #
-sub is_forced
-{
-  my( $self, $error) = @_;
-  return !!($self->status->{error} & $self->M_FORCED);
-}
+#sub is_forced
+#{
+#  my( $self, $error) = @_;
+#  return !!($self->status->{error} & $self->M_FORCED);
+#}
 
 #-------------------------------------------------------------------------------
 # Return true(0) when object status is informational.

@@ -65,9 +65,6 @@ An example of the logfile is shown here;
   warning, error, trace, debug or fatal respectively. The second letter is
   s and f for success or failure respectively.
 
-  Uppercase letters s and f mean that the log entry would be forced while
-  otherwise the setting of loglevel would prevent it.
-
   A tag is a 3 letter code representing the logging module. This must be
   set by the module by calling add_tag(). The tag is followed by a four
   digit line number.
@@ -76,9 +73,9 @@ An example of the logfile is shown here;
   ----------
   2014-08-10
   ----------
-  14:09:06 IS =LG 0537 LOGINIT - Logger initialized
-       980 IS =LG 0448 LOGSTARTED - Logging started. Log level set to 'ERROR'. Starting new log
-       980 IS =LG 0164 LLVLCHANGED - Log level changed from 'ERROR' into 'TRACE'
+  14:09:06 Is =LG 0537 LOGINIT - Logger initialized
+       980 Is =LG 0448 LOGSTARTED - Logging started. Log level set to 'ERROR'. Starting new log
+       980 Is =LG 0164 LLVLCHANGED - Log level changed from 'ERROR' into 'TRACE'
        981 Is =LG 1027 TAGADDED - Tag 'MXT' added for module 'main'
        000 Is =LG 1027 TAGADDED - Tag '=CL' added for module 'AppState::Plugins::CommandLine'
        000 Is =PM 0395 PLGCREATED - Object CommandLine created
@@ -178,10 +175,6 @@ Test if status is successful
 
 Test if status is a failure
 
-=head2 is_last_forced()
-
-Test if status is forced
-
 =head2 get_last_message()
 
 Get the message from the last saved state object
@@ -258,7 +251,7 @@ Cleaning up the module by stopping log output and deleting subscribers.
 =head2 start_logging()
 
 Start the log. From this moment the write_log will write to the log depending
-on the log level and if message is forced to be written.
+on the log level.
 
 =head2 stop_logging()
 
@@ -382,18 +375,6 @@ Set new logging level for logger.
 
 Get the log level for the logger
 
-=head2 _logging_is_forced()
-
-Check to see if error has a forced bit enabled.
-
-=head2 _force_log()
-
-Force logging of message independend of log_level
-
-=head2 _normal_log()
-
-Logging is normal in respect to log_level. That is, not forced.
-
 =head2 _is_logging()
 
 Check to see if logging is started or not.
@@ -468,7 +449,7 @@ no log will be done.
 
 Status object (AppState::Plugins::Log::Status) is saved here so the log object can be
 queried for its values. See also clear_last_error, is_last_success,
-is_last_fail, is_last_forced, get_last_message, get_last_error,
+is_last_fail, get_last_message, get_last_error,
 get_last_severity, get_last_eventcode, get_sender_line_no, get_sender_file,
 get_sender_package
 
@@ -502,12 +483,11 @@ uses the pattern log.startmsg, if needed, and the pattern log.date.
 
 =head2 _log_time_line( $msg, $log_attr)
 
-Write the time and message depending on log level and if message is forced
-to be written.
+Write the time and message depending on log level to be written.
 
-=head2 _log_message( $msg, $forced)
+=head2 _log_message( $msg)
 
-Write message depending on log level and if message is forced to be written.
+Write message depending on log level to be written.
 
 =head2 _get_log_level_name($mask)
 
@@ -532,25 +512,29 @@ Return stack starting at call_level which is by default 0.
 
 =head1 STATUS CODES
 
-Many status codes are forced messages which means that when the error level is
-lower than the log_level(), they will still be processed. It is done because
-one can always see what the logger processes when logging is turned on. Fatal
-error status will kill the program unless die_on_fatal(0) is called first.
+Severity is prefixed as a letter on front of the code. T, D, I, W, E and F
+stands for trace, debug, info, warn, error and fatal.
 
-  Status name         Severity     Note
+  Status name           Note
   
-  C_LOG_LOGINIT       M_TRACE      Log initialized
-  C_LOG_LOGSTARTED    M_TRACE      Logging started
-  C_LOG_LOGSTOPPED    M_TRACE      Logging stopped
-  C_LOG_TAGLBLINUSE   M_FATAL      Tag already in use by other module.
-  C_LOG_TAGALRDYSET   M_FATAL      Calling module has already a tag set.
-  C_LOG_LOGGERLVL     M_TRACE      Level for some logger changed
-  C_LOG_TAGADDED      M_INFO       Tag added for calling module
-  C_LOG_NOERRCODE     M_F_ERROR    Error does not have a event or severity code
-  C_LOG_NOMSG         M_F_ERROR    No message or empty message in error
-  C_LOG_LOGALRINIT    M_F_WARNING  Log already initialized. Happens with append,
-                                   flush and hide message legend changes.
-  C_LOG_ILLLEVELCD    M_F_ERROR    Illegal logger level
+  C_LOG_LOGINIT         Log initialized
+  C_LOG_LOGSTARTED      Logging started
+  C_LOG_LOGSTOPPED      Logging stopped
+  I_FILELOGSTARTED      File logging started. File log level set to '%s'");
+  I_FILELOGSTOPPED      File logging stopped');
+  I_STDERRLOGSTARTED    Stderr logging started. Stderr log level set to '%s'");
+  I_STDERRLOGSTOPPED    Stderr logging stopped');
+  I_EMAILLOGSTARTED     Email logging started. Email log level set to '%s'");
+  I_EMAILLOGSTOPPED     Email logging stopped');
+  C_LOG_TAGLBLINUSE     Tag already in use by other module.
+  C_LOG_TAGALRDYSET     Calling module has already a tag set.
+  C_LOG_LOGGERLVL       Level for some logger changed
+  C_LOG_TAGADDED        Tag added for calling module
+  C_LOG_NOERRCODE       Error does not have a event or severity code
+  C_LOG_NOMSG           No message or empty message in error
+  C_LOG_LOGALRINIT      Log already initialized. Happens with append,
+                        flush and hide message legend changes.
+  C_LOG_ILLLEVELCD      Illegal logger level
 
 
 =head1 PROGRAM CODES

@@ -25,8 +25,8 @@ use AppState::Plugins::Log::Meta_Constants;
 #
 def_sts( 'C_CMD_OPTPROCESSED', 'M_INFO', 'Options processed');
 def_sts( 'C_CMD_OPTCHANGED',   'M_INFO', 'Option processing changed: %s');
-def_sts( 'C_CMD_OPTPROCFAIL',  'M_F_WARNING', 'There are errors processing commandline options');
-def_sts( 'C_CMD_NODESCRIPTION','M_F_WARNING', 'Description of command not defined');
+def_sts( 'C_CMD_OPTPROCFAIL',  'M_WARN', 'There are errors processing commandline options');
+def_sts( 'C_CMD_NODESCRIPTION','M_WARN', 'Description of command not defined');
 
 #-------------------------------------------------------------------------------
 

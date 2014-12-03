@@ -63,7 +63,6 @@ sub
 
   ok( $log->is_last_success, 'Status is success');
   ok( !$log->is_last_fail, 'Status is not a failure');
-  ok( !$log->is_last_forced, 'Message is not forced');
   like( $log->get_last_message, qr/This has gone ok/, 'Info message');
   ok( $log->get_last_error == (0xAB | $app->M_INFO), 'Check error code');
   ok( $log->is_last_success, 'M_INFO is successfull');
@@ -90,7 +89,7 @@ __END__
 
 
 #-------------------------------------------------------------------------------
-# Info and warnings are not sent to the log unless forced.
+# Info and warnings are not sent.
 #
 #subtest 'log file tests 2' =>
 #sub
@@ -122,17 +121,16 @@ subtest 'check error object' =>
 sub
 {
   my $lineNbr = __LINE__;
-  my $eobj = $log->write_log( 'Tracing this time', 0x2A9 | $app->M_F_TRACE);
+  my $eobj = $log->write_log( 'Tracing this time', 0x2A9 | $app->M_TRACE);
   isa_ok( $eobj, 'AppState::Plugins::Log::Status');
 if(0)
 {
   ok( $eobj->is_success == 1, 'Is success');
   ok( $eobj->is_fail == 0, 'Is not a failure');
-  ok( $eobj->is_forced == 1, 'Check if trace');
-  ok( $eobj->is_trace == 1, 'Check if forced');
+  ok( $eobj->is_trace == 1, 'Check if trace');
   is( $eobj->get_message, 'Tracing this time', 'message ok');
-  ok( $eobj->get_error == (0x2A9 | $app->M_F_TRACE), 'error code ok');
-  ok( $eobj->get_severity == ($app->M_F_TRACE), 'severity ok');
+  ok( $eobj->get_error == (0x2A9 | $app->M_TRACE), 'error code ok');
+  ok( $eobj->get_severity == ($app->M_TRACE), 'severity ok');
   ok( $eobj->get_eventcode == 0x2A9, 'event code ok');
   ok( $eobj->get_line == $lineNbr + 1, 'Check sender line number in file');
   is( $eobj->get_file, 't/100-Log.t', 'Check sender file name');
@@ -249,7 +247,6 @@ sub
                                          );
   ok( $log->is_last_success == 1, 'Check if success');
   ok( $log->is_last_fail == 0, 'Check if not a failure');
-  ok( $log->is_last_forced == 0, 'Check if forced');
   is( $log->get_last_message, 'This has gone ok ....', 'Check message');
   is( $log->get_last_error, 0x4B | $app->M_INFO | $app->M_SUCCESS, 'Check error code');
   is( $log->get_last_severity, $app->M_INFO | $app->M_SUCCESS, 'Check severity code');
@@ -260,7 +257,7 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-# Info and warnings are not sent to the log unless forced.
+# Info and warnings are not sent to the log.
 #
 subtest 'log file tests 1' =>
 sub
@@ -276,14 +273,13 @@ sub
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ws LOG 002/, $config_dir);
 
-  $log->write_log( 'LOG 003 I really must say this ....', 0x18 | $app->M_F_INFO);
+  $log->write_log( 'LOG 003 I really must say this ....', 0x18 | $app->M_INFO);
   content_like( qr/.*\.log$/, qr/$tagName \d+ IS LOG 003/, $config_dir);
 
   $log->write_log( 'LOG 004 Wrong and should change ....'
-             , 0x18 | $app->M_F_WARNING | $app->M_FAIL
+             , 0x18 | $app->M_WARNING | $app->M_FAIL
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ef LOG 004/, $config_dir);
-# Done later forced...
 
   $log->write_log( 'LOG 005 This has gone wrong badly ....', 0xFF | $app->M_ERROR);
   content_like( qr/.*\.log$/, qr/$tagName \d+ ef LOG 005/, $config_dir);
@@ -293,7 +289,7 @@ sub
 };
 
 #-------------------------------------------------------------------------------
-# Info and warnings are not sent to the log unless forced.
+# Info and warnings are not sent.
 #
 #subtest 'log file tests 2' =>
 #sub

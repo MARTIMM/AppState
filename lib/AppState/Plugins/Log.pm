@@ -48,16 +48,14 @@ def_sts( 'I_STDERRLOGSTARTED','M_INFO', "Stderr logging started. Stderr log leve
 def_sts( 'I_STDERRLOGSTOPPED','M_INFO', 'Stderr logging stopped');
 def_sts( 'I_EMAILLOGSTARTED', 'M_INFO', "Email logging started. Email log level set to '%s'");
 def_sts( 'I_EMAILLOGSTOPPED', 'M_INFO', 'Email logging stopped');
-#def_sts( 'C_LOG_LOGSTARTED',  'M_INFO', "Logging started. File log level set to '%s' and stderr log level set to '%s'. %s");
-#def_sts( 'C_LOG_LOGSTOPPED',  'M_TRACE', 'Logging stopped');
 def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
 def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "Package '%s' already has a tag '%s'");
 def_sts( 'C_LOG_LOGGERLVL',   'M_TRACE', '%s log level changed to %s');
 def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
-def_sts( 'C_LOG_NOERRCODE',   'M_F_ERROR', 'Error does not have an error code and/or severity code');
-def_sts( 'C_LOG_NOMSG',       'M_F_ERROR', 'No message given to write_log');
-def_sts( 'C_LOG_LOGALRINIT',  'M_F_WARNING', 'Not changed, logger already initialized');
-def_sts( 'C_LOG_ILLLEVELCD',  'M_F_ERROR', 'Illegal logger level %s');
+def_sts( 'C_LOG_NOERRCODE',   'M_ERROR', 'Error does not have an error code and/or severity code');
+def_sts( 'C_LOG_NOMSG',       'M_ERROR', 'No message given to write_log');
+def_sts( 'C_LOG_LOGALRINIT',  'M_WARNING', 'Not changed, logger already initialized');
+def_sts( 'C_LOG_ILLLEVELCD',  'M_ERROR', 'Illegal logger level %s');
 def_sts( 'C_LOG_EXTERNFATAL', 'M_FATAL', 'Fatal error from external module: %s');
 
 # Constant codes
@@ -131,15 +129,15 @@ has _log_levels =>
       }
     );
 
-has _is_logging_forced =>
+has XX_is_logging_forced =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
     , lazy              => 1
     , traits            => ['Bool']
     , handles           =>
-      { _force_log      => 'set'
-      , _normal_log     => 'unset'
+      { XX_force_log      => 'set'
+      , XX_normal_log     => 'unset'
       }
     , trigger           =>
       sub
@@ -230,20 +228,22 @@ has _logging_switch =>
           $all_logging_off = 0 if $nv;
           next if $ov == $nv;
 
-#say STDERR "set_logging  $nk: $ov -> $nv";
           if( $nk eq 'file' )
           {
             state $curr_file_level = 0;
             my $logger = Log::Log4perl->get_logger('' . $self->C_ROOTFILE);
-            
+
             # Turn file logging off
             #
             if( $nv == 0 and $ov )
             {
               $curr_file_level = $logger->level;
               $logger->level('OFF');
+#say STDERR "set_logging  $nk: $ov -> $nv; "
+#  , Log::Log4perl::Level::to_level($curr_file_level)
+#  , ' -> ', Log::Log4perl::Level::to_level($logger->level);
             }
-            
+
             # Turn file logging on
             #
             elsif( $ov == 0 and $nv )
@@ -251,12 +251,12 @@ has _logging_switch =>
               $logger->level($curr_file_level);
             }
           }
-          
+
           elsif( $nk eq 'stderr' )
           {
             state $curr_stderr_level = 0;
             my $logger = Log::Log4perl->get_logger('' . $self->C_ROOTSTDERR);
-            
+
             # Turn stderr logging off
             #
             if( $nv == 0 and $ov )
@@ -264,7 +264,7 @@ has _logging_switch =>
               $curr_stderr_level = $logger->level;
               $logger->level('OFF');
             }
-            
+
             # Turn stderr logging on
             #
             elsif( $ov == 0 and $nv )
@@ -272,7 +272,7 @@ has _logging_switch =>
               $logger->level($curr_stderr_level);
             }
           }
-          
+
           elsif( $nk eq 'email' )
           {
             state $curr_email_level = 0;
@@ -294,12 +294,12 @@ has _logging_switch =>
             }
           }
         }
-        
+
         if( $all_logging_off )
         {
           $self->_logging_off;
         }
-        
+
         else
         {
           $self->_logging_on;
@@ -393,7 +393,6 @@ has _lastError =>
       { clear_last_error        => 'clear_error'
       , is_last_success         => 'is_success'
       , is_last_fail            => 'is_fail'
-      , is_last_forced          => 'is_forced'
       , get_last_message        => 'get_message'
       , get_last_error          => 'get_error'
       , get_last_severity       => 'get_severity'
@@ -485,7 +484,7 @@ sub BUILD
     my $error = $_[0];
     my @errors = split( "\t", $error);
     $self->write_log( [join( "", @errors)], $self->C_LOG_EXTERNFATAL);
-#say join( "", @errors);
+say join( "", @errors);
     # $SIG{__DIE__} = $external_die_handler;
     $self->stop_file_logging;
     my $app = AppState->instance;
@@ -513,7 +512,7 @@ sub plugin_cleanup
   $self->stop_file_logging;
   $self->delete_all_subscribers;
 }
-  
+
 #-------------------------------------------------------------------------------
 # Make sub to define a logging level for a Log4perl logger. Root loggers are
 # defined by $logger_prefix. The calls will set a level for any logger created
@@ -585,8 +584,7 @@ sub _getset_log_level
   # Save level for this package
   #
   $self->_set_log_lvl($logger_name => $level);
-say "getset $logger_name => $level";
-
+#say "getset $logger_name => $level == ", $self->_get_log_level_name($level);
 
   # Set level for appropriate logger
   #
@@ -624,26 +622,6 @@ sub XXstart_logging
   #
   my $level_str = $self->_get_log_level_name($self->file_log_level);
   my $stderr_level_str = $self->_get_log_level_name($self->stderr_log_level);
-###  Log::Log4perl->get_logger('' . $self->C_ROOTFILE)->level($level_str);
-###  Log::Log4perl->get_logger('' . $self->C_ROOTSTDERR)->level($stderr_level_str);
-
-  # Write first entry to log file
-  #
-  $self->wlog( $self->C_LOG_LOGSTARTED
-             , [ $level_str
-               , $stderr_level_str
-               ]
-             );
-}
-
-#-------------------------------------------------------------------------------
-# Stop logging to the file.
-#
-sub XXstop_logging
-{
-  my($self) = @_;
-  $self->wlog($self->C_LOG_LOGSTOPPED);
-  $self->_logging_off;
 }
 
 #-------------------------------------------------------------------------------
@@ -652,16 +630,16 @@ sub start_file_logging
 {
   my( $self, $file_log_control) = @_;
 
-  # Reset some values used to compare values from a previous log entry.
-  #
-  $self->_previousMsg('');
-  $self->_previousMsgEq(0);
-  $self->_previousDate('');
-  $self->_previousTime('');
-
   if( !$self->_defined_logging('file') )
   {
-    $self->_init_file_logger($file_log_control // {});
+    # Reset some values used to compare values from a previous log entry.
+    #
+    $self->_previousMsg('');
+    $self->_previousMsgEq(0);
+    $self->_previousDate('');
+    $self->_previousTime('');
+
+    $self->_init_file_root_logger($file_log_control // {});
   }
 
   $self->_set_logging(file => 1);
@@ -676,97 +654,11 @@ sub start_file_logging
 }
 
 #-------------------------------------------------------------------------------
-# Stop logging to the file.
-#
-sub stop_file_logging
-{
-  my($self) = @_;
-  $self->wlog($self->I_FILELOGSTOPPED);
-  $self->_set_logging(file => 0);
-}
-
-#-------------------------------------------------------------------------------
-#
-sub start_stderr_logging
-{
-  my( $self, $stderr_log_control) = @_;
-
-  if( !$self->_defined_logging('stderr') )
-  {
-    $self->_create_stderr_root_logger($stderr_log_control // {});
-  }
-
-  $self->_set_logging(stderr => 1);
-
-  # Write first entry to log file
-  #
-  my $level_str = $self->_get_log_level_name($self->stderr_log_level);
-  $self->wlog( $self->I_STDERRLOGSTARTED, [$level_str]);
-}
-
-#-------------------------------------------------------------------------------
-# Stop logging to the stderr.
-#
-sub stop_stderr_logging
-{
-  my($self) = @_;
-  $self->wlog($self->I_STDERRLOGSTOPPED);
-  $self->_set_logging(stderr => 0);
-}
-
-#-------------------------------------------------------------------------------
-#
-sub start_email_logging
-{
-  my( $self, $log_control) = @_;
-
-  if( !$self->_defined_logging('email') )
-  {
-    $self->_create_email_root_logger($log_control // {});
-  }
-
-  $self->_set_logging(email => 1);
-
-  # Write first entry to log
-  #
-  my $level_str = $self->_get_log_level_name($self->email_log_level);
-  $self->wlog( $self->I_EMAILLOGSTARTED, [$level_str]);
-}
-
-#-------------------------------------------------------------------------------
-# Stop logging to the stderr.
-#
-sub stop_email_logging
-{
-  my($self) = @_;
-  $self->wlog($self->I_EMAILLOGSTOPPED);
-  $self->_set_logging(email => 0);
-}
-
-#-------------------------------------------------------------------------------
-# Setup loggers
-#
-sub _make_logger_objects
-{
-  my($self) = @_;
-
-  #$self->_create_file_root_logger;
-  $self->_init_file_logger({});
-  $self->_create_stderr_root_logger;
-  $self->_create_email_root_logger;
-
-  # Finish setup,
-  #
-  $self->_logging_on;
-  $self->wlog($self->C_LOG_LOGINIT);
-}
-
-#-------------------------------------------------------------------------------
 # Provide attributes for the File or FileRotate appenders
 # The attributes name, syswrite are overwritten. filename is set if not
 # provided.
 #
-sub _init_file_logger
+sub _init_file_root_logger
 {
   my( $self, $logger_attr) = @_;
 
@@ -850,10 +742,39 @@ sub _create_file_root_logger
 }
 
 #-------------------------------------------------------------------------------
+# Stop logging to the file.
+#
+sub stop_file_logging
+{
+  my($self) = @_;
+  $self->wlog($self->I_FILELOGSTOPPED);
+  $self->_set_logging(file => 0);
+}
+
+#-------------------------------------------------------------------------------
+#
+sub start_stderr_logging
+{
+  my( $self, $stderr_log_control) = @_;
+
+  if( !$self->_defined_logging('stderr') )
+  {
+    $self->_init_stderr_root_logger($stderr_log_control // {});
+  }
+
+  $self->_set_logging(stderr => 1);
+
+  # Write first entry to log file
+  #
+  my $level_str = $self->_get_log_level_name($self->stderr_log_level);
+  $self->wlog( $self->I_STDERRLOGSTARTED, [$level_str]);
+}
+
+#-------------------------------------------------------------------------------
 # Provide attributes for the ScreenColoredLevels appenders
 # The attributes name is overwritten.
 #
-sub _init_stderr_logger
+sub _init_stderr_root_logger
 {
   my( $self, $logger_attr) = @_;
 
@@ -866,6 +787,7 @@ sub _init_stderr_logger
   # Always overide
   #
   $logger_attr->{name} = '' . $self->C_ROOTSTDERR;
+  $logger_attr->{stderr} //= 1;         # Default to standard error channel
 
   my $dispatch_name = 'Log::Log4perl::Appender::ScreenColoredLevels';
 
@@ -877,7 +799,7 @@ sub _init_stderr_logger
 #
 sub _create_stderr_root_logger
 {
-  my($self) = @_;
+  my( $self, $dispatch_name, $logger_attr) = @_;
 
   # Create logger for stderr logging with its own output pattern
   #
@@ -885,16 +807,14 @@ sub _create_stderr_root_logger
   $self->_set_layout('log.stderr' => $layout);
 
   my $logger = Log::Log4perl->get_logger('' . $self->C_ROOTSTDERR);
-
-  my $appender = Log::Log4perl::Appender->new
-                 ( "Log::Log4perl::Appender::ScreenColoredLevels"
-                 , name          => '' . $self->C_ROOTSTDERR
-                 , stderr        => 1
-                 );
+  my $appender = Log::Log4perl::Appender->new( $dispatch_name, %$logger_attr);
 
   $appender->layout($layout);
   $logger->add_appender($appender);
   $logger->level($self->_get_log_level_name($self->stderr_log_level));
+say "Level set: ", $self->_get_log_level_name($self->stderr_log_level);
+say "Level from logger: ", Log::Log4perl::Level::to_level($logger->level)
+  , ', ' . $self->C_ROOTSTDERR;
 #  $logger->level('TRACE');
   $self->wlog( $self->C_LOG_TRACE
              , [ $self->stderr_log_level
@@ -902,6 +822,35 @@ sub _create_stderr_root_logger
                . $self->_get_log_level_name($self->stderr_log_level)
                ]
              );
+}
+
+#-------------------------------------------------------------------------------
+# Stop logging to the stderr.
+#
+sub stop_stderr_logging
+{
+  my($self) = @_;
+  $self->wlog($self->I_STDERRLOGSTOPPED);
+  $self->_set_logging(stderr => 0);
+}
+
+#-------------------------------------------------------------------------------
+#
+sub start_email_logging
+{
+  my( $self, $log_control) = @_;
+
+  if( !$self->_defined_logging('email') )
+  {
+    $self->_create_email_root_logger($log_control // {});
+  }
+
+  $self->_set_logging(email => 1);
+
+  # Write first entry to log
+  #
+  my $level_str = $self->_get_log_level_name($self->email_log_level);
+  $self->wlog( $self->I_EMAILLOGSTARTED, [$level_str]);
 }
 
 #-------------------------------------------------------------------------------
@@ -933,6 +882,16 @@ sub _create_email_root_logger
 }
 
 #-------------------------------------------------------------------------------
+# Stop logging to the stderr.
+#
+sub stop_email_logging
+{
+  my($self) = @_;
+  $self->wlog($self->I_EMAILLOGSTOPPED);
+  $self->_set_logging(email => 0);
+}
+
+#-------------------------------------------------------------------------------
 # Create first message for logfile. Will also be done when starting a new day.
 #
 sub _log_data_line
@@ -943,8 +902,8 @@ sub _log_data_line
 
   # For the data line the output is forced.
   #
-  $self->_force_log;
-  
+#  $self->_force_log;
+
   # Only log to file needs another pattern layout
   #
   my $logger = Log::Log4perl->get_logger('' . $self->C_ROOTFILE);
@@ -967,7 +926,7 @@ sub _log_data_line
   # And again to log the message
   #
   $appender->layout($self->_get_layout('log.millisec'));
-  $self->_normal_log;
+#  $self->_normal_log;
 }
 
 #-------------------------------------------------------------------------------
@@ -1003,7 +962,7 @@ sub _log_message
   # Force the message if needed
   #
   my $force_message = $log_attr->{force_message} // 0;
-  $self->_force_log if $force_message;
+#  $self->_force_log if $force_message;
 
   # Get the logger and the function name from the error message. Then
   # log the message with that function.
@@ -1018,23 +977,51 @@ sub _log_message
                ;
 
   $logger->$l4p_fnc_name($msgTxt);
+#$self->expose_logger_levels($logger_name);
 
   # Turn back to normal logging if the message was forced to be printed
   #
-  $self->_normal_log if $force_message;
+#  $self->_normal_log if $force_message;
 
   # Send message to stderr if stderr_log_level is set to the proper level.
   # This logger does not need change of layout patterns like the file logger
   # because date and time is not printed.
   #
   $logger_name = '' . $self->C_ROOTSTDERR . "::$log_attr->{package}";
-#say "FN: $l4p_fnc_name, $logger_name";
-  Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
+  $logger = Log::Log4perl->get_logger($logger_name);
+  $logger->$l4p_fnc_name($msg);
+#$self->expose_logger_levels($logger_name);
 
   # Send message to email logger too.
   #
 #  $logger_name = '' . $self->C_ROOTEMAIL . "::$log_attr->{package}";
 #  Log::Log4perl->get_logger($logger_name)->$l4p_fnc_name($msg);
+}
+
+#-------------------------------------------------------------------------------
+# Test to expose log levels on all catagory levels up to the root
+#
+sub expose_logger_levels
+{
+  my( $self, $logger_name) = @_;
+
+  my $logger = Log::Log4perl->get_logger($logger_name);
+  say "FN: "
+    , Log::Log4perl::Level::to_level($logger->level)
+    , ', ', $logger->category;
+
+  while( $logger_name =~ m/::/ )
+  {
+    $logger_name =~ s/::[^:]+$//;
+    $logger = Log::Log4perl->get_logger($logger_name);
+    say "FN: "
+      , Log::Log4perl::Level::to_level($logger->level)
+      , ', ', $logger->category;
+  }
+
+  $logger = Log::Log4perl->get_logger('');
+  say "FN: ", Log::Log4perl::Level::to_level($logger->level)
+    , ', ', $logger->category;
 }
 
 #-------------------------------------------------------------------------------
@@ -1150,9 +1137,6 @@ Severity code is a 2 letter code. First is I, W, E, T, D and F for info,
 warning, error, trace, debug or fatal respectively. The second letter is
 s and f for success or failure respectively.
 
-Uppercase letters s and f mean that the log entry would be forced while
-otherwise the setting of loglevel would prevent it.
-
 A tag is a 3 letter code representing the logging module. This must be
 set by the module by calling add_tag(). The tag is followed by a four
 digit line number.
@@ -1245,7 +1229,7 @@ sub write_log
   $self->_log_data_line if $dateTxt;
 
   my $log_attr = {package => $package};
-  $log_attr->{force_message} = 1 if is_forced($error);
+#  $log_attr->{force_message} = 1 if is_forced($error);
 
   # Stackdump attached to message when error level is higher than warning
   #
@@ -1309,7 +1293,7 @@ sub _create_message
   # If the messages should have been filtered, the forced bit should have
   # been set if we ended up here
   #
-  $severitySymbol = uc($severitySymbol) if $sts->is_forced;
+#  $severitySymbol = uc($severitySymbol) if $sts->is_forced;
 
   my $error = $sts->get_error;
   my $message = $sts->get_message;
@@ -1397,7 +1381,6 @@ sub get_log_lvl
   my $log_level;
   while( !defined $log_level )
   {
-#say STDERR "GLVL: $logger_name, ll = ", (defined $log_level ? $log_level : 'Not defined' );
     $log_level = $self->_get_log_lvl($logger_name);
     last if $logger_name !~ m/::/;
     $logger_name =~ s/::[^:]+$//;

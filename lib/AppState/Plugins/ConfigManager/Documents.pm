@@ -19,13 +19,13 @@ use AppState::Plugins::Log::Meta_Constants;
 #
 def_sts( 'C_DOC_SELOUTRANGE',  'M_ERROR', 'Document number %s out of range, document not %s');
 def_sts( 'C_DOC_DOCRETRIEVED', 'M_TRACE', 'Document %s retrieved');
-def_sts( 'C_DOC_NODOCUMENTS',  'M_F_WARNING', 'No documents available');
+def_sts( 'C_DOC_NODOCUMENTS',  'M_WARN', 'No documents available');
 def_sts( 'C_DOC_NOHASHREF',    'M_ERROR', 'Config root nor config hook into data is a hash reference. Returned an empty hash reference, perhaps no document selected');
 def_sts( 'C_DOC_NOARRAYREF',   'M_ERROR', 'No array reference at %s');
 def_sts( 'C_DOC_EVALERROR',    'M_ERROR', 'Error eval path %s: %s');
-def_sts( 'C_DOC_NOVALUE',      'M_WARNING', 'No value found at %s');
+def_sts( 'C_DOC_NOVALUE',      'M_WARN', 'No value found at %s');
 def_sts( 'C_DOC_NOKEY',        'M_ERROR', 'Key not defined');
-def_sts( 'C_DOC_KEYNOTEXIST',  'M_WARNING', 'Key %s does not exist');
+def_sts( 'C_DOC_KEYNOTEXIST',  'M_WARN', 'Key %s does not exist');
 def_sts( 'C_DOC_MODTRACE',     'M_TRACE', "%s p='%s' '%s'");
 def_sts( 'C_DOC_MODKTRACE',    'M_TRACE', "%s p='%s' k='%s' %s");
 def_sts( 'C_DOC_MODERR',       'M_ERROR', "%s %s");

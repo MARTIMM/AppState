@@ -48,7 +48,6 @@ has M_RESERVED  => ( default => 0x0001F800, %_c_Attr); # Reserved
 #
 has M_SUCCESS   => ( default => 0x10000000, %_c_Attr);
 has M_FAIL      => ( default => 0x20000000, %_c_Attr);
-has M_FORCED    => ( default => 0x40000000, %_c_Attr);  # Force logging
 has M_CODE      => ( default => 0x80000000, %_c_Attr);  # Used to define codes
 
 has M_TRACE     => ( default => 0x10120000, %_c_Attr);  # is success
@@ -58,16 +57,6 @@ has M_WARN      => ( default => 0x02080000, %_c_Attr);  # no success/fail
 has M_WARNING   => ( default => 0x02080000, %_c_Attr);  # same as M_WARNING
 has M_ERROR     => ( default => 0x240A0000, %_c_Attr);  # is fail
 has M_FATAL     => ( default => 0x204C0000, %_c_Attr);
-
-# Following are combinations with FORCED -> log always when log is opened
-#
-has M_F_TRACE   => ( default => 0x50120000, %_c_Attr); # With forced logging
-has M_F_DEBUG   => ( default => 0x50240000, %_c_Attr);
-has M_F_INFO    => ( default => 0x51060000, %_c_Attr);
-has M_F_WARN    => ( default => 0x42080000, %_c_Attr);
-has M_F_WARNING => ( default => 0x42080000, %_c_Attr);
-has M_F_ERROR   => ( default => 0x640A0000, %_c_Attr);
-has M_F_FATAL   => ( default => 0x604C0000, %_c_Attr);
 
 #-------------------------------------------------------------------------------
 # POSIX IPC constants
@@ -85,7 +74,7 @@ has C_MSG_NOWAIT        => ( default => 1, %_c_Attr);
 #-------------------------------------------------------------------------------
 # Error codes for Constants module
 #
-# 0x604C0000 == M_F_FATAL
+# 0x204C0000 == M_FATAL
 has C_MODIMMUT  =>
     ( default => Scalar::Util::dualvar( 1 | 0x604C0000, 'Module is immutable')
     , %_c_Attr
