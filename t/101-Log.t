@@ -155,10 +155,10 @@ sub
                    };
   $log->add_subscriber( $tagName, $subscriber);
 
-  $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
+  $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARN);
   is( ref $source, 'AppState::Plugins::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->is_warning, 'is warning');
+  ok( $status->is_warn, 'is warning');
   ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
 
   $log->delete_subscriber( $tagName, $subscriber);
@@ -269,7 +269,7 @@ sub
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ is LOG 001/, $config_dir);
 
   $log->write_log( 'LOG 002 This has gone wrong but not so bad ....'
-             , 0xAA | $app->M_WARNING | $app->M_SUCCESS
+             , 0xAA | $app->M_WARN | $app->M_SUCCESS
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ws LOG 002/, $config_dir);
 
@@ -277,7 +277,7 @@ sub
   content_like( qr/.*\.log$/, qr/$tagName \d+ IS LOG 003/, $config_dir);
 
   $log->write_log( 'LOG 004 Wrong and should change ....'
-             , 0x18 | $app->M_WARNING | $app->M_FAIL
+             , 0x18 | $app->M_WARN | $app->M_FAIL
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ef LOG 004/, $config_dir);
 

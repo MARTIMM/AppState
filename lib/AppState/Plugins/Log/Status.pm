@@ -118,15 +118,6 @@ sub is_info
 }
 
 #-------------------------------------------------------------------------------
-# Return true(0) when object status is a warning.
-#
-sub is_warning
-{
-  my( $self, $error) = @_;
-  return !!($self->status->{error} & $self->M_NOTMSFF & $self->M_WARNING);
-}
-
-#-------------------------------------------------------------------------------
 # Return true(0) when object status is an error.
 #
 sub is_error
@@ -154,7 +145,7 @@ sub is_debug
 }
 
 #-------------------------------------------------------------------------------
-# Same as warning because M_WARN == M_WARNING
+# Same as warning because M_WARN == M_WARN
 #
 sub is_warn
 {

@@ -54,7 +54,7 @@ def_sts( 'C_LOG_LOGGERLVL',   'M_TRACE', '%s log level changed to %s');
 def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
 def_sts( 'C_LOG_NOERRCODE',   'M_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',       'M_ERROR', 'No message given to write_log');
-def_sts( 'C_LOG_LOGALRINIT',  'M_WARNING', 'Not changed, logger already initialized');
+def_sts( 'C_LOG_LOGALRINIT',  'M_WARN', 'Not changed, logger already initialized');
 def_sts( 'C_LOG_ILLLEVELCD',  'M_ERROR', 'Illegal logger level %s');
 def_sts( 'C_LOG_EXTERNFATAL', 'M_FATAL', 'Fatal error from external module: %s');
 
@@ -421,7 +421,7 @@ sub BUILD
     return match::simple::match
            ( 0 + $_[0]
            , [ $self->M_TRACE, $self->M_DEBUG, $self->M_INFO
-             , $self->M_WARN, $self->M_WARNING, $self->M_ERROR
+             , $self->M_WARN, $self->M_WARN, $self->M_ERROR
              , $self->M_FATAL
              ]
            );
@@ -1047,7 +1047,7 @@ sub _get_log_level_name
     $log_level_name = 'INFO';
   }
 
-  elsif( is_warning($mask) )
+  elsif( is_warn($mask) )
   {
     $log_level_name = 'WARN';
   }
@@ -1093,7 +1093,7 @@ sub _get_log_level_function_name
     $log_level_name = 'info';
   }
 
-  elsif( $sts->is_warning )
+  elsif( $sts->is_warn )
   {
     $log_level_name = 'warn';
   }
@@ -1237,7 +1237,7 @@ sub write_log
            . join( ''
                  , map { ' ' x 13 . "$_\n"}
                        $self->_get_stack($call_level + 1)
-                 ) if cmp_levels( $error, $self->M_WARNING) > 0;
+                 ) if cmp_levels( $error, $self->M_WARN) > 0;
 
   if( $timeTxt and $msgTxt )
   {

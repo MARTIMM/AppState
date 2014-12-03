@@ -10,7 +10,7 @@ use AppState;
 use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
-def_sts( 'CONST_1', 'M_WARNING', 'Constant warning');
+def_sts( 'CONST_1', 'M_WARN', 'Constant warning');
 def_sts( 'N'      , 'M_INFO', 'Message for constant N');
 def_sts( 'M'      , 'M_INFO', 'Message for constant M');
 
@@ -51,7 +51,7 @@ sub
 subtest 'Test DC type constants' =>
 sub
 {
-  $self->t_all_code( CONST_1 => $self->M_WARNING | 10);
+  $self->t_all_code( CONST_1 => $self->M_WARN | 10);
   $self->t_all_code( N => $self->M_INFO | 10);
   $self->t_all_code( M => $self->M_INFO | 10);
 };

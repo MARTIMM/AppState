@@ -9,7 +9,7 @@ package Foo
   use AppState;
   use AppState::Plugins::Log::Meta_Constants;
 
-  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARN M_ERROR M_FATAL)];
   my $count = 1;
   foreach my $sts_text (@$sts_texts)
   {
@@ -92,7 +92,7 @@ package Foo::Bar
   use AppState;
   use AppState::Plugins::Log::Meta_Constants;
 
-  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+  my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARN M_ERROR M_FATAL)];
   my $count = 1;
   foreach my $sts_text (@$sts_texts)
   {
@@ -181,7 +181,7 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Make a few status messages in main package
 #
-my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARNING M_ERROR M_FATAL)];
+my $sts_texts = [qw( M_TRACE M_DEBUG M_INFO M_WARN M_WARN M_ERROR M_FATAL)];
 my $count = 1;
 foreach my $sts_text (@$sts_texts)
 {
@@ -283,7 +283,7 @@ sub
   &cunlike("Ds 103 \\d+ MAIN2 - Status is 10240... with M_DEBUG severity");
   &clike("Is 103 \\d+ MAIN3 - Status is 11060... with M_INFO severity");
   &clike("W- 103 \\d+ MAIN4 - Status is 02080... with M_WARN severity");
-  &clike("W- 103 \\d+ MAIN5 - Status is 02080... with M_WARNING severity");
+  &clike("W- 103 \\d+ MAIN5 - Status is 02080... with M_WARN severity");
   &clike("Ef 103 \\d+ MAIN6 - Status is 240A0... with M_ERROR severity");
   &clike("Ff 103 \\d+ MAIN7 - Status is 204C0... with M_FATAL severity");
 };
@@ -302,7 +302,7 @@ sub
   &cunlike("Ds Foo \\d+ FOO2 - Status is 10240... with M_DEBUG severity");
   &cunlike("Is Foo \\d+ FOO3 - Status is 11060... with M_INFO severity");
   &clike("W- Foo \\d+ FOO4 - Status is 02080... with M_WARN severity");
-  &clike("W- Foo \\d+ FOO5 - Status is 02080... with M_WARNING severity");
+  &clike("W- Foo \\d+ FOO5 - Status is 02080... with M_WARN severity");
   &clike("Ef Foo \\d+ FOO6 - Status is 240A0... with M_ERROR severity");
   &clike("Ff Foo \\d+ FOO7 - Status is 204C0... with M_FATAL severity");
 };
@@ -321,7 +321,7 @@ sub
   &cunlike("Ds Bar \\d+ BAR2 - Status is 10240... with M_DEBUG severity");
   &cunlike("Is Bar \\d+ BAR3 - Status is 11060... with M_INFO severity");
   &cunlike("W- Bar \\d+ BAR4 - Status is 02080... with M_WARN severity");
-  &cunlike("W- Bar \\d+ BAR5 - Status is 02080... with M_WARNING severity");
+  &cunlike("W- Bar \\d+ BAR5 - Status is 02080... with M_WARN severity");
   &clike("Ef Bar \\d+ BAR6 - Status is 240A0... with M_ERROR severity");
   &clike("Ff Bar \\d+ BAR7 - Status is 204C0... with M_FATAL severity");
 };
@@ -467,10 +467,10 @@ sub
                    };
   $log->add_subscriber( $tagName, $subscriber);
 
-  $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARNING);
+  $log->write_log( ['This has gone ok ....'], 0x3aB | $app->M_WARN);
   is( ref $source, 'AppState::Plugins::Log', 'Check source of notify');
   is( $tag, $tagName, 'Check tag name of the event');
-  ok( $status->is_warning, 'is warning');
+  ok( $status->is_warn, 'is warning');
   ok( $status->get_eventcode == 0x3aB, 'Check eventcode');
 
   $log->delete_subscriber( $tagName, $subscriber);
@@ -582,7 +582,7 @@ sub
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ is LOG 001/, $config_dir);
 
   $log->write_log( 'LOG 002 This has gone wrong but not so bad ....'
-             , 0xAA | $app->M_WARNING | $app->M_SUCCESS
+             , 0xAA | $app->M_WARN | $app->M_SUCCESS
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ws LOG 002/, $config_dir);
 
@@ -590,7 +590,7 @@ sub
   content_like( qr/.*\.log$/, qr/$tagName \d+ IS LOG 003/, $config_dir);
 
   $log->write_log( 'LOG 004 Wrong and should change ....'
-             , 0x18 | $app->M_WARNING | $app->M_FAIL
+             , 0x18 | $app->M_WARN | $app->M_FAIL
              );
   content_unlike( qr/.*\.log$/, qr/$tagName \d+ ef LOG 004/, $config_dir);
 

@@ -17,7 +17,7 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'W_ATTROVERWR', 'M_WARNING', 'Attribute name %s overwritten with new value');
+def_sts( 'W_ATTROVERWR', 'M_WARN', 'Attribute name %s overwritten with new value');
 def_sts( 'D_ADDATTR', 'M_DEBUG', 'Add attribute %s, value %s');
 
 #-------------------------------------------------------------------------------

@@ -113,7 +113,6 @@ sub
   $self->t_code( M_TRACE        => 0x10100000);
   $self->t_code( M_DEBUG        => 0x10200000);
   $self->t_code( M_INFO         => 0x11000000);
-  $self->t_code( M_WARNING      => 0x02000000);
   $self->t_code( M_ERROR        => 0x24000000);
   $self->t_code( M_WARN         => 0x02000000);
   $self->t_code( M_FATAL        => 0x20400000);

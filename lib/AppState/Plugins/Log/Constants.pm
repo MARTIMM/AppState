@@ -54,7 +54,6 @@ has M_TRACE     => ( default => 0x10120000, %_c_Attr);  # is success
 has M_DEBUG     => ( default => 0x10240000, %_c_Attr);
 has M_INFO      => ( default => 0x11060000, %_c_Attr);
 has M_WARN      => ( default => 0x02080000, %_c_Attr);  # no success/fail
-has M_WARNING   => ( default => 0x02080000, %_c_Attr);  # same as M_WARNING
 has M_ERROR     => ( default => 0x240A0000, %_c_Attr);  # is fail
 has M_FATAL     => ( default => 0x204C0000, %_c_Attr);
 

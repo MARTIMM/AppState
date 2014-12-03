@@ -23,11 +23,10 @@ sub
   ok( $sts->is_success, 'is successfull');
   ok( !$sts->is_fail, 'is not a failure');
   ok( !$sts->is_info, 'is not info');
-  ok( !$sts->is_warning, 'is not a warning');
+  ok( !$sts->is_warn, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
   ok( $sts->is_trace, 'is trace');
   ok( !$sts->is_debug, 'is not a debug');
-  ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not a fatal');
 };
 
@@ -45,11 +44,10 @@ sub
   ok( !$sts->is_success, 'is not successfull');
   ok( $sts->is_fail, 'is a failure');
   ok( !$sts->is_info, 'is not info');
-  ok( !$sts->is_warning, 'is not a warning');
+  ok( !$sts->is_warn, 'is not a warning');
   ok( $sts->is_error, 'is an error');
   ok( !$sts->is_trace, 'is not a trace');
   ok( !$sts->is_debug, 'is not a debug');
-  ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not a fatal');
 
   ok( $sts->get_eventcode == 24, 'event code is 24');
@@ -70,7 +68,7 @@ sub
 {
   $sts->clear_error;
   ok( $sts->is_success, 'is successfull');
-  ok( !$sts->is_warning, 'is not a warning');
+  ok( !$sts->is_warn, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
   is( $sts->get_message, 'State object initialized ok', 'init message');
   like( $sts->get_file, qr/Status\.pm/, 'Status.pm');
@@ -103,7 +101,6 @@ sub
   ok( $sts->is_success, 'is successfull');
   ok( !$sts->is_fail, 'is not a failure');
   ok( !$sts->is_info, 'is not info');
-  ok( !$sts->is_warning, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
   ok( !$sts->is_trace, 'is not a trace');
   ok( $sts->is_debug, 'is a debug');
@@ -156,11 +153,10 @@ sub
   ok( $sts->is_success, 'is successfull');
   ok( !$sts->is_fail, 'is not a failure');
   ok( !$sts->is_info, 'is not info');
-  ok( !$sts->is_warning, 'is not a warning');
+  ok( !$sts->is_warn, 'is not a warning');
   ok( !$sts->is_error, 'is not an error');
   ok( $sts->is_trace, 'is trace');
   ok( !$sts->is_debug, 'is not debug');
-  ok( !$sts->is_warn, 'is not a warn');
   ok( !$sts->is_fatal, 'is not fatal');
 
   ok( $sts->get_eventcode == 28, 'second event code is 28');
@@ -168,7 +164,7 @@ sub
   is( $sts->get_message, 'test 3', 'message test 3');
 
   is( $sts->get_file, '', 'File test-file3.pm');
-  ok( $sts->get_line == 53003, 'Line 53003');
+  is( $sts->get_line, 53003, 'Line 53003');
   is( $sts->get_package, 'main', 'Package main');
 
   # Now call with call_level == 0               <=== Line 53032 !!!!
@@ -182,7 +178,7 @@ sub
   is( ref $s, '', 'Should be no set_status error');
 
   like( $sts->get_file, qr/test-file3.pm/, 'File test-file3.pm');
-  is( $sts->get_line, 53032, 'Line 53032');
+  is( $sts->get_line, 53031, 'Line 53031');
   is( $sts->get_package, 'main', 'Package main');
 
 };
@@ -194,7 +190,7 @@ sub
 {
   ok( cmp_levels( $sts->M_FATAL, $sts->M_TRACE) == 1, 'Fatal higher than trace');
   ok( cmp_levels( $sts->M_TRACE, $sts->M_DEBUG) == -1, 'Trace lower than debug');
-  ok( cmp_levels( $sts->M_WARN, $sts->M_WARNING) == 0, 'Warn equal to warning');
+  ok( cmp_levels( $sts->M_WARN, $sts->M_WARN) == 0, 'Warn equal to warning');
 };
 
 #-------------------------------------------------------------------------------

@@ -108,16 +108,6 @@ sub is_info
 
 #-------------------------------------------------------------------------------
 #
-sub is_warning
-{
-  my($error) = @_;
-
-  $error //= 0;
-  return !!($error & $_aes->M_NOTMSFF & $_aes->M_WARNING);
-}
-
-#-------------------------------------------------------------------------------
-#
 sub is_error
 {
   my($error) = @_;
@@ -147,7 +137,7 @@ sub is_debug
 }
 
 #-------------------------------------------------------------------------------
-# Same as warning because M_WARN == M_WARNING
+# Same as warning because M_WARN == M_WARN
 #
 sub is_warn
 {
@@ -173,7 +163,7 @@ sub is_fatal
 Moose::Exporter->setup_import_methods
     ( with_meta => [qw(def_sts)]
     , as_is => [qw( cmp_levels is_success is_fail is_info
-                    is_warning is_error is_trace is_debug is_warn is_fatal
+                    is_error is_trace is_debug is_warn is_fatal
                   )
                ]
     );

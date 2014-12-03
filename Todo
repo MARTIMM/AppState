@@ -35,6 +35,7 @@ x Implemented
     the functions stop_*_logging() can be removed.
   - Perhaps change the set of functions *_log_level() into
     log_level( {file => log_level, package => some_package})
+  x Remove M_WARNING constant. Use only WARN. removed is_warning() too.
 
 - Memcached tests with better skip clause
 
