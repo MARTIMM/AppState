@@ -103,7 +103,6 @@ sub
 {
   # Flush to check file contents
   #
-  $log->message_wrapping(0);
   $log->write_start_message(0);
   $log->start_file_logging({ mode => 'write', autoflush => 1});
   ok( $log->_defined_logging('file'), 'File logging defined');

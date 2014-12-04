@@ -29,7 +29,6 @@ $app->initialize( config_dir => $config_dir, check_directories => 1);
 my $tagName = '105';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->message_wrapping(0);
 $log->start_file_logging( { autoflush => 1, mode => 'append'
                           , size => 2048, max => 3
                           }

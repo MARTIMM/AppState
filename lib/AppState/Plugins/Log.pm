@@ -7,7 +7,7 @@ package AppState::Plugins::Log;
 
 use Modern::Perl '2010';
 use 5.010001;
-use version; our $VERSION = '' . version->parse("v0.5.14");
+use version; our $VERSION = '' . version->parse("v0.5.17");
 
 use namespace::autoclean;
 
@@ -27,14 +27,6 @@ use AppState::Plugins::Log::Status;
 use AppState::Plugins::Log::Meta_Constants;
 require Scalar::Util;
 require match::simple;
-
-use Text::Wrap;
-
-# Number of columns left for message See logger patterns and break line pattern.
-#
-#local $Text::Wrap::break = '[\s\n]';
-local $Text::Wrap::columns = 71;
-local $Text::Wrap::huge = 'overflow'; # [perl #120641] Text::Wrap "This shouldn't happen" with '=' in text
 
 use Types::Standard qw(Dict Optional Int Str);
 
@@ -319,14 +311,6 @@ has die_on_fatal =>
     , default           => 1
     );
 
-# Do we wrap messages over multiple lines or not
-#
-has message_wrapping =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 1
-    );
-
 # Do we show a start message before logging and on change of date.
 #
 has write_start_message =>
@@ -479,7 +463,6 @@ sub BUILD
     # Prevent loops of fatal calls because of a die in write_log().
     #
     delete $SIG{__DIE__};
-    $self->message_wrapping(0);
 
     my $error = $_[0];
     my @errors = split( "\t", $error);
@@ -972,12 +955,7 @@ sub _log_message
   my $logger = Log::Log4perl->get_logger($logger_name);
   my $l4p_fnc_name = $self->_get_log_level_function_name;
 
-  my $msgTxt = $self->message_wrapping
-               ? Text::Wrap::wrap( '', ' ' x 21, $msg)
-               : $msg
-               ;
-
-  $logger->$l4p_fnc_name($msgTxt);
+  $logger->$l4p_fnc_name($msg);
 #$self->expose_logger_levels($logger_name);
 
   # Turn back to normal logging if the message was forced to be printed

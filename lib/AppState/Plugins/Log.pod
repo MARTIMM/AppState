@@ -153,12 +153,6 @@ Control if the write_log() must end the program after handling the message with
 a fatal status. Default is on. Returns the current value when no argument is
 given.
 
-=head2 message_wrapping($bool)
-
-Wrap messages in the logfile. The lines have a maximum of 80 characters and will
-indent on the second line. Default is 1. When zero, the messages to STDERR followed
-by a stack dump will always be wrapped.
-
 =head2 write_start_message($bool)
 
 Control if a legend must be written at the start of the logfile. Default is 1.

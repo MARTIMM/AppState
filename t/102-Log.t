@@ -35,7 +35,6 @@ $app->initialize( config_dir => $config_dir, check_directories => 1);
 my $tagName = '102';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->message_wrapping(0);
 $log->start_file_logging({ autoflush => 1, mode => 'write'});
 #$log->stderr_log_level($self->M_TRACE);
 $log->file_log_level($self->M_TRACE);
