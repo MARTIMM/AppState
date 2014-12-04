@@ -687,6 +687,7 @@ sub _init_file_root_logger
   $dispatch_name = 'Log::Dispatch::FileRotate'
     if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
 
+say "Init file: $dispatch_name, $logger_attr->{size}, $logger_attr->{max}";
   $self->_create_file_root_logger( $dispatch_name, $logger_attr);
 }
 

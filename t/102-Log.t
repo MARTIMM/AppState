@@ -27,11 +27,7 @@ my $self = main->new;
 #
 my $config_dir = 't/Log';
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir
-                , use_work_dir => 0
-                , use_temp_dir => 0
-                , check_directories => 1
-                );
+$app->initialize( config_dir => $config_dir, check_directories => 1);
 
 #-------------------------------------------------------------------------------
 # Get log object
@@ -39,7 +35,8 @@ $app->initialize( config_dir => $config_dir
 my $tagName = '102';
 my $log = $app->get_app_object('Log');
 $log->die_on_fatal(0);
-$log->start_file_logging({autoflush => 1});
+$log->message_wrapping(0);
+$log->start_file_logging({ autoflush => 1, mode => 'write'});
 #$log->stderr_log_level($self->M_TRACE);
 $log->file_log_level($self->M_TRACE);
 $log->add_tag($tagName);
@@ -47,7 +44,7 @@ $log->add_tag($tagName);
 #-------------------------------------------------------------------------------
 # Check last error system
 #
-subtest 'Output log file tests' =>
+subtest 'Output log file tests 1' =>
 sub
 {
   $log->file_log_level($self->M_TRACE);
@@ -62,16 +59,16 @@ sub
 
   # After sleep of one sec, a full time stamp is given. Next entry in msec
   #
-  content_like( qr/.*\.log$/, qr/\d\d:\d\d:\d\d Ds 102 \d\d\d\d LOOP - Loop counters 2 and 1/, $config_dir);
-  content_like( qr/.*\.log$/, qr/\s+\d\d\d Ds 102 \d\d\d\d LOOP - Loop counters 2 and 2/, $config_dir);
+  content_like( qr/102-Log\.log.*$/, qr/\d\d:\d\d:\d\d Ds 102 \d\d\d\d LOOP - Loop counters 2 and 1/, $config_dir);
+  content_like( qr/102-Log\.log.*$/, qr/\s+\d\d\d Ds 102 \d\d\d\d LOOP - Loop counters 2 and 2/, $config_dir);
 
   # Same a sec later
   #
-  content_like( qr/.*\.log$/, qr/\d\d:\d\d:\d\d Ds 102 \d\d\d\d LOOP - Loop counters 3 and 1/, $config_dir);
-  content_like( qr/.*\.log$/, qr/\s+\d\d\d Ds 102 \d\d\d\d LOOP - Loop counters 3 and 2/, $config_dir);
+  content_like( qr/102-Log\.log.*$/, qr/\d\d:\d\d:\d\d Ds 102 \d\d\d\d LOOP - Loop counters 3 and 1/, $config_dir);
+  content_like( qr/102-Log\.log.*$/, qr/\s+\d\d\d Ds 102 \d\d\d\d LOOP - Loop counters 3 and 2/, $config_dir);
 };
 
+done_testing();
 $app->cleanup;
 File::Path::remove_tree($config_dir);
-done_testing();
 exit(0);

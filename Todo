@@ -16,7 +16,7 @@ x Implemented
   x AppState::Plugins::NodeTree::NodeDOM
 
 - Log.pm
-  - Log4perl will not split logfile when larger than some size, bug?
+  x Log4perl will not split logfile when larger than some size, bug?
   x Turning on/off several types of log output (stderr, file, email).
   - Wrap messages has problems with '=' on last unbreakable word.
     Remove wrapping?
@@ -34,8 +34,9 @@ x Implemented
     set the logging level together with the severity codes like M_ERROR. Then
     the functions stop_*_logging() can be removed.
   - Perhaps change the set of functions *_log_level() into
-    log_level( {file => log_level, package => some_package})
-  x Remove M_WARNING constant. Use only WARN. removed is_warning() too.
+    log_level( {file => log_level, package => some_package}) as a step
+    to generalize the several loggers using codes instead of fuxed functions.
+  x Remove M_WARNING constant. Use only WARN. remove is_warning() too.
 
 - Memcached tests with better skip clause
 
