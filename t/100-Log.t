@@ -120,8 +120,9 @@ sub
 #  ok( $log->_logger_initialized, 'Logger is initialized');
   isa_ok( $log->_get_layout('log.date'), 'Log::Log4perl::Layout');
 
-#  $log->stderr_log_level({level => $log->M_FATAL, package => 'root'});
+$log->expose_logger_levels('A::Stderr::AppState::Plugins::Log');
   $log->start_stderr_logging;
+$log->expose_logger_levels('A::Stderr::AppState::Plugins::Log');
   ok( $log->_defined_logging('stderr'), 'Stderr logging defined');
   ok( $log->_get_logging('stderr'), 'Stderr logging is started');
 

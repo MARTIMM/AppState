@@ -21,14 +21,14 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_PLG_PLGDELETED',   'M_INFO', 'Plugin object %s deleted (undefined)');
-def_sts( 'C_PLG_PLGREMOVED',   'M_INFO', 'Plugin entry %s removed');
+def_sts( 'C_PLG_PLGDELETED',   'M_TRACE', 'Plugin object %s deleted (undefined)');
+def_sts( 'C_PLG_PLGREMOVED',   'M_TRACE', 'Plugin entry %s removed');
 def_sts( 'C_PLG_PLGNOTDEF',    'M_FATAL', 'Plugin entry %s not defined');
-def_sts( 'C_PLG_PLGDEFINED',   'M_INFO', 'Plugin entry %s defined');
+def_sts( 'C_PLG_PLGDEFINED',   'M_TRACE', 'Plugin entry %s defined');
 def_sts( 'C_PLG_PLGKEYNOTDEF', 'M_FATAL', 'Key %s not defined');
-def_sts( 'C_PLG_PLGCREATED',   'M_INFO', 'Object %s created');
-def_sts( 'C_PLG_PLGRETRVED',   'M_INFO', 'Object %s retrieved');
-def_sts( 'C_PLG_UNRECCREATE',  'M_INFO', 'Unrecognized create flag');
+def_sts( 'C_PLG_PLGCREATED',   'M_TRACE', 'Object %s created');
+def_sts( 'C_PLG_PLGRETRVED',   'M_TRACE', 'Object %s retrieved');
+def_sts( 'C_PLG_UNRECCREATE',  'M_TRACE', 'Unrecognized create flag');
 def_sts( 'C_PLG_APIFAIL',      'M_FATAL', 'Object %s cannot do %s()');
 def_sts( 'C_PLG_APISTUB',      'M_WARN', 'Called generated stub %s::%s()');
 def_sts( 'C_PLG_CODEFAIL',     'M_FATAL', 'Error importing class %s, err: %s');

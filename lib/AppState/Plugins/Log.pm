@@ -34,16 +34,16 @@ use Types::Standard qw(Dict Optional Int Str);
 # Error codes
 #
 def_sts( 'C_LOG_LOGINIT',     'M_TRACE', 'Logger initialized');
-def_sts( 'I_FILELOGSTARTED',  'M_INFO', "File logging started. File log level set to '%s'");
-def_sts( 'I_FILELOGSTOPPED',  'M_INFO', 'File logging stopped');
-def_sts( 'I_STDERRLOGSTARTED','M_INFO', "Stderr logging started. Stderr log level set to '%s'");
-def_sts( 'I_STDERRLOGSTOPPED','M_INFO', 'Stderr logging stopped');
-def_sts( 'I_EMAILLOGSTARTED', 'M_INFO', "Email logging started. Email log level set to '%s'");
-def_sts( 'I_EMAILLOGSTOPPED', 'M_INFO', 'Email logging stopped');
+def_sts( 'I_FILELOGSTARTED',  'M_TRACE', "File logging started. File log level set to '%s'");
+def_sts( 'I_FILELOGSTOPPED',  'M_TRACE', 'File logging stopped');
+def_sts( 'I_STDERRLOGSTARTED','M_TRACE', "Stderr logging started. Stderr log level set to '%s'");
+def_sts( 'I_STDERRLOGSTOPPED','M_TRACE', 'Stderr logging stopped');
+def_sts( 'I_EMAILLOGSTARTED', 'M_TRACE', "Email logging started. Email log level set to '%s'");
+def_sts( 'I_EMAILLOGSTOPPED', 'M_TRACE', 'Email logging stopped');
 def_sts( 'C_LOG_TAGLBLINUSE', 'M_FATAL', "Tag label '%s' already in use");
 def_sts( 'C_LOG_TAGALRDYSET', 'M_FATAL', "Package '%s' already has a tag '%s'");
 def_sts( 'C_LOG_LOGGERLVL',   'M_TRACE', '%s log level changed to %s');
-def_sts( 'C_LOG_TAGADDED',    'M_INFO', "Tag '%s' added for module '%s'");
+def_sts( 'C_LOG_TAGADDED',    'M_TRACE', "Tag '%s' added for module '%s'");
 def_sts( 'C_LOG_NOERRCODE',   'M_ERROR', 'Error does not have an error code and/or severity code');
 def_sts( 'C_LOG_NOMSG',       'M_ERROR', 'No message given to write_log');
 def_sts( 'C_LOG_LOGALRINIT',  'M_WARN', 'Not changed, logger already initialized');
@@ -670,7 +670,7 @@ sub _init_file_root_logger
   $dispatch_name = 'Log::Dispatch::FileRotate'
     if $logger_attr->{size} > 0 and $logger_attr->{max} > 0;
 
-say "Init file: $dispatch_name, $logger_attr->{size}, $logger_attr->{max}";
+#say "Init file: $dispatch_name, $logger_attr->{size}, $logger_attr->{max}";
   $self->_create_file_root_logger( $dispatch_name, $logger_attr);
 }
 
@@ -796,9 +796,9 @@ sub _create_stderr_root_logger
   $appender->layout($layout);
   $logger->add_appender($appender);
   $logger->level($self->_get_log_level_name($self->stderr_log_level));
-say "Level set: ", $self->_get_log_level_name($self->stderr_log_level);
-say "Level from logger: ", Log::Log4perl::Level::to_level($logger->level)
-  , ', ' . $self->C_ROOTSTDERR;
+#say "Level set: ", $self->_get_log_level_name($self->stderr_log_level);
+#say "Level from logger: ", Log::Log4perl::Level::to_level($logger->level)
+#  , ', ' . $self->C_ROOTSTDERR;
 #  $logger->level('TRACE');
   $self->wlog( $self->C_LOG_TRACE
              , [ $self->stderr_log_level

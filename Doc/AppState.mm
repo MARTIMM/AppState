@@ -1,6 +1,6 @@
 <map version="1.0.1">
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
-<node CREATED="1364292703431" ID="ID_1395924001" MODIFIED="1410861827389" TEXT="AppState Project">
+<node CREATED="1364292703431" ID="ID_1395924001" MODIFIED="1437327385831" TEXT="AppState Project">
 <richcontent TYPE="NOTE"><html>
   <head>
     
@@ -10,7 +10,8 @@
       Singleton Class
     </p>
   </body>
-</html></richcontent>
+</html>
+</richcontent>
 <font NAME="SansSerif" SIZE="12"/>
 <node CREATED="1364292719404" ID="ID_844350238" MODIFIED="1369509912778" POSITION="right" STYLE="fork" TEXT="Config">
 <font BOLD="true" NAME="SansSerif" SIZE="12"/>

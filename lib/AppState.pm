@@ -23,8 +23,8 @@ extends qw( Class::Singleton AppState::Plugins::Log::Constants);
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_APP_UNLINKTEMP', 'M_INFO', 'Unlink %s/%s');
-def_sts( 'C_APP_APPDESTROY', 'M_INFO', 'AppState set to be deleted after destroying plugins');
+def_sts( 'C_APP_UNLINKTEMP', 'M_TRACE', 'Unlink %s/%s');
+def_sts( 'C_APP_APPDESTROY', 'M_TRACE', 'AppState set to be deleted after destroying plugins');
 def_sts( 'C_APP_ILLAPPINIT', 'M_FATAL', 'Called new() directly, use instance() instead! %s');
 
 #-------------------------------------------------------------------------------

@@ -1,0 +1,19 @@
+
+----------
+2014-12-04
+----------
+17:34:21 Is =LG 0633 FILELOGSTARTED - File logging started. File log level set to 'TRACE'
+     956 Is =LG 0734 FILELOGSTOPPED - File logging stopped
+     957 Is =LG 0633 FILELOGSTARTED - File logging started. File log level set to 'TRACE'
+     963 Ts =LG 0803 TRACE - 541851648 == FATAL
+     965 Is =LG 0754 STDERRLOGSTARTED - Stderr logging started. Stderr log level set to 'FATAL'
+     966 Is =LG 0817 STDERRLOGSTOPPED - Stderr logging stopped
+     975 Is =LG 0837 EMAILLOGSTARTED - Email logging started. Email log level set to 'FATAL'
+     976 Is =LG 0874 EMAILLOGSTOPPED - Email logging stopped
+     978 Ts =LG 0577 LOGGERLVL - A::Stderr::main log level changed to TRACE
+     979 Ts 100 0144 TRACE - Trace message
+     979 Ds 100 0145 DEBUG - Debug message
+     980 Is 100 0146 INFO - Info message
+     980 Is =AP 0312 APPDESTROY - AppState set to be deleted after destroying plugins
+     981 Is =PM 0099 PLGDELETED - Plugin object Log deleted (undefined)
+     982 Is =LG 0734 FILELOGSTOPPED - File logging stopped

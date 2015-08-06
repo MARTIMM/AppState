@@ -22,14 +22,14 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. These codes must also be handled by ConfigManager.
 #
-def_sts( 'C_CFF_STORETYPESET', 'M_INFO', 'Store type set to %s');
-def_sts( 'C_CFF_LOCCODESET',   'M_INFO', 'Location code set to %s');
-def_sts( 'C_CFF_REQFILESET',   'M_INFO', 'Request for file %s');
-def_sts( 'C_CFF_CFGFILESET',   'M_INFO', 'Config filename set to %s');
-def_sts( 'C_CFF_CANNOTDELDOC', 'M_WARN', 'Cannot delete() documents');
-def_sts( 'C_CFF_DOCCLONED',    'M_INFO', 'Document cloned = %s');
-def_sts( 'C_CFF_CANNOTCLODOC', 'M_WARN', 'Cannot clone() documents in %s');
-def_sts( 'C_CFF_STOREPLGINIT', 'M_INFO', 'Config %s initialized');
+def_sts( 'C_CFF_STORETYPESET', 'M_TRACE', 'Store type set to %s');
+def_sts( 'C_CFF_LOCCODESET',   'M_TRACE', 'Location code set to %s');
+def_sts( 'C_CFF_REQFILESET',   'M_TRACE', 'Request for file %s');
+def_sts( 'C_CFF_CFGFILESET',   'M_TRACE', 'Config filename set to %s');
+def_sts( 'C_CFF_CANNOTDELDOC', 'M_WARN',  'Cannot delete() documents');
+def_sts( 'C_CFF_DOCCLONED',    'M_TRACE', 'Document cloned = %s');
+def_sts( 'C_CFF_CANNOTCLODOC', 'M_WARN',  'Cannot clone() documents in %s');
+def_sts( 'C_CFF_STOREPLGINIT', 'M_TRACE', 'Config %s initialized');
 
 # Location values
 #

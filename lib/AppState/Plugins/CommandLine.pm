@@ -23,10 +23,10 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_CMD_OPTPROCESSED', 'M_INFO', 'Options processed');
-def_sts( 'C_CMD_OPTCHANGED',   'M_INFO', 'Option processing changed: %s');
-def_sts( 'C_CMD_OPTPROCFAIL',  'M_WARN', 'There are errors processing commandline options');
-def_sts( 'C_CMD_NODESCRIPTION','M_WARN', 'Description of command not defined');
+def_sts( 'C_CMD_OPTPROCESSED', 'M_TRACE', 'Options processed');
+def_sts( 'C_CMD_OPTCHANGED',   'M_TRACE', 'Option processing changed: %s');
+def_sts( 'C_CMD_OPTPROCFAIL',  'M_WARN',  'There are errors processing commandline options');
+def_sts( 'C_CMD_NODESCRIPTION','M_WARN',  'Description of command not defined');
 
 #-------------------------------------------------------------------------------
 

@@ -18,10 +18,10 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes. Make handle in ConfigFile.
 #
-def_sts( 'C_CIO_CFGREAD',       'M_INFO', 'Config text read from file %s');
-def_sts( 'C_CIO_CFGWRITTEN',    'M_INFO', 'Data written to file %s');
-def_sts( 'C_CIO_CFGNOTREAD',    'M_WARN', 'File %s not readable or not existent');
-def_sts( 'C_CIO_CFGNOTWRITTEN', 'M_WARN', '%s: %s');
+def_sts( 'C_CIO_CFGREAD',       'M_TRACE', 'Config text read from file %s');
+def_sts( 'C_CIO_CFGWRITTEN',    'M_TRACE', 'Data written to file %s');
+def_sts( 'C_CIO_CFGNOTREAD',    'M_WARN',  'File %s not readable or not existent');
+def_sts( 'C_CIO_CFGNOTWRITTEN', 'M_WARN',  '%s: %s');
 def_sts( 'C_CIO_IOERROR',       'M_FATAL', '%s: %s');
 def_sts( 'C_CIO_SERIALIZEFAIL', 'M_FATAL', 'Failed to serialize %s file %s: %s');
 def_sts( 'C_CIO_DESERIALFAIL',  'M_FATAL', 'Failed to deserialize %s file %s: %s');
